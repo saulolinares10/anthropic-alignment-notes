@@ -1,6 +1,6 @@
 # anthropic-alignment-notes
 
-A living repo tracking my study of AI alignment concepts relevant to Anthropic's FDE/Applied AI role. Each folder is a topic with a notebook, a write-up, and a LinkedIn post draft.
+A living repo tracking my study of AI concepts. Each folder is a topic with a notebook, a write-up, and a LinkedIn post draft.
 
 ## Table of Contents
 
