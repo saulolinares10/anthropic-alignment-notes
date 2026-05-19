@@ -9,6 +9,7 @@ A living repo tracking my study of AI concepts. Each folder is a topic with a no
 | 01 | Constitutional AI | [cai_simulation.ipynb](01-constitutional-ai/notebook/cai_simulation.ipynb) | [POST.md](01-constitutional-ai/POST.md) | May 2026 |
 | 02 | RLHF | [rlhf_simulation.ipynb](02-rlhf/notebook/rlhf_simulation.ipynb) | POST.md | May 2026 |
 | 03 | Transformer Architecture | [transformer_fundamentals.ipynb](03-transformer-architecture/notebook/transformer_fundamentals.ipynb) | POST.md | May 2026 |
+| 04 | RAG Systems | [rag_fundamentals.ipynb](04-rag-systems/notebook/rag_fundamentals.ipynb) | POST.md | May 2026 |
 
 ## Stack
 
