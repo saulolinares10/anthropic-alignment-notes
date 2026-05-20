@@ -9,6 +9,7 @@
 | File | Description |
 |------|-------------|
 | `notebook/rag_fundamentals.ipynb` | Working notebook: chunking, vector index, query routing, RAGAS eval, freshness demo |
+| `notebook/rag_advanced_retrieval.ipynb` | Advanced retrieval — hybrid search, HyDE, re-ranking, query decomposition |
 | `POST.md` | LinkedIn post draft |
 
 ## Core Idea
