@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1200">
+  <title>Colombia · Segunda Vuelta · 21 de Junio 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F2F0EC;
+      color: #1a1a1a;
+      padding: 44px 32px 64px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page { max-width: 1120px; margin: 0 auto; }
+
+    /* ── Page header ─────────────────────────────────── */
+    .page-title {
+      font-size: 22px;
+      font-weight: 500;
+      color: #111;
+      letter-spacing: -0.022em;
+      margin-bottom: 5px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: #888;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      margin-bottom: 22px;
+    }
+
+    /* ── Main card ───────────────────────────────────── */
+    .card {
+      background: #fff;
+      border: 0.5px solid #e0ddd6;
+      border-radius: 12px;
+      padding: 32px 32px 28px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+
+    /* ── Three-column grid ───────────────────────────── */
+    .columns {
+      display: grid;
+      grid-template-columns: 1fr 1px 1.1fr 1px 1.1fr;
+      gap: 0;
+      margin-bottom: 26px;
+    }
+
+    .col-divider { background: #e8e5de; }
+
+    .col-left    { padding-right: 26px; }
+    .col-center  { padding: 0 26px; }
+    .col-right   { padding-left: 26px; }
+
+    .col-header {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.11em;
+      color: #999;
+      margin-bottom: 14px;
+    }
+
+    /* ── LEFT: consolidated vote blocks ─────────────── */
+    .vote-block {
+      border-radius: 8px;
+      padding: 15px 15px 13px;
+      margin-bottom: 10px;
+    }
+
+    .vote-block--abelardo {
+      background: #E1F5EE;
+      border-left: 3px solid #1D9E75;
+    }
+
+    .vote-block--cepeda {
+      background: #FEF3F2;
+      border-left: 3px solid #E24B4A;
+    }
+
+    .vote-pct {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .vote-pct--abelardo { color: #14825e; }
+    .vote-pct--cepeda   { color: #c73837; }
+
+    .vote-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 2px;
+    }
+
+    .vote-sub {
+      font-size: 11.5px;
+      color: #666;
+      margin-bottom: 9px;
+    }
+
+    .vote-tag {
+      display: inline-block;
+      font-size: 10.5px;
+      color: #555;
+      background: rgba(0,0,0,.06);
+      border-radius: 4px;
+      padding: 2px 7px;
+      margin-bottom: 9px;
+    }
+
+    .vote-combined {
+      font-size: 11.5px;
+      color: #444;
+      border-top: 1px solid rgba(0,0,0,.07);
+      padding-top: 8px;
+      line-height: 1.45;
+    }
+
+    .vote-combined strong { font-weight: 700; }
+
+    /* ── CENTER: swing items ─────────────────────────── */
+    .swing-item {
+      background: #f7f6f3;
+      border: 1px solid #e8e5de;
+      border-radius: 8px;
+      padding: 13px 14px 12px;
+      margin-bottom: 9px;
+    }
+
+    .swing-item:last-child { margin-bottom: 0; }
+
+    .swing-header {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      margin-bottom: 6px;
+    }
+
+    .swing-icon { font-size: 15px; line-height: 1; }
+
+    .swing-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .swing-sub {
+      font-size: 11.5px;
+      color: #666;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    /* Flow arrows */
+    .flow-arrows {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11.5px;
+    }
+
+    .flow-pip {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 800;
+      flex-shrink: 0;
+      color: #fff;
+    }
+
+    .flow-pip--a { background: #1D9E75; }
+    .flow-pip--c { background: #E24B4A; }
+    .flow-pip--n { background: #bbb; }
+
+    .flow-dest   { color: #444; flex: 1; }
+    .flow-est    { font-weight: 700; color: #222; font-size: 11.5px; }
+
+    .swing-note {
+      font-size: 10.5px;
+      color: #999;
+      font-style: italic;
+      border-top: 1px solid #e8e5de;
+      padding-top: 7px;
+      margin-top: 7px;
+      line-height: 1.45;
+    }
+
+    /* ── RIGHT: poll cards ───────────────────────────── */
+    .poll-card { padding: 14px 0 12px; }
+
+    .poll-card + .poll-card {
+      border-top: 1px solid #e8e5de;
+    }
+
+    .poll-source {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+    .poll-row { margin-bottom: 7px; }
+
+    .poll-row-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+    }
+
+    .poll-candidate {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .poll-num {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .poll-num--c { color: #c73837; }
+    .poll-num--a { color: #14825e; }
+
+    .poll-track {
+      height: 7px;
+      background: #eeece8;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .poll-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    .poll-fill--c { background: #E24B4A; }
+    .poll-fill--a { background: #1D9E75; }
+
+    .poll-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 9px;
+    }
+
+    .poll-badge {
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+
+    .poll-badge--c { background: #FEF3F2; color: #c73837; }
+    .poll-badge--a { background: #E1F5EE; color: #14825e; }
+
+    .poll-footnote {
+      font-size: 10.5px;
+      color: #aaa;
+    }
+
+    /* Amber callout */
+    .amber-callout {
+      background: #FDF5E6;
+      border-left: 3px solid #BA7517;
+      border-radius: 0 6px 6px 0;
+      padding: 11px 13px;
+      margin-top: 13px;
+      font-size: 11.5px;
+      color: #7a4e0c;
+      line-height: 1.6;
+    }
+
+    /* ── BOTTOM: decisive variables ──────────────────── */
+    .bottom-section {
+      background: #f5f4f0;
+      border-radius: 8px;
+      padding: 16px 20px 17px;
+    }
+
+    .bottom-title {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #222;
+      margin-bottom: 14px;
+    }
+
+    .bottom-items {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+
+    .bottom-item { padding-right: 24px; }
+
+    .bottom-item + .bottom-item {
+      padding-left: 24px;
+      padding-right: 24px;
+      border-left: 1px solid #dddbd5;
+    }
+
+    .bottom-item:last-child { padding-right: 0; }
+
+    .bottom-num {
+      font-size: 10px;
+      font-weight: 800;
+      color: #BA7517;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+
+    .bottom-label {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 4px;
+      letter-spacing: -0.01em;
+    }
+
+    .bottom-text {
+      font-size: 11.5px;
+      color: #666;
+      line-height: 1.55;
+    }
+
+    /* ── Agent note ──────────────────────────────────── */
+    .agent-note {
+      font-size: 11.5px;
+      color: #b0aca4;
+      margin-top: 16px;
+      line-height: 1.65;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── Header ──────────────────────────────────────── -->
+  <h1 class="page-title">Colombia &nbsp;·&nbsp; Segunda Vuelta &nbsp;·&nbsp; 21 de Junio 2026</h1>
+  <p class="page-subtitle">Dónde van los votos del 31 de mayo — y por qué nadie sabe con certeza</p>
+
+  <!-- ── Card ────────────────────────────────────────── -->
+  <div class="card">
+
+    <!-- Three columns -->
+    <div class="columns">
+
+      <!-- ── LEFT ─────────────────────────────────────── -->
+      <div class="col-left">
+        <div class="col-header">Votos consolidados</div>
+
+        <!-- Abelardo -->
+        <div class="vote-block vote-block--abelardo">
+          <div class="vote-pct vote-pct--abelardo">43.74%</div>
+          <div class="vote-name">Abelardo de la Espriella</div>
+          <div class="vote-sub">10.3M votos &nbsp;·&nbsp; 1ra vuelta</div>
+          <div class="vote-tag">+ Paloma Valencia (6.92%) ya lo apoyó</div>
+          <div class="vote-combined">
+            <strong>≈ 50.66%</strong> si toda la derecha transfiere
+          </div>
+        </div>
+
+        <!-- Cepeda -->
+        <div class="vote-block vote-block--cepeda">
+          <div class="vote-pct vote-pct--cepeda">40.90%</div>
+          <div class="vote-name">Iván Cepeda</div>
+          <div class="vote-sub">9.7M votos &nbsp;·&nbsp; 1ra vuelta &nbsp;·&nbsp; Pacto Histórico</div>
+          <div class="vote-tag">Petro lo respalda activamente</div>
+          <div class="vote-combined">
+            <strong>≈ 40.90%</strong> base consolidada
+          </div>
+        </div>
+      </div>
+
+      <div class="col-divider"></div>
+
+      <!-- ── CENTER ────────────────────────────────────── -->
+      <div class="col-center">
+        <div class="col-header">La zona de incertidumbre</div>
+
+        <!-- Fajardo -->
+        <div class="swing-item">
+          <div class="swing-header">
+            <span class="swing-icon">⚖️</span>
+            <span class="swing-name">Sergio Fajardo &nbsp;·&nbsp; 4.26% &nbsp;·&nbsp; 1M votos</span>
+          </div>
+          <div class="swing-sub">
+            Centro. Ideológicamente más cerca de Abelardo.
+            Pero históricamente anti-uribismo.
+          </div>
+          <div class="flow-arrows">
+            <div class="flow-row">
+              <div class="flow-pip flow-pip--a">→</div>
+              <span class="flow-dest">Abelardo</span>
+              <span class="flow-est">~60%?</span>
+            </div>
+            <div class="flow-row">
+              <div class="flow-pip flow-pip--c">→</div>
+              <span class="flow-dest">Cepeda</span>
+              <span class="flow-est">~25%?</span>
+            </div>
+            <div class="flow-row">
+              <div class="flow-pip flow-pip--n">–</div>
+              <span class="flow-dest">Abstención</span>
+              <span class="flow-est">~15%?</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Abstención -->
+        <div class="swing-item">
+          <div class="swing-header">
+            <span class="swing-icon">🗳️</span>
+            <span class="swing-name">Abstención histórica: ~45%</span>
+          </div>
+          <div class="swing-sub">
+            Si la izquierda moviliza más que la derecha
+            en segunda vuelta, cambia el resultado.
+          </div>
+          <div class="swing-note">
+            En 2022 Petro ganó en segunda con mayor movilización
+          </div>
+        </div>
+
+        <!-- Otros -->
+        <div class="swing-item">
+          <div class="swing-header">
+            <span class="swing-icon">❓</span>
+            <span class="swing-name">Claudia López 0.95% &nbsp;·&nbsp; Otros ~2%</span>
+          </div>
+          <div class="swing-sub">
+            Electores de centro-izquierda sin candidato natural.
+            Presión para votar Cepeda como mal menor.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-divider"></div>
+
+      <!-- ── RIGHT ─────────────────────────────────────── -->
+      <div class="col-right">
+        <div class="col-header">Encuestas segunda vuelta</div>
+
+        <!-- Invamer -->
+        <div class="poll-card">
+          <div class="poll-source">Invamer</div>
+
+          <div class="poll-row">
+            <div class="poll-row-label">
+              <span class="poll-candidate">Iván Cepeda</span>
+              <span class="poll-num poll-num--c">52.4%</span>
+            </div>
+            <div class="poll-track">
+              <div class="poll-fill poll-fill--c" style="width: 52.4%"></div>
+            </div>
+          </div>
+
+          <div class="poll-row">
+            <div class="poll-row-label">
+              <span class="poll-candidate">Abelardo de la Espriella</span>
+              <span class="poll-num poll-num--a">45.3%</span>
+            </div>
+            <div class="poll-track">
+              <div class="poll-fill poll-fill--a" style="width: 45.3%"></div>
+            </div>
+          </div>
+
+          <div class="poll-footer">
+            <span class="poll-badge poll-badge--c">Cepeda gana</span>
+            <span class="poll-footnote">2.3% voto en blanco</span>
+          </div>
+        </div>
+
+        <!-- AtlasIntel -->
+        <div class="poll-card">
+          <div class="poll-source">AtlasIntel &nbsp;·&nbsp; Semana</div>
+
+          <div class="poll-row">
+            <div class="poll-row-label">
+              <span class="poll-candidate">Abelardo de la Espriella</span>
+              <span class="poll-num poll-num--a">50.0%</span>
+            </div>
+            <div class="poll-track">
+              <div class="poll-fill poll-fill--a" style="width: 50.0%"></div>
+            </div>
+          </div>
+
+          <div class="poll-row">
+            <div class="poll-row-label">
+              <span class="poll-candidate">Iván Cepeda</span>
+              <span class="poll-num poll-num--c">41.3%</span>
+            </div>
+            <div class="poll-track">
+              <div class="poll-fill poll-fill--c" style="width: 41.3%"></div>
+            </div>
+          </div>
+
+          <div class="poll-footer">
+            <span class="poll-badge poll-badge--a">Abelardo gana</span>
+            <span class="poll-footnote">8.8% blanco/nulo</span>
+          </div>
+        </div>
+
+        <!-- Amber callout -->
+        <div class="amber-callout">
+          Las dos encuestas más serias del país
+          predicen ganadores opuestos.
+          El margen real está dentro del error estadístico.
+        </div>
+      </div>
+    </div><!-- /columns -->
+
+    <!-- ── Bottom: decisive variables ─────────────────── -->
+    <div class="bottom-section">
+      <div class="bottom-title">Las tres variables que deciden el 21 de junio</div>
+      <div class="bottom-items">
+
+        <div class="bottom-item">
+          <div class="bottom-num">01</div>
+          <div class="bottom-label">Transferencia de Paloma</div>
+          <div class="bottom-text">
+            6.92% declaró apoyo a Abelardo.
+            ¿Cuántos realmente votan por él?
+          </div>
+        </div>
+
+        <div class="bottom-item">
+          <div class="bottom-num">02</div>
+          <div class="bottom-label">Movilización de Fajardo</div>
+          <div class="bottom-text">
+            4.26% sin candidato. Centro pragmático.
+            El más disputado de los bloques.
+          </div>
+        </div>
+
+        <div class="bottom-item">
+          <div class="bottom-num">03</div>
+          <div class="bottom-label">Abstención diferencial</div>
+          <div class="bottom-text">
+            ¿Quién moviliza mejor su base
+            en segunda vuelta? En 2022 ganó la izquierda.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /card -->
+
+  <!-- ── Agent note ───────────────────────────────────── -->
+  <p class="agent-note">
+    Análisis generado con un sistema multi-agente el 1 de junio de 2026.
+    Datos: Registraduría Nacional &nbsp;·&nbsp; Encuestas Invamer y AtlasIntel/Semana.<br>
+    El modelo predijo Valencia vs López como segunda vuelta.
+    La realidad fue Abelardo vs Cepeda. Eso también es parte del análisis.
+  </p>
+
+</div>
+</body>
+</html>
