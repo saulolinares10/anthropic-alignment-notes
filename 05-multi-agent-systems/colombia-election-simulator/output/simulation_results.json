@@ -1,0 +1,312 @@
+{
+  "policy_analysis": {
+    "policy_map": {
+      "economy": {
+        "Paloma Valencia": {
+          "position_summary": "Propone una agenda de libre mercado con reducción de impuestos empresariales y eliminación del impuesto al patrimonio. Busca atraer inversión extranjera mediante zonas francas regionales y TLCs con Asia. Meta explícita de crecimiento del 5% anual.",
+          "ideology_score": 0.75,
+          "key_proposal": "Reducir impuesto de renta empresarial y eliminar impuesto al patrimonio para estimular inversión privada."
+        },
+        "Iván Cepeda": {
+          "position_summary": "Defiende una reforma tributaria progresiva con el Estado como motor del desarrollo económico. Propone continuar las políticas del gobierno Petro con mayor redistribución. Prioriza la reducción de desigualdad sobre el crecimiento del sector privado.",
+          "ideology_score": -0.75,
+          "key_proposal": "Reforma tributaria progresiva con el Estado como motor central del desarrollo económico."
+        },
+        "Claudia López": {
+          "position_summary": "Propone descentralización fiscal y presupuestos participativos regionales como ejes económicos. Sitúa la lucha anticorrupción como condición necesaria para el desarrollo. Postura moderada que no privilegia ni al Estado ni al mercado de forma exclusiva.",
+          "ideology_score": -0.1,
+          "key_proposal": "Descentralización fiscal y presupuestos participativos regionales como motor del desarrollo territorial."
+        },
+        "Abelardo de la Espriella": {
+          "position_summary": "Enfoca la política económica en el crecimiento empresarial y la simplificación regulatoria. Apoya a las pymes como columna vertebral de la economía. Postura centro-derecha sin propuestas de reforma tributaria radical.",
+          "ideology_score": 0.55,
+          "key_proposal": "Reducción de trámites y apoyo a pymes para dinamizar el crecimiento empresarial."
+        }
+      },
+      "security": {
+        "Paloma Valencia": {
+          "position_summary": "Propone la 'Seguridad Total' con incorporación de 30.000 militares y 30.000 policías adicionales. Enfatiza la recuperación territorial del Estado frente a grupos armados. Visión predominantemente coercitiva y de fuerza pública.",
+          "ideology_score": 0.8,
+          "key_proposal": "Plan 30-30: incorporar 30.000 nuevos militares y 30.000 policías para recuperar territorios."
+        },
+        "Iván Cepeda": {
+          "position_summary": "Defiende la 'Paz Total' mediante negociación con grupos armados ilegales. Prioriza el abordaje de las causas estructurales de la violencia como pobreza y exclusión. Rechaza el enfoque militarista como solución duradera.",
+          "ideology_score": -0.8,
+          "key_proposal": "Paz Total: negociación política con grupos armados y ataque a causas estructurales de la violencia."
+        },
+        "Claudia López": {
+          "position_summary": "Redefine el problema de seguridad en términos de crimen organizado urbano más que de conflicto armado político. Propone un enfoque focalizado en ciudades y comunidades. Postura intermedia que combina presencia estatal con estrategias comunitarias.",
+          "ideology_score": -0.15,
+          "key_proposal": "Redefinir la violencia como crimen organizado y enfocar la respuesta en ciudades y comunidades."
+        },
+        "Abelardo de la Espriella": {
+          "position_summary": "Propone mano dura contra el crimen y recuperación del orden público. Postura afín a la derecha en materia de seguridad aunque sin el detalle del Plan 30-30. Énfasis en el restablecimiento de la autoridad del Estado.",
+          "ideology_score": 0.6,
+          "key_proposal": "Mano dura contra el crimen y recuperación del orden público como prioridad de gobierno."
+        }
+      },
+      "health": {
+        "Paloma Valencia": {
+          "position_summary": "Propone resolver el represamiento de citas médicas en los primeros meses de gobierno como meta de gestión inmediata. Busca fortalecer la cobertura sin proponer una transformación estructural del sistema. Postura pragmática de corto plazo.",
+          "ideology_score": 0.5,
+          "key_proposal": "Resolver millones de citas represadas en los primeros meses de gobierno."
+        },
+        "Iván Cepeda": {
+          "position_summary": "Propone una reforma estructural al sistema de salud con fortalecimiento del sector público. Continuidad con la reforma de salud impulsada por el gobierno Petro. Visión de la salud como derecho fundamental gestionado principalmente por el Estado.",
+          "ideology_score": -0.75,
+          "key_proposal": "Reforma estructural al sistema de salud con fortalecimiento del sector público."
+        },
+        "Claudia López": {
+          "position_summary": "Propone recuperar el sistema de salud mediante una reforma moderada que corrija sus fallas sin desmantelarlo. Postura intermedia que reconoce problemas del sistema actual sin abrazar la reforma radical. Énfasis en la sostenibilidad y gestión eficiente.",
+          "ideology_score": -0.2,
+          "key_proposal": "Reforma moderada para recuperar el sistema de salud respetando su estructura mixta."
+        },
+        "Abelardo de la Espriella": {
+          "position_summary": "Defiende un sistema mixto público-privado que preserva el rol de las aseguradoras privadas. Postura de centro-derecha que favorece la competencia y la libre elección en salud. No propone una reforma estructural profunda.",
+          "ideology_score": 0.55,
+          "key_proposal": "Mantener y fortalecer el sistema mixto público-privado en salud."
+        }
+      },
+      "education": {
+        "Paloma Valencia": {
+          "position_summary": "Propone bonos escolares y becas como mecanismos de acceso con énfasis en la elección individual. Apuesta por la formación tecnológica en inteligencia artificial como eje de modernización. Visión que incorpora al sector privado en la provisión educativa.",
+          "ideology_score": 0.7,
+          "key_proposal": "Bonos escolares y formación tecnológica en IA como ejes de la política educativa."
+        },
+        "Iván Cepeda": {
+          "position_summary": "Defiende la educación pública gratuita en todos los niveles incluyendo la universidad. Visión de la educación como derecho universal financiado por el Estado. Continuidad con la política de gratuidad del gobierno Petro.",
+          "ideology_score": -0.75,
+          "key_proposal": "Educación pública gratuita y universal incluyendo el nivel universitario."
+        },
+        "Claudia López": {
+          "position_summary": "Propone educación de calidad con énfasis en las regiones más rezagadas del país. Postura moderada que equilibra cobertura y calidad sin comprometerse con gratuidad universal. Enfoque territorial como diferenciador de su propuesta.",
+          "ideology_score": -0.15,
+          "key_proposal": "Educación de calidad con énfasis en cierre de brechas regionales."
+        },
+        "Abelardo de la Espriella": {
+          "position_summary": "Prioriza la educación técnica y vocacional como respuesta a las necesidades del mercado laboral. Visión pragmática orientada a la empleabilidad más que a la educación como derecho universal. Postura afín al sector productivo.",
+          "ideology_score": 0.5,
+          "key_proposal": "Priorizar la educación técnica y vocacional alineada con las necesidades del mercado laboral."
+        }
+      },
+      "energy": {
+        "Paloma Valencia": {
+          "position_summary": "Apoya el fracking bajo regulación ambiental como herramienta para fortalecer la producción energética nacional. Concibe los ingresos petroleros como fuente de financiamiento para programas sociales. Postura extractivista moderada con condicionamiento ambiental.",
+          "ideology_score": 0.75,
+          "key_proposal": "Apoyar el fracking bajo regulación ambiental para sostener ingresos que financien programas sociales."
+        },
+        "Iván Cepeda": {
+          "position_summary": "Propone una transición energética acelerada y rechaza categóricamente el fracking. Continuidad con la política energética del gobierno Petro de reducción de dependencia de combustibles fósiles. Visión ambientalista que prioriza las energías renovables.",
+          "ideology_score": -0.8,
+          "key_proposal": "Transición energética acelerada y prohibición del fracking."
+        },
+        "Claudia López": {
+          "position_summary": "Propone una transición energética gradual que reconoce la necesidad de responsabilidad fiscal. Postura intermedia que acepta la necesidad de la transición pero sin el ritmo acelerado de la izquierda. Equilibra objetivos ambientales con estabilidad económica.",
+          "ideology_score": -0.2,
+          "key_proposal": "Transición energética gradual con responsabilidad fiscal como condición de viabilidad."
+        },
+        "Abelardo de la Espriella": {
+          "position_summary": "Propone un balance entre producción energética convencional y transición hacia renovables. Postura pragmática de centro-derecha que no abandona los hidrocarburos pero reconoce la necesidad del cambio. Sin posición explícita sobre el fracking.",
+          "ideology_score": 0.4,
+          "key_proposal": "Balance pragmático entre producción energética convencional y transición hacia renovables."
+        }
+      }
+    },
+    "policy_gaps": [
+      {
+        "dimension": "economy",
+        "gap_description": "Desacuerdo fundamental sobre el rol del Estado versus el mercado en la economía: reducción de impuestos y liberalización versus reforma tributaria progresiva y Estado como motor del desarrollo.",
+        "left_position": "Reforma tributaria progresiva con el Estado como principal agente del desarrollo económico (Cepeda).",
+        "right_position": "Reducción de impuestos empresariales, eliminación del impuesto al patrimonio y atracción de inversión privada (Valencia).",
+        "gap_magnitude": 0.85
+      },
+      {
+        "dimension": "security",
+        "gap_description": "Oposición radical entre la 'Seguridad Total' militarista y la 'Paz Total' negociadora, reflejando visiones incompatibles sobre las causas y soluciones a la violencia en Colombia.",
+        "left_position": "Negociación política con grupos armados y abordaje de causas estructurales de la violencia (Cepeda).",
+        "right_position": "Incorporación masiva de fuerza pública y recuperación territorial mediante la coerción (Valencia).",
+        "gap_magnitude": 0.95
+      },
+      {
+        "dimension": "health",
+        "gap_description": "Divergencia sobre la estructura del sistema de salud: reforma estructural hacia un modelo público versus mantenimiento y optimización del sistema mixto existente.",
+        "left_position": "Reforma estructural con fortalecimiento del sector público y continuidad de la reforma Petro (Cepeda).",
+        "right_position": "Sistema mixto público-privado que preserva el rol de las aseguradoras (De la Espriella).",
+        "gap_magnitude": 0.75
+      },
+      {
+        "dimension": "education",
+        "gap_description": "Brecha entre la educación pública gratuita universal como derecho y la educación como servicio con participación privada orientada al mercado laboral.",
+        "left_position": "Educación pública gratuita y universal incluyendo la universidad como derecho fundamental (Cepeda).",
+        "right_position": "Bonos escolares que incorporan al sector privado y formación técnica orientada al mercado (Valencia).",
+        "gap_magnitude": 0.8
+      },
+      {
+        "dimension": "energy",
+        "gap_description": "Desacuerdo central sobre el fracking y el ritmo de la transición energética: prohibición absoluta versus apoyo regulado, con implicaciones fiscales y ambientales profundas para Colombia.",
+        "left_position": "Prohibición del fracking y transición energética acelerada hacia renovables (Cepeda).",
+        "right_position": "Apoyo al fracking bajo regulación ambiental para sostener ingresos fiscales (Valencia).",
+        "gap_magnitude": 0.9
+      }
+    ],
+    "consensus_areas": [
+      "Todos los candidatos reconocen la necesidad de mejorar la cobertura y calidad del sistema de salud, aunque difieren en la profundidad y dirección de la reforma.",
+      "Todos los candidatos aceptan que Colombia debe transitar hacia una mayor participación de energías renovables en su matriz energética, aunque difieren en el ritmo y las condiciones.",
+      "Todos los candidatos coinciden en que la educación es un sector prioritario de política pública que requiere mayor inversión y mejora en calidad.",
+      "Todos los candidatos reconocen que el crecimiento económico es un objetivo deseable, aunque difieren radicalmente en el modelo para alcanzarlo.",
+      "Todos los candidatos reconocen la necesidad de reducir la violencia y mejorar la seguridad ciudadana, aunque proponen estrategias opuestas para lograrlo."
+    ]
+  },
+  "voter_bloc_results": [
+    {
+      "bloc": "Pacto Histórico",
+      "seats": 25,
+      "ideology_score": -0.8,
+      "round_1_preference": "Iván Cepeda",
+      "round_1_confidence": 0.96,
+      "round_2_scenarios": {
+        "Valencia_vs_Cepeda": {
+          "preference": "Iván Cepeda",
+          "probability": 0.97,
+          "reasoning": "Cepeda es el candidato propio del Pacto Histórico y representa continuidad directa con el proyecto político de Petro; la distancia ideológica con Valencia (+1.55 puntos) hace casi imposible cualquier apoyo o abstención masiva del bloque."
+        },
+        "Valencia_vs_Lopez": {
+          "preference": "Claudia López",
+          "probability": 0.82,
+          "reasoning": "Aunque López genera tensiones históricas con el Pacto por sus críticas al gobierno Petro, su posición de centroizquierda y agenda anticorrupción la hacen preferible frente a una candidata de Centro Democrático; el bloque optaría por el mal menor con probable negociación de agenda mínima."
+        },
+        "Cepeda_vs_Lopez": {
+          "preference": "Iván Cepeda",
+          "probability": 0.98,
+          "reasoning": "En este escenario el Pacto Histórico se moviliza masiva y disciplinadamente detrás de su propio candidato, sin ambigüedad posible dado el alineamiento ideológico total y la estructura orgánica del bloque."
+        }
+      }
+    },
+    {
+      "bloc": "Centro Democrático",
+      "seats": 17,
+      "ideology_score": 0.85,
+      "round_1_preference": "Paloma Valencia",
+      "round_1_confidence": 0.93,
+      "round_2_scenarios": {
+        "Valencia_vs_Cepeda": {
+          "preference": "Paloma Valencia",
+          "probability": 0.98,
+          "reasoning": "Centro Democrático would consolidate unanimously behind Valencia against Cepeda, a Pacto Histórico figure ideologically antithetical to Uribismo and a direct adversary on security, economy, and the legacy of the Petro government."
+        },
+        "Valencia_vs_Lopez": {
+          "preference": "Paloma Valencia",
+          "probability": 0.96,
+          "reasoning": "López is their own candidate, so this scenario is moot, but Centro Democrático would back Valencia overwhelmingly given her ideological alignment, their formal coalition pact, and López's center-left positions on energy, security, and fiscal policy."
+        },
+        "Cepeda_vs_Lopez": {
+          "preference": "Claudia López",
+          "probability": 0.82,
+          "reasoning": "Facing a binary choice between the far left and the center-left, Centro Democrático would reluctantly back López as the lesser ideological threat, though internal discipline may fracture with some abstentions given López's confrontational history with Uribismo."
+        }
+      }
+    },
+    {
+      "bloc": "Partido Liberal",
+      "seats": 11,
+      "ideology_score": 0.2,
+      "round_1_preference": "Paloma Valencia",
+      "round_1_confidence": 0.72,
+      "round_2_scenarios": {
+        "Valencia_vs_Cepeda": {
+          "preference": "Paloma Valencia",
+          "probability": 0.85,
+          "reasoning": "El Partido Liberal, con su historial de centroderecha moderada y su endorsement formal a Valencia, difícilmente migraría hacia el Pacto Histórico dado el distanciamiento ideológico y el rechazo institucional a las políticas del gobierno Petro. La distancia ideológica con Cepeda (-0.75) es demasiado amplia para una coalición liberal clásica."
+        },
+        "Valencia_vs_Lopez": {
+          "preference": "Claudia López",
+          "probability": 0.61,
+          "reasoning": "En un escenario sin la presión de coalición formal, el centro ideológico del Partido Liberal (0.2) está más cerca de López (-0.1) que de Valencia (0.75), y la agenda anticorrupción y descentralización de López tiene resonancia histórica liberal; sin embargo, el endorsement previo y compromisos de cuotas burocráticas podrían dividir la bancada."
+        },
+        "Cepeda_vs_Lopez": {
+          "preference": "Claudia López",
+          "probability": 0.88,
+          "reasoning": "Claudia López representa la opción natural para el Partido Liberal en este escenario: ideológicamente afín, con propuestas de descentralización fiscal compatibles con intereses regionales liberales, y sin el peso ideológico del Pacto Histórico que haría inviable el apoyo a Cepeda."
+        }
+      }
+    },
+    {
+      "bloc": "Alianza por Colombia",
+      "seats": 9,
+      "ideology_score": 0.5,
+      "round_1_preference": "Abelardo de la Espriella",
+      "round_1_confidence": 0.52,
+      "round_2_scenarios": {
+        "Valencia_vs_Cepeda": {
+          "preference": "Paloma Valencia",
+          "probability": 0.91,
+          "reasoning": "Con ideología 0.5, el bloque rechaza fuertemente la continuidad del Pacto Histórico; Valencia, pese a ser más derechista de lo ideal, es la única opción viable frente a Cepeda en -0.75."
+        },
+        "Valencia_vs_Lopez": {
+          "preference": "Paloma Valencia",
+          "probability": 0.62,
+          "reasoning": "Aunque López es más cercana ideológicamente al centro, Valencia ofrece mayor certeza en seguridad y economía de mercado; el bloque podría negociar concesiones con Valencia antes de una segunda vuelta."
+        },
+        "Cepeda_vs_Lopez": {
+          "preference": "Claudia López",
+          "probability": 0.88,
+          "reasoning": "López en -0.1 es significativamente más compatible con el bloque que Cepeda en -0.75; su enfoque anticorrupción y descentralización fiscal son puntos de convergencia real."
+        }
+      }
+    },
+    {
+      "bloc": "Partido Conservador",
+      "seats": 8,
+      "ideology_score": 0.7,
+      "round_1_preference": "Paloma Valencia",
+      "round_1_confidence": 0.82,
+      "round_2_scenarios": {
+        "Valencia_vs_Cepeda": {
+          "preference": "Paloma Valencia",
+          "probability": 0.96,
+          "reasoning": "La distancia ideológica con Cepeda es máxima; sus propuestas de continuidad del gobierno Petro y reforma tributaria progresiva son incompatibles con los valores económicos y de seguridad del conservatismo. El voto por Valencia sería casi unánime como voto de bloque."
+        },
+        "Valencia_vs_Lopez": {
+          "preference": "Paloma Valencia",
+          "probability": 0.78,
+          "reasoning": "Valencia es la opción natural por afinidad ideológica y de coalición; sin embargo, una fracción moderada del conservatismo podría abstenerse o votar López si Valencia no ofrece concesiones en agenda social o regional. La mayoría del bloque votaría Valencia."
+        },
+        "Cepeda_vs_Lopez": {
+          "preference": "Claudia López",
+          "probability": 0.85,
+          "reasoning": "Ante la ausencia de una opción de centro-derecha, el Partido Conservador optaría pragmáticamente por López como mal menor; su posición centrista y discurso anticorrupción son más tolerables que la agenda de izquierda radical de Cepeda."
+        }
+      }
+    }
+  ],
+  "median_voter_analysis": {
+    "median_voter_position": 0.34,
+    "median_voter_description": "A center-right Colombian voter, likely affiliated with or sympathetic to traditional parties (Liberal, Conservador) or moderate independent movements. This voter is skeptical of the Petro government's economic management and security record, values institutional stability, moderate fiscal responsibility, and anti-corruption messaging, but does not fully embrace hardline Uribismo. Geographically, this voter is likely urban or peri-urban, middle class, and responsive to pragmatic governance arguments over ideological purity.",
+    "second_round_scenarios": [
+      {
+        "matchup": "Paloma Valencia vs Iván Cepeda",
+        "median_voter_closest_to": "Paloma Valencia",
+        "predicted_winner": "Paloma Valencia",
+        "win_probability": 0.81,
+        "key_factor": "The median voter at +0.34 sits 0.41 points from Valencia and 1.09 points from Cepeda, creating a structurally insurmountable ideological gap. Conservative, Liberal, and Alianza blocs (45 combined seats) consolidate behind Valencia, while Cepeda retains only the Pacto Histórico's 25 seats with minimal cross-bloc appeal. The anti-Petro backlash dynamic further amplifies Valencia's advantage by converting diffuse discontent into a disciplined defensive vote."
+      },
+      {
+        "matchup": "Paloma Valencia vs Claudia López",
+        "median_voter_closest_to": "Claudia López",
+        "predicted_winner": "Claudia López",
+        "win_probability": 0.58,
+        "key_factor": "López at -0.10 is 0.44 points closer to the median than Valencia at +0.75. Her anti-corruption brand and centrist positioning allow her to aggregate the Pacto Histórico's reluctant support (probability 0.82), the Liberal bloc's natural ideological affinity (0.61), and competitive performance with Alianza por Colombia (0.38 probability), while Valencia's coalitional base narrows to Centro Democrático and Conservador. The race is genuinely competitive but López's center-gravity advantage is decisive in a high-turnout scenario. Valencia retains a realistic path if Liberal bloc discipline holds to its endorsement commitments."
+      },
+      {
+        "matchup": "Iván Cepeda vs Claudia López",
+        "median_voter_closest_to": "Claudia López",
+        "predicted_winner": "Claudia López",
+        "win_probability": 0.87,
+        "key_factor": "This is López's strongest structural scenario. The median voter at +0.34 is 0.44 points from López and 1.09 points from Cepeda. Centro Democrático (17 seats, probability 0.82), Partido Conservador (8 seats, probability 0.85), Alianza por Colombia (9 seats, probability 0.88), and Partido Liberal (11 seats, probability 0.88) all converge on López as the pragmatic center-right firewall against the radical left. Total cross-bloc seat weight mobilized for López approaches 80% of non-Pacto Histórico blocs, producing a lopsided second-round coalition."
+      }
+    ],
+    "most_likely_second_round": "Paloma Valencia vs Claudia López",
+    "analysis": "The seat-weighted median voter position of approximately +0.34 reveals a Colombian electorate that has shifted toward center-right pragmatism relative to the 2022 election cycle, reflecting accumulated discontent with the Petro government's economic volatility, security deterioration, and institutional confrontations. No candidate sits precisely at this median: Valencia (+0.75) overshoots it by 0.41 points to the right, while López (-0.10) undershoots it by 0.44 points to the left. This near-symmetry makes a Valencia vs. López second round the most competitive and analytically interesting scenario, and also the most structurally probable given round-one bloc preferences: Valencia commands near-certain backing from Centro Democrático (0.93 confidence), Conservador (0.82), and formal Liberal endorsement (0.72), while López is best positioned to consolidate the non-Pacto center-left and draw crossover votes from disaffected Petro supporters who reject Cepeda's maximalism.\n\nIn the most likely second-round matchup—Valencia vs. López—the Median Voter Theorem predicts López as the narrow favorite, but the outcome is highly contingent on two structural variables: first, whether the Partido Liberal's formal coalition endorsement of Valencia holds under second-round pressure or fractures toward López along natural ideological lines (Liberal ideology score of 0.20 sits 0.30 points closer to López than to Valencia); and second, whether Alianza por Colombia's 9 seats follow negotiated commitments to Valencia or respond to López's centrist positioning. The Pacto Histórico's 25-seat bloc will transfer to López with approximately 0.82 probability, adding a substantial floor that Valencia cannot match from the left. However, Valencia's advantage lies in organizational discipline and the anti-Petro emotional mobilization that could drive turnout differentials in her favor.\n\nCepeda's path to the second round requires a significant collapse of López's first-round coalition, which current data does not support. His scenario against Valencia would represent the most polarized possible outcome—a replay of 2022's structural logic but with Petro's approval drag now weighing directly on the Pacto candidate—and would almost certainly produce a Valencia victory by a double-digit margin. The most consequential first-round dynamic to monitor is whether Espriella's 9-seat Alianza bloc consolidates early enough to act as a kingmaker signal, or fragments in ways that allow López to absorb centrist votes before the second round. The median voter's position at +0.34 ultimately rewards whichever candidate most credibly occupies the center-right without being captured by either the Uribista or Petrista base energetics."
+  },
+  "synthesis": "```json\n{\n  \"analysis_type\": \"Second Round Synthesis — Colombia 2026 Presidential Election\",\n  \"generated_by\": \"Multi-Agent Political Analysis System\",\n  \"confidence_level\": \"Moderate-High (contingent on first-round consolidation dynamics)\",\n  \"synthesis\": {\n    \"paragraph_1\": {\n      \"theme\": \"Structural Landscape and Second-Round Framing\",\n      \"content\": \"Colombia's 2026 presidential election is structurally defined by a median voter who has migrated toward center-right pragmatism — sitting at +0.34 on the ideological spectrum — without fully endorsing the hardline Uribista platform that Paloma Valencia represents. The most probable second-round matchup, Valencia (+0.75) versus Claudia López (-0.10), places that median voter almost equidistant between both candidates, with López holding a narrow geometric advantage of approximately 0.04 points closer to the median. This near-symmetry means the election will not be decided by ideological positioning alone, but by coalition arithmetic, turnout mobilization, and the credibility of each candidate's governance narrative. Valencia enters the second round with a structurally disciplined bloc — Centro Democrático, Partido Conservador, and formal Liberal endorsement accounting for 36 of 70 tracked congressional seats — while López's path depends on consolidating the center-left, absorbing Pacto Histórico transfers, and peeling off pragmatic Liberal voters whose ideological center of gravity sits closer to her than to Valencia. The fundamental tension in this election is not left versus right in the 2022 sense, but rather competing definitions of what 'responsible governance' means to an electorate exhausted by both Petrista maximalism and Uribista polarization.\"\n    },\n    \"paragraph_2\": {\n      \"theme\": \"Coalition Fracture Points and Key Structural Variables\",\n      \"content\": \"Two coalition dynamics will function as the decisive swing variables in the second round. First, the Partido Liberal's formal endorsement of Valencia — secured at the coalition level with 72% confidence — sits in tension with the party's ideological position score of +0.20, which is 0.30 points closer to López than to Valencia. If Liberal rank-and-file voters, particularly in urban and Atlantic coast strongholds, perceive López as the more viable center candidate, elite-level endorsement may not translate into reliable vote transfer, effectively redistributing up to 11 congressional seat-equivalents of electoral weight toward López. Second, Abelardo de la Espriella's Alianza por Colombia bloc, carrying 9 seats with only 52% first-round confidence, represents the election's most fluid kingmaker variable: a bloc that is ideologically centrist, organizationally weak, and therefore most susceptible to second-round repositioning signals. If Espriella publicly endorses Valencia before the second round, the organizational discipline of that transfer will be partial at best; if he pivots toward López or remains neutral, he functionally advantages her by denying Valencia's coalition a coherent center-right signal. Meanwhile, the Pacto Histórico's 25-seat bloc is projected to transfer to López with approximately 0.82 probability, providing her with a substantial and non-negotiable electoral floor that Valencia has no symmetric mechanism to offset from her left flank, making turnout mobilization among anti-Petro voters Valencia's primary compensating instrument.\"\n    },\n    \"paragraph_3\": {\n      \"theme\": \"Policy Dimensions Defining the Outcome\",\n      \"content\": \"Of the five identified policy gap dimensions, the economy stands as the dominant axis on which the second round will be contested and decided. With the largest inter-candidate divergence concentrated in economic management — ranging from state-led redistributive models to market-oriented institutional frameworks — the central electoral question becomes whether voters assign greater priority to correcting Petro-era economic volatility or to avoiding a perceived return to pre-2022 exclusionary growth patterns. Valencia's platform benefits from accumulated public frustration with fiscal uncertainty and investment flight, but risks being perceived as a restoration of an inequitable status quo; López's economic positioning as a center-left pragmatist allows her to critique Petro's implementation failures while retaining the reform-oriented credibility that the median voter still values in principle. On security — the second most polarized dimension — Valencia's law-and-order framing carries strong emotional resonance with the urban middle class that constitutes the median voter profile, but total peace policy failure under Petro does not automatically translate into public appetite for a full securitization reversal"
+}

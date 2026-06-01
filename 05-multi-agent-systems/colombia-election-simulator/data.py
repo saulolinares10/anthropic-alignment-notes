@@ -1,6 +1,7 @@
 """
 Colombia 2026 presidential election data.
-Sources: Registraduría Nacional (congressional results, March 8 2026);
+Sources: Registraduría Nacional (congressional results, March 8 2026;
+first round results, May 31 2026);
 El Tiempo, Razón Pública, Bloomberg Línea, Infobae Colombia (candidate proposals, May 2026).
 """
 
@@ -103,6 +104,32 @@ CANDIDATES_2026 = {
             "energy": "Balance entre producción y transición.",
         },
     },
+    "Sergio Fajardo": {
+        "coalition": "Coalición Centro Esperanza",
+        "ideology_score": 0.05,
+        "key_proposals": {
+            "economy": (
+                "Reforma tributaria condicionada a pacto nacional. Alivios para pymes. "
+                "Lucha anticorrupción como eje fiscal."
+            ),
+            "security": (
+                "Recuperación territorial con pie de fuerza. Prevención del reclutamiento juvenil. "
+                "Enfoque social complementario."
+            ),
+            "health": (
+                "Reforma moderada al sistema. Fortalecimiento de la red pública "
+                "sin desmantelar lo privado."
+            ),
+            "education": (
+                "Educación como eje central. Calidad antes que cobertura. "
+                "Énfasis en regiones rezagadas."
+            ),
+            "energy": (
+                "Transición energética gradual con responsabilidad fiscal. "
+                "No al fracking en zonas sensibles."
+            ),
+        },
+    },
 }
 
 POLICY_DIMENSIONS = [
@@ -112,3 +139,32 @@ POLICY_DIMENSIONS = [
     "education",
     "energy",
 ]
+
+# ── First round results — May 31, 2026 ──────────────────────────────────────
+
+FIRST_ROUND_RESULTS_2026 = {
+    "Abelardo de la Espriella": {
+        "votes": 10_361_413,
+        "percentage": 43.74,
+        "advances_to_second_round": True,
+    },
+    "Iván Cepeda": {
+        "votes": 9_688_245,
+        "percentage": 40.90,
+        "advances_to_second_round": True,
+    },
+    "Paloma Valencia": {
+        "votes": None,
+        "percentage": 6.9,
+        "advances_to_second_round": False,
+        "endorses": "Abelardo de la Espriella",
+    },
+    "Sergio Fajardo": {
+        "votes": None,
+        "percentage": 4.26,
+        "advances_to_second_round": False,
+    },
+}
+
+SECOND_ROUND_DATE = "June 21, 2026"
+SECOND_ROUND_MATCHUP = "Abelardo de la Espriella vs Iván Cepeda"
