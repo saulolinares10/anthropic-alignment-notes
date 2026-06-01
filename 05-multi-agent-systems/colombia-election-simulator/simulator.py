@@ -42,16 +42,27 @@ MODEL = "claude-sonnet-4-6"
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 def _parse_json(text):
+    # Strip markdown code fences if present
     text = text.strip()
     if text.startswith("```"):
         lines = text.split("\n")
-        inner = lines[1:]
-        if inner and inner[-1].strip() == "```":
-            inner = inner[:-1]
-        text = "\n".join(inner)
-    if text.strip().startswith("json"):
-        text = text.strip()[4:]
-    return json.loads(text.strip())
+        text = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
+    text = text.strip()
+
+    # Try direct parse first
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        # Try to find JSON object within the text
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1:
+            try:
+                return json.loads(text[start:end + 1])
+            except json.JSONDecodeError:
+                pass
+        # Return raw text if all else fails
+        return {"raw_response": text}
 
 
 def call_agent(system_prompt, user_message, agent_name):
@@ -60,7 +71,7 @@ def call_agent(system_prompt, user_message, agent_name):
     print("─" * 70)
     response = client.messages.create(
         model=MODEL,
-        max_tokens=1000,
+        max_tokens=4000,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
     )
