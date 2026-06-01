@@ -1,11 +1,15 @@
 """
-Colombia 2026 Presidential Election — Multi-Agent Simulator
-============================================================
-Four-agent pipeline:
-  1. Policy Analyst   — maps candidates across 5 policy dimensions
-  2. Voter Bloc x5    — one agent per congressional bloc
-  3. Median Voter     — applies Median Voter Theorem
-  4. Orchestrator     — synthesizes all findings
+Colombia 2026 · Segunda Vuelta Simulator
+=========================================
+Abelardo de la Espriella vs Iván Cepeda · June 21, 2026
+
+Three-agent pipeline:
+  1. Survey Analyst    — reconciles divergent polls (Invamer, AtlasIntel, Guarumo)
+  2. Swing Analyst     — models Paloma transfer, Fajardo split, abstention differential
+  3. Median Voter Agent — applies MVT and identifies Colombian deviations from theory
+
+Built June 1st, 2026. Uses only verified first-round vote data and published polls.
+No congressional seat proxies.
 
 Usage:
     export ANTHROPIC_API_KEY=your_key
@@ -17,377 +21,365 @@ from pathlib import Path
 
 import anthropic
 
-from data import CANDIDATES_2026, CONGRESSIONAL_RESULTS_2026, POLICY_DIMENSIONS
+from data import (
+    CANDIDATE_IDEOLOGY,
+    FIRST_ROUND_RESULTS,
+    HISTORICAL_CONTEXT,
+    SECOND_ROUND_POLLS,
+    SWING_VARIABLES,
+)
 from prompts import (
     MEDIAN_VOTER_PROMPT,
     ORCHESTRATOR_PROMPT,
-    POLICY_ANALYST_PROMPT,
-    VOTER_BLOC_PROMPT,
+    SURVEY_ANALYST_PROMPT,
+    SWING_ANALYST_PROMPT,
 )
 
 client = anthropic.Anthropic()
 MODEL = "claude-sonnet-4-6"
 
 
-# ── Shared helper ────────────────────────────────────────────────────────────
+# ── Helpers ──────────────────────────────────────────────────────────────────
 
-def _parse_json(text: str) -> dict:
-    """Parse JSON from model output, stripping markdown code fences if present."""
+def _parse_json(text):
     text = text.strip()
     if text.startswith("```"):
-        lines = text.splitlines()
-        # Drop opening fence line; drop closing ``` if present
+        lines = text.split("\n")
         inner = lines[1:]
         if inner and inner[-1].strip() == "```":
             inner = inner[:-1]
-        joined = "\n".join(inner)
-        if joined.lstrip().startswith("json"):
-            joined = joined.lstrip()[4:]
-        return json.loads(joined.strip())
-    return json.loads(text)
+        text = "\n".join(inner)
+    if text.strip().startswith("json"):
+        text = text.strip()[4:]
+    return json.loads(text.strip())
 
 
-# ── Agent 1: Policy Analyst ──────────────────────────────────────────────────
-
-def run_policy_analyst(candidates: dict, dimensions: list) -> dict:
-    """
-    Ask Claude to map all candidates across all policy dimensions.
-    Returns structured JSON with policy_map, policy_gaps, consensus_areas.
-    """
-    print("\n" + "─" * 70)
-    print("AGENT 1: Policy Analyst")
+def call_agent(system_prompt, user_message, agent_name):
+    print(f"\n{'─' * 70}")
+    print(f"AGENT: {agent_name}")
     print("─" * 70)
-
-    user_message = f"""Analyze the following Colombian presidential candidates across all policy dimensions.
-
-CANDIDATES AND PROPOSALS:
-{json.dumps(candidates, ensure_ascii=False, indent=2)}
-
-POLICY DIMENSIONS TO ANALYZE: {dimensions}
-
-Return ONLY a JSON object with this exact structure:
-{{
-  "policy_map": {{
-    "<dimension>": {{
-      "<candidate_name>": {{
-        "position_summary": "<2-3 sentence summary>",
-        "ideology_score": <float -1 to 1>,
-        "key_proposal": "<the single most defining proposal>"
-      }}
-    }}
-  }},
-  "policy_gaps": [
-    {{
-      "dimension": "<dimension name>",
-      "gap_description": "<what the disagreement is about>",
-      "left_position": "<what the left candidate proposes>",
-      "right_position": "<what the right candidate proposes>",
-      "gap_magnitude": <float 0 to 1>
-    }}
-  ],
-  "consensus_areas": ["<area of agreement>"]
-}}
-
-No preamble. No explanation. Only valid JSON."""
-
     response = client.messages.create(
         model=MODEL,
-        max_tokens=4096,
-        system=POLICY_ANALYST_PROMPT,
+        max_tokens=1000,
+        system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
     )
-    result = _parse_json(response.content[0].text)
-
-    # ── Print: ideology score table ──────────────────────────────────────────
-    cand_names = list(candidates.keys())
-    col_w = 18
-    print(f"\n  {'Dimension':<13}", end="")
-    for name in cand_names:
-        print(f"  {name[:col_w - 2]:<{col_w}}", end="")
-    print()
-    print("  " + "─" * (13 + (col_w + 2) * len(cand_names)))
-
-    for dim in dimensions:
-        print(f"  {dim:<13}", end="")
-        dim_data = result.get("policy_map", {}).get(dim, {})
-        for name in cand_names:
-            score = dim_data.get(name, {}).get("ideology_score", 0.0)
-            cell = f"{score:+.2f}"
-            print(f"  {cell:<{col_w}}", end="")
-        print()
-
-    # ── Print: top 3 policy gaps ─────────────────────────────────────────────
-    print("\n🔺 Top Policy Gaps:")
-    gaps = sorted(
-        result.get("policy_gaps", []),
-        key=lambda g: g.get("gap_magnitude", 0.0),
-        reverse=True,
-    )[:3]
-    for i, gap in enumerate(gaps, 1):
-        mag = gap.get("gap_magnitude", 0.0)
-        print(f"  {i}. {gap.get('dimension', '').upper()} — magnitude: {mag:.2f}")
-        print(f"     {gap.get('gap_description', '')}")
-
-    # ── Print: consensus areas ───────────────────────────────────────────────
-    print("\n✅ Areas of Consensus:")
-    for area in result.get("consensus_areas", []):
-        print(f"  · {area}")
-
-    return result
+    return response.content[0].text
 
 
-# ── Agent 2: Voter Bloc Agents ───────────────────────────────────────────────
+# ── Agent 1: Survey Analyst ───────────────────────────────────────────────────
 
-def _run_single_bloc(bloc_name: str, bloc_data: dict, candidates: dict) -> dict:
-    """Call the voter bloc agent for one congressional bloc."""
-    candidate_summary = {
-        name: {
-            "ideology_score": cdata["ideology_score"],
-            "coalition": cdata["coalition"],
-            "key_proposals": cdata["key_proposals"],
-        }
-        for name, cdata in candidates.items()
-    }
+def run_survey_analyst() -> dict:
+    """
+    Reconcile three divergent polls, produce a weighted consensus,
+    and identify what polling cannot capture.
+    """
+    user_message = f"""Analyze three divergent second-round poll estimates for Colombia's June 21, 2026 presidential runoff.
 
-    user_message = f"""Model the voting preferences of this Colombian congressional bloc.
+POLLS:
+{json.dumps(SECOND_ROUND_POLLS, ensure_ascii=False, indent=2)}
 
-BLOC: {bloc_name}
-SEATS IN SENATE: {bloc_data.get('seats_senate', 0)}
-IDEOLOGY SCORE: {bloc_data.get('ideology_score', 0)} (-1 far left, +1 far right)
-CURRENT PRESIDENTIAL CANDIDATE: {bloc_data.get('presidential_candidate', 'TBD')}
+FIRST ROUND RESULT (actual, May 31):
+  Abelardo de la Espriella: 43.74%
+  Iván Cepeda:              40.90%
+  Gap: +2.84 points for Abelardo
 
-CANDIDATES AND POSITIONS:
-{json.dumps(candidate_summary, ensure_ascii=False, indent=2)}
+Note: These polls produce opposing winners (Invamer: Cepeda; AtlasIntel + Guarumo: Abelardo).
 
 Return ONLY a JSON object with this exact structure:
 {{
-  "bloc": "{bloc_name}",
-  "seats": {bloc_data.get('seats_senate', 0)},
-  "ideology_score": {bloc_data.get('ideology_score', 0)},
-  "round_1_preference": "<candidate name>",
-  "round_1_confidence": <float 0 to 1>,
-  "round_2_scenarios": {{
-    "Valencia_vs_Cepeda": {{
-      "preference": "<candidate name or 'abstain'>",
-      "probability": <float 0 to 1>,
-      "reasoning": "<1-2 sentences>"
-    }},
-    "Valencia_vs_Lopez": {{
-      "preference": "<candidate name>",
-      "probability": <float 0 to 1>,
-      "reasoning": "<1-2 sentences>"
-    }},
-    "Cepeda_vs_Lopez": {{
-      "preference": "<candidate name>",
-      "probability": <float 0 to 1>,
-      "reasoning": "<1-2 sentences>"
-    }}
-  }}
+  "poll_divergence_reason": "<2-3 sentences explaining why these polls produce different winners>",
+  "weighted_consensus": {{
+    "abelardo": <float>,
+    "cepeda": <float>,
+    "margin": <float — positive means Abelardo leads>,
+    "uncertainty_band": "<e.g. ±3.5 points>"
+  }},
+  "what_polls_cannot_tell_us": ["<limitation 1>", "<limitation 2>", "<limitation 3>"],
+  "most_credible_scenario": "<which poll or combination is most credible and why>"
 }}
 
 No preamble. Only valid JSON."""
 
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=1024,
-        system=VOTER_BLOC_PROMPT,
-        messages=[{"role": "user", "content": user_message}],
+    raw = call_agent(SURVEY_ANALYST_PROMPT, user_message, "Survey Analyst")
+    result = _parse_json(raw)
+
+    # Print poll comparison table
+    print(f"\n  {'Firm':<28} {'Abelardo':>10} {'Cepeda':>10} {'B/N':>8}  Winner")
+    print("  " + "─" * 64)
+    for p in SECOND_ROUND_POLLS:
+        print(
+            f"  {p['firm'][:27]:<28}"
+            f"  {p['abelardo']:.1f}%{'':<5}"
+            f"  {p['cepeda']:.1f}%{'':<5}"
+            f"  {p['blanco_nulo']:.1f}%{'':<3}"
+            f"  {p['predicted_winner']}"
+        )
+
+    wc = result.get("weighted_consensus", {})
+    margin = wc.get("margin", 0)
+    leader = "Abelardo" if margin >= 0 else "Cepeda"
+    print(
+        f"\n  Weighted consensus: Abelardo {wc.get('abelardo', 0):.1f}% — "
+        f"Cepeda {wc.get('cepeda', 0):.1f}%"
     )
-    return _parse_json(response.content[0].text)
+    print(f"  Margin: {leader} +{abs(margin):.1f}%  (uncertainty: {wc.get('uncertainty_band', '?')})")
+    print(f"\n  Divergence reason: {result.get('poll_divergence_reason', '')}")
+
+    print("\n  What polls cannot tell us:")
+    for lim in result.get("what_polls_cannot_tell_us", []):
+        print(f"    · {lim}")
+
+    print(f"\n  Most credible scenario: {result.get('most_credible_scenario', '')}")
+
+    return result
 
 
-def run_voter_blocs(blocs: dict, candidates: dict) -> list:
-    """Run one voter bloc agent per congressional bloc, sequentially."""
-    print("\n" + "─" * 70)
-    print("AGENT 2: Voter Bloc Agents (5 blocs)")
-    print("─" * 70)
+# ── Agent 2: Swing Variable Analyst ──────────────────────────────────────────
 
-    results = []
-    for bloc_name, bloc_data in blocs.items():
-        seats = bloc_data["seats_senate"]
-        score = bloc_data["ideology_score"]
-        print(f"\n  Analyzing: {bloc_name}  ({seats} seats · ideology {score:+.2f})")
+def run_swing_analyst() -> dict:
+    """
+    Model three vote-transfer scenarios using Paloma endorsement efficiency,
+    Fajardo centrist split, and 2022 abstention patterns as anchors.
+    """
+    user_message = f"""Model vote transfer scenarios for Colombia's June 21, 2026 presidential runoff.
 
-        result = _run_single_bloc(bloc_name, bloc_data, candidates)
-        results.append(result)
+BASELINE (May 31 first round):
+  Abelardo: 43.74%  (10,361,413 votes)
+  Cepeda:   40.90%  ( 9,688,245 votes)
+  Gap: +2.84 points for Abelardo
 
-        r1 = result.get("round_1_preference", "?")
-        conf = result.get("round_1_confidence", 0.0)
-        print(f"    Round 1 → {r1}  (confidence {conf:.0%})")
+SWING VARIABLES:
+{json.dumps(SWING_VARIABLES, ensure_ascii=False, indent=2)}
 
-        for matchup, data in result.get("round_2_scenarios", {}).items():
-            label = matchup.replace("_vs_", " vs ")
-            pref = data.get("preference", "?")
-            prob = data.get("probability", 0.0)
-            print(f"    {label:<30}  → {pref}  ({prob:.0%})")
+HISTORICAL ANCHOR — 2022 second round:
+{json.dumps(HISTORICAL_CONTEXT["2022_second_round"], ensure_ascii=False, indent=2)}
 
-    return results
+IDEOLOGY REFERENCE:
+  Abelardo: +0.75 (right)
+  Cepeda:   -0.80 (left)
+  Paloma:   +0.82 (further right than Abelardo — endorsement is natural)
+  Fajardo:  +0.05 (center, closer to Abelardo in position, but historically anti-Uribista)
+  Median voter: +0.15 (center-right)
+
+Return ONLY a JSON object with this exact structure:
+{{
+  "scenario_abelardo_wins": {{
+    "paloma_transfer_pct": <fraction of Paloma's 6.92% that goes to Abelardo>,
+    "fajardo_to_abelardo_pct": <fraction of Fajardo's 4.26% that goes to Abelardo>,
+    "abstention_pattern": "<brief description>",
+    "abelardo_final": <estimated final vote share>,
+    "cepeda_final": <estimated final vote share>,
+    "probability": <float 0 to 1>
+  }},
+  "scenario_cepeda_wins": {{
+    "paloma_transfer_pct": <fraction of Paloma's 6.92% going to Abelardo>,
+    "fajardo_to_cepeda_pct": <fraction of Fajardo's 4.26% going to Cepeda>,
+    "abstention_pattern": "<brief description>",
+    "abelardo_final": <estimated final vote share>,
+    "cepeda_final": <estimated final vote share>,
+    "probability": <float 0 to 1>
+  }},
+  "scenario_toss_up": {{
+    "description": "<what makes this a true toss-up>",
+    "deciding_variable": "<the single variable that tips it>",
+    "abelardo_final": <estimated final vote share>,
+    "cepeda_final": <estimated final vote share>,
+    "probability": <float 0 to 1>
+  }},
+  "most_likely_scenario": "<scenario_abelardo_wins | scenario_cepeda_wins | scenario_toss_up>",
+  "key_insight": "<the single most important insight from this vote-transfer analysis>"
+}}
+
+Probabilities must sum to 1.0. No preamble. Only valid JSON."""
+
+    raw = call_agent(SWING_ANALYST_PROMPT, user_message, "Swing Variable Analyst")
+    result = _parse_json(raw)
+
+    # Print three scenarios
+    for label, key in [
+        ("ABELARDO WINS", "scenario_abelardo_wins"),
+        ("CEPEDA WINS",   "scenario_cepeda_wins"),
+        ("TOSS-UP",       "scenario_toss_up"),
+    ]:
+        s = result.get(key, {})
+        ab = s.get("abelardo_final", 0)
+        ce = s.get("cepeda_final", 0)
+        prob = s.get("probability", 0)
+        print(f"\n  SCENARIO: {label}  (probability: {prob:.0%})")
+        print(f"    Abelardo {ab:.1f}%  —  Cepeda {ce:.1f}%")
+
+        if key == "scenario_abelardo_wins":
+            print(f"    Paloma → Abelardo: {s.get('paloma_transfer_pct', 0):.0%} of her vote")
+            print(f"    Fajardo → Abelardo: {s.get('fajardo_to_abelardo_pct', 0):.0%} of his vote")
+            print(f"    Abstention: {s.get('abstention_pattern', '')}")
+        elif key == "scenario_cepeda_wins":
+            print(f"    Paloma → Abelardo: {s.get('paloma_transfer_pct', 0):.0%} of her vote")
+            print(f"    Fajardo → Cepeda: {s.get('fajardo_to_cepeda_pct', 0):.0%} of his vote")
+            print(f"    Abstention: {s.get('abstention_pattern', '')}")
+        else:
+            print(f"    Deciding variable: {s.get('deciding_variable', '')}")
+            print(f"    {s.get('description', '')}")
+
+    print(f"\n  Most likely scenario: {result.get('most_likely_scenario', '?')}")
+    print(f"  Key insight: {result.get('key_insight', '')}")
+
+    return result
 
 
-# ── Agent 3: Median Voter ────────────────────────────────────────────────────
+# ── Agent 3: Median Voter Agent ───────────────────────────────────────────────
 
-def run_median_voter_agent(bloc_results: list, candidates: dict) -> dict:
-    """Apply the Median Voter Theorem using bloc seat counts as voter weights."""
-    print("\n" + "─" * 70)
-    print("AGENT 3: Median Voter Agent — Median Voter Theorem")
-    print("─" * 70)
-
-    candidate_positions = {
-        name: {"ideology_score": cdata["ideology_score"], "coalition": cdata["coalition"]}
-        for name, cdata in candidates.items()
-    }
-
-    user_message = f"""Apply the Median Voter Theorem to Colombia's 2026 presidential election.
-
-VOTER BLOC RESULTS (seats = voter weight):
-{json.dumps(bloc_results, ensure_ascii=False, indent=2)}
+def run_median_voter_agent() -> dict:
+    """
+    Apply the Median Voter Theorem using first-round vote shares as weights,
+    then identify where Colombian political reality deviates from the theorem.
+    """
+    user_message = f"""Apply the Median Voter Theorem to Colombia's June 21, 2026 presidential runoff.
 
 CANDIDATE IDEOLOGY POSITIONS:
-{json.dumps(candidate_positions, ensure_ascii=False, indent=2)}
+{json.dumps(CANDIDATE_IDEOLOGY, ensure_ascii=False, indent=2)}
+
+FIRST ROUND VOTE SHARES (use as voter weight approximations):
+  Abelardo (+0.75):  43.74%
+  Cepeda   (-0.80):  40.90%
+  Paloma   (+0.82):   6.92%  → endorsed Abelardo
+  Fajardo  (+0.05):   4.26%  → no endorsement
+  López    (-0.10):   0.95%  → no endorsement
+  Otros    (+0.20):   3.23%
+
+HISTORICAL CONTEXT:
+{json.dumps(HISTORICAL_CONTEXT, ensure_ascii=False, indent=2)}
 
 Instructions:
-1. Calculate the seat-weighted median ideology position across all blocs
-2. Identify which candidate sits closest to that median
-3. Model all three second-round scenarios
-4. Identify the most likely second-round matchup based on round 1 bloc preferences
+1. Calculate the vote-weighted median ideological position
+2. Identify which candidate is closer to that median
+3. State the pure MVT prediction
+4. Identify where Colombian political reality deviates from MVT assumptions
+5. Give an MVT-adjusted prediction that accounts for those deviations
 
 Return ONLY a JSON object with this exact structure:
 {{
-  "median_voter_position": <float -1 to 1>,
-  "median_voter_description": "<describe who this median voter is in Colombian political terms>",
-  "second_round_scenarios": [
+  "median_voter_position": <float — calculated from vote-weighted distribution>,
+  "closest_candidate": "<Abelardo | Cepeda>",
+  "mvt_prediction": "<pure MVT prediction and one-sentence reasoning>",
+  "colombian_deviations": [
     {{
-      "matchup": "<Candidate A vs Candidate B>",
-      "median_voter_closest_to": "<candidate name>",
-      "predicted_winner": "<candidate name>",
-      "win_probability": <float 0.5 to 1.0>,
-      "key_factor": "<the decisive political or structural factor>"
+      "deviation": "<name of the deviation from MVT assumptions>",
+      "impact_on_mvt": "<how this undermines or modifies the pure prediction>",
+      "favors": "<Abelardo | Cepeda | neutral>"
     }}
   ],
-  "most_likely_second_round": "<most likely matchup>",
-  "analysis": "<2-3 paragraph analysis of second round dynamics>"
+  "mvt_adjusted_prediction": "<adjusted prediction accounting for all identified deviations>",
+  "confidence": "<low | medium | high — with one-sentence justification>"
 }}
 
 No preamble. Only valid JSON."""
 
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=2048,
-        system=MEDIAN_VOTER_PROMPT,
-        messages=[{"role": "user", "content": user_message}],
-    )
-    result = _parse_json(response.content[0].text)
+    raw = call_agent(MEDIAN_VOTER_PROMPT, user_message, "Median Voter Agent")
+    result = _parse_json(raw)
 
     pos = result.get("median_voter_position", 0.0)
-    desc = result.get("median_voter_description", "")
-    print(f"\n📍 Median Voter Position: {pos:+.3f}")
-    print(f"   {desc}")
+    closest = result.get("closest_candidate", "?")
+    pure = result.get("mvt_prediction", "")
+    adjusted = result.get("mvt_adjusted_prediction", "")
+    confidence = result.get("confidence", "?")
 
-    print("\n⚖️  Second Round Scenarios:")
-    for scenario in result.get("second_round_scenarios", []):
-        matchup = scenario.get("matchup", "?")
-        winner = scenario.get("predicted_winner", "?")
-        prob = scenario.get("win_probability", 0.0)
-        closest = scenario.get("median_voter_closest_to", "?")
-        factor = scenario.get("key_factor", "")
-        print(f"\n  {matchup}")
-        print(f"    Median voter closest to : {closest}")
-        print(f"    Predicted winner        : {winner}  ({prob:.0%})")
-        print(f"    Key factor              : {factor}")
+    print(f"\n  Median voter position: {pos:+.3f}")
+    print(f"  Closest candidate:     {closest}")
+    print(f"\n  Pure MVT prediction: {pure}")
 
-    likely = result.get("most_likely_second_round", "?")
-    print(f"\n🎯 Most Likely Second Round: {likely}")
+    print("\n  Colombian deviations from MVT:")
+    for d in result.get("colombian_deviations", []):
+        print(f"    · {d.get('deviation', '?')}")
+        print(f"      Impact: {d.get('impact_on_mvt', '')}")
+        print(f"      Favors: {d.get('favors', '?')}")
+
+    print(f"\n  MVT-adjusted prediction: {adjusted}")
+    print(f"  Confidence: {confidence}")
 
     return result
 
 
-# ── Orchestrator ─────────────────────────────────────────────────────────────
+# ── Orchestrator ──────────────────────────────────────────────────────────────
 
-def run_orchestrator() -> dict:
+def run_orchestrator(survey_result: dict, swing_result: dict, mvt_result: dict) -> str:
     """
-    Coordinate all three agents in sequence, then produce a final
-    neutral synthesis of the second-round dynamics.
+    Synthesize all three agent outputs into a 2-paragraph neutral assessment
+    with explicit probability estimate and confidence interval.
     """
-    all_results: dict = {}
-
-    # ── Agent 1 ──────────────────────────────────────────────────────────────
-    policy_result = run_policy_analyst(CANDIDATES_2026, POLICY_DIMENSIONS)
-    all_results["policy_analysis"] = policy_result
-
-    # ── Agent 2 ──────────────────────────────────────────────────────────────
-    bloc_results = run_voter_blocs(CONGRESSIONAL_RESULTS_2026, CANDIDATES_2026)
-    all_results["voter_bloc_results"] = bloc_results
-
-    # ── Agent 3 ──────────────────────────────────────────────────────────────
-    median_result = run_median_voter_agent(bloc_results, CANDIDATES_2026)
-    all_results["median_voter_analysis"] = median_result
-
-    # ── Final synthesis ───────────────────────────────────────────────────────
-    print("\n" + "─" * 70)
+    print(f"\n{'─' * 70}")
     print("ORCHESTRATOR: Final Synthesis")
     print("─" * 70)
 
-    gaps = policy_result.get("policy_gaps", [])
-    top_gap_dim = gaps[0]["dimension"].upper() if gaps else "N/A"
-    consensus = policy_result.get("consensus_areas", [])
+    wc = survey_result.get("weighted_consensus", {})
+    sw_likely = swing_result.get("most_likely_scenario", "?")
+    sw_insight = swing_result.get("key_insight", "")
+    sw_a = swing_result.get("scenario_abelardo_wins", {})
+    sw_c = swing_result.get("scenario_cepeda_wins", {})
+    sw_t = swing_result.get("scenario_toss_up", {})
+    mvt_adj = mvt_result.get("mvt_adjusted_prediction", "")
+    mvt_conf = mvt_result.get("confidence", "?")
+    deviations = [d.get("deviation", "") for d in mvt_result.get("colombian_deviations", [])]
 
-    bloc_summary = "\n".join(
-        f"  - {r['bloc']} ({r['seats']} seats): "
-        f"Round 1 → {r.get('round_1_preference', '?')}  "
-        f"(confidence {r.get('round_1_confidence', 0):.0%})"
-        for r in bloc_results
-    )
+    user_message = f"""Synthesize three analyses of Colombia's June 21, 2026 presidential runoff.
 
-    synthesis_prompt = f"""Given the following analysis of Colombia's 2026 presidential election:
+SURVEY ANALYSIS:
+  Weighted consensus: Abelardo {wc.get('abelardo', 0):.1f}% — Cepeda {wc.get('cepeda', 0):.1f}%
+  Margin: {wc.get('margin', 0):+.1f} pts  (uncertainty: {wc.get('uncertainty_band', '?')})
+  Most credible scenario: {survey_result.get('most_credible_scenario', '?')}
+  Key poll limitation: {survey_result.get('what_polls_cannot_tell_us', ['?'])[0]}
 
-POLICY ANALYSIS:
-- Policy gaps identified: {len(gaps)} — largest gap dimension: {top_gap_dim}
-- Areas of cross-candidate consensus: {consensus}
-
-VOTER BLOC ROUND 1 PREFERENCES:
-{bloc_summary}
-
-MEDIAN VOTER:
-- Seat-weighted position: {median_result.get('median_voter_position', 0):+.3f}
-- Description: {median_result.get('median_voter_description', '')}
-- Most likely second round: {median_result.get('most_likely_second_round', '?')}
+SWING VARIABLE ANALYSIS:
+  Most likely scenario: {sw_likely}
+  Abelardo wins ({sw_a.get('probability', 0):.0%}): Abelardo {sw_a.get('abelardo_final', 0):.1f}% — Cepeda {sw_c.get('cepeda_final', 0):.1f}%
+  Cepeda wins  ({sw_c.get('probability', 0):.0%}): Abelardo {sw_c.get('abelardo_final', 0):.1f}% — Cepeda {sw_c.get('cepeda_final', 0):.1f}%
+  Toss-up      ({sw_t.get('probability', 0):.0%}): deciding variable — {sw_t.get('deciding_variable', '?')}
+  Key insight: {sw_insight}
 
 MEDIAN VOTER ANALYSIS:
-{median_result.get('analysis', '')}
+  MVT-adjusted prediction: {mvt_adj}
+  Confidence: {mvt_conf}
+  Colombian deviations identified: {', '.join(deviations)}
 
-Provide a 3-paragraph neutral synthesis of what Colombia's second round dynamics look like \
-and which policy dimensions will define the outcome."""
+Write exactly 2 paragraphs:
+1. What the three analyses agree on, and the single most decisive variable for June 21st.
+2. What remains genuinely uncertain, and a probability estimate with explicit confidence interval.
 
-    synthesis_response = client.messages.create(
-        model=MODEL,
-        max_tokens=1024,
-        system=ORCHESTRATOR_PROMPT,
-        messages=[{"role": "user", "content": synthesis_prompt}],
-    )
-    synthesis_text = synthesis_response.content[0].text.strip()
-    print(f"\n{synthesis_text}")
-    all_results["synthesis"] = synthesis_text
+Be direct. Acknowledge uncertainty. No hedging beyond what the data supports."""
 
-    # ── Save results ─────────────────────────────────────────────────────────
-    output_dir = Path(__file__).parent / "output"
-    output_dir.mkdir(exist_ok=True)
-    output_file = output_dir / "simulation_results.json"
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(all_results, f, ensure_ascii=False, indent=2)
-
-    return all_results
+    raw = call_agent(ORCHESTRATOR_PROMPT, user_message, "Orchestrator — Final Synthesis")
+    print(f"\n{raw}")
+    return raw
 
 
-# ── Entry point ──────────────────────────────────────────────────────────────
+# ── Entry point ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     print("=" * 70)
-    print("COLOMBIA 2026 PRESIDENTIAL ELECTION — MULTI-AGENT ANALYSIS")
-    print("Based on March 8, 2026 congressional results")
+    print("COLOMBIA · SEGUNDA VUELTA · 21 DE JUNIO 2026")
+    print("Abelardo de la Espriella vs Iván Cepeda")
+    print("Análisis multi-agente basado en encuestas y datos reales")
     print("=" * 70)
 
-    run_orchestrator()
+    survey = run_survey_analyst()
+    swing  = run_swing_analyst()
+    mvt    = run_median_voter_agent()
+    synthesis = run_orchestrator(survey, swing, mvt)
 
-    print("\n" + "=" * 70)
-    print("All results saved to output/simulation_results.json")
+    # Save all results
+    all_results = {
+        "survey_analysis": survey,
+        "swing_analysis": swing,
+        "mvt_analysis": mvt,
+        "synthesis": synthesis,
+    }
+
+    output_dir = Path(__file__).parent / "output"
+    output_dir.mkdir(exist_ok=True)
+    output_file = output_dir / "segunda_vuelta_analysis.json"
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(all_results, f, ensure_ascii=False, indent=2)
+
+    print(f"\n{'=' * 70}")
+    print("All results saved to output/segunda_vuelta_analysis.json")
     print("=" * 70)
