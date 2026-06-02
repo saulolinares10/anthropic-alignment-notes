@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Colombia 2026 · Análisis Electoral · Multi-Agente</title>
-  <meta name="description" content="Dashboard interactivo — segunda vuelta presidencial Colombia 21 junio 2026. Análisis con sistema multi-agente: encuestas, transferencias de voto y Teorema del Votante Mediano.">
+  <meta name="description" content="Dashboard interactivo — segunda vuelta presidencial Colombia 21 junio 2026. Análisis con sistema multi-agente: encuestas, para dónde se van los votos y Teorema del Votante del Centro (Median Voter Theorem).">
   <meta property="og:title" content="Colombia 2026 · Segunda Vuelta · Análisis Multi-Agente">
   <meta property="og:description" content="Tres agentes de IA analizaron la segunda vuelta. Explorador interactivo con la matemática expuesta.">
   <meta property="og:type" content="website">
@@ -415,6 +415,26 @@
   </style>
 </head>
 <body>
+<!--
+  FOTOS DE CANDIDATOS — cómo actualizar:
+
+  1. Busca en Google Images:
+     - "Iván Cepeda Castro foto oficial alta resolución"
+     - "Abelardo de la Espriella foto oficial 2026"
+
+  2. Click derecho en la foto → "Copiar dirección de imagen"
+
+  3. Reemplaza CEPEDA_PHOTO_URL y ABELARDO_PHOTO_URL
+     en este archivo con las URLs copiadas.
+
+  4. Si la foto no carga, el card sigue funcionando
+     (el img tiene onerror que lo oculta automáticamente)
+
+  Alternativa: descarga las fotos, súbelas a:
+  docs/colombia-dashboard/img/cepeda.jpg
+  docs/colombia-dashboard/img/abelardo.jpg
+  Y usa src="img/cepeda.jpg" en vez de la URL externa.
+-->
 <div class="container">
 
   <!-- ── Header ──────────────────────────────────── -->
@@ -422,9 +442,51 @@
   <h1 class="page-title">Dashboard de análisis electoral multi-agente</h1>
   <p class="page-desc">
     Un sistema de tres agentes especializados analizó el escenario del 21 de junio.
-    Cada agente aborda una dimensión distinta del problema — encuestas, transferencias de voto,
-    y teoría política. Un orquestador pondera los tres outputs. La matemática está expuesta.
+    Cada agente aborda una dimensión distinta del problema — encuestas, para dónde se van los votos,
+    y teoría política. Un orquestador pondera los tres resultados. La matemática está expuesta.
   </p>
+
+  <!-- ── Candidate comparison ─────────────────────── -->
+  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;margin:24px 0;padding:20px;background:#f8f7f5;border-radius:12px;align-items:center">
+
+    <!-- Cepeda -->
+    <div style="border-left:3px solid #378ADD;padding-left:16px;display:flex;gap:16px;align-items:center">
+      <img src="CEPEDA_PHOTO_URL"
+        alt="Iván Cepeda Castro"
+        style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid #378ADD;flex-shrink:0"
+        onerror="this.style.display='none'">
+      <div>
+        <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Pacto Histórico</div>
+        <div style="font-size:17px;font-weight:500;color:#1a1a1a">Iván Cepeda</div>
+        <div style="font-size:28px;font-weight:500;color:#378ADD;line-height:1">40.90%</div>
+        <div style="font-size:12px;color:#5f5e5a;margin-top:3px">Paz · Estado activo · Reforma</div>
+      </div>
+    </div>
+
+    <!-- Center divider -->
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0 4px">
+      <div style="font-size:11px;color:#888">distancia</div>
+      <div style="font-size:20px;font-weight:500;color:#1a1a1a">1.55</div>
+      <div style="font-size:11px;color:#888">puntos</div>
+      <div style="width:1px;height:40px;background:linear-gradient(#378ADD,#E24B4A);margin:4px 0"></div>
+      <div style="font-size:10px;color:#888;text-align:center">escala -1 a +1</div>
+    </div>
+
+    <!-- Abelardo -->
+    <div style="border-right:3px solid #E24B4A;padding-right:16px;display:flex;gap:16px;align-items:center;justify-content:flex-end;text-align:right">
+      <div>
+        <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Defensores de la Patria</div>
+        <div style="font-size:17px;font-weight:500;color:#1a1a1a">Abelardo de la Espriella</div>
+        <div style="font-size:28px;font-weight:500;color:#E24B4A;line-height:1">43.74%</div>
+        <div style="font-size:12px;color:#5f5e5a;margin-top:3px">Orden · Austeridad · Anti-Petro</div>
+      </div>
+      <img src="ABELARDO_PHOTO_URL"
+        alt="Abelardo de la Espriella"
+        style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid #E24B4A;flex-shrink:0"
+        onerror="this.style.display='none'">
+    </div>
+
+  </div>
 
   <!-- ── Tabs ────────────────────────────────────── -->
   <div class="tabs">
@@ -452,33 +514,33 @@
 <span class="cmt">// Consenso ponderado (Invamer y AtlasIntel × 1.5, Guarumo × 1.0)</span>
 <span class="lbl">Abelardo:</span>  (1.5×45.3 + 1.5×50.0 + 1.0×44.8) / 4.0 = <span class="res">46.9%</span>
 <span class="lbl">Cepeda:  </span>  (1.5×52.4 + 1.5×41.3 + 1.0×39.9) / 4.0 = <span class="res">45.1%</span>
-<span class="lbl">Margen:  </span>  Abelardo <span class="res">+1.8 pts</span>  ·  IC: <span class="res">±3.5 puntos</span>
+<span class="lbl">Margen:  </span>  Abelardo <span class="res">+1.8 pts</span>  ·  Margen de error:<span class="res">±3.5 puntos</span>
 
 <span class="cmt">// Diagnóstico de la divergencia</span>
 <span class="dim">→ Invamer redistribuye el voto en blanco entre los dos finalistas.</span>
 <span class="dim">  Eso eleva a Cepeda sobre el 50% — el único escenario en que ocurre.</span>
 <span class="dim">→ AtlasIntel y Guarumo lo excluyen del denominador.</span>
-<span class="dim">  Con 8–15% de blanco/nulo, esa decisión metodológica cambia el ganador.</span></div>
+<span class="dim">  Con 8–15% de voto en blanco, esa decisión metodológica cambia el ganador.</span></div>
     </div>
 
     <!-- Agent 2 — Swing Analyst -->
     <div class="agent-card ac--p2">
-      <div class="ac-tag ac-tag--p2">Agente 2 · Variables de swing</div>
-      <div class="ac-title">Modelado de transferencias de voto</div>
-      <div class="ac-desc">1.6 millones de votos de Paloma Valencia tienen endoso formal
-        hacia Abelardo. 1 millón de Fajardo no tienen endoso. El agente construye tres
+      <div class="ac-tag ac-tag--p2">Agente 2 · Los votos que están en el aire</div>
+      <div class="ac-title">Modelado de para dónde se van los votos</div>
+      <div class="ac-desc">1.6 millones de votos de Paloma Valencia tienen respaldo formal
+        hacia Abelardo. 1 millón de Fajardo no tienen respaldo oficial. El agente construye tres
         escenarios calibrados con el precedente histórico de 2022.</div>
       <div class="math"><span class="cmt">// Base — primera vuelta 31 mayo 2026</span>
 <span class="lbl">Abelardo: </span><span class="val">43.74%</span>  (10,361,413 votos)
 <span class="lbl">Cepeda:   </span><span class="val">40.90%</span>   (9,688,245 votos)
 <span class="lbl">Diferencia:</span> <span class="val">+2.84 puntos</span> a favor de Abelardo
 
-<span class="cmt">// Bloque Paloma Valencia (6.92% disponible — endoso formal a Abelardo)</span>
+<span class="cmt">// Bloque Paloma Valencia (6.92% disponible — respaldo formal a Abelardo)</span>
 <span class="lbl">→ Abelardo:</span>  6.92 × 0.65 = <span class="val">+4.50%</span>  <span class="dim">(eficiencia estimada: 65%)</span>
 <span class="lbl">→ Cepeda:  </span>  6.92 × 0.05 = <span class="val">+0.35%</span>  <span class="dim">(piso mínimo)</span>
 <span class="lbl">→ Abstención: </span>6.92 × 0.30 = <span class="dim">1.73%</span>
 
-<span class="cmt">// Bloque Fajardo (4.26% — sin endoso, centro pragmático)</span>
+<span class="cmt">// Bloque Fajardo (4.26% — sin candidato definido, centro pragmático)</span>
 <span class="lbl">→ Abelardo:</span>  4.26 × 0.35 = <span class="val">+1.49%</span>
 <span class="lbl">→ Cepeda:  </span>  4.26 × 0.65 = <span class="val">+2.77%</span>
 <span class="dim">  (históricamente anti-uribismo · en 2022 ~60% fue a Petro)</span>
@@ -498,10 +560,10 @@
 
     <!-- Agent 3 — MVT -->
     <div class="agent-card ac--p3">
-      <div class="ac-tag ac-tag--p3">Agente 3 · Votante mediano (TVT)</div>
-      <div class="ac-title">Teorema del Votante Mediano aplicado a Colombia</div>
+      <div class="ac-tag ac-tag--p3">Agente 3 · Votante del centro (TVT)</div>
+      <div class="ac-title">Teorema del Votante del Centro (Median Voter Theorem) aplicado a Colombia</div>
       <div class="ac-desc">En una carrera de dos candidatos, el TVT predice que gana quien
-        está más cerca del votante mediano. El agente calcula esa posición usando votos reales
+        está más cerca del votante del centro. El agente calcula esa posición usando votos reales
         como pesos, e identifica cinco desviaciones estructurales del caso colombiano.</div>
       <div class="math"><span class="cmt">// Pesos ideológicos — votantes del 31 mayo</span>
 <span class="lbl">Candidato      Ideología    % votos   Producto</span>
@@ -533,13 +595,13 @@
     <!-- Orchestrator -->
     <div class="agent-card ac--oc">
       <div class="ac-tag ac-tag--oc">Orquestador · Síntesis final</div>
-      <div class="ac-title">Ponderación de los tres outputs</div>
+      <div class="ac-title">Peso de los tres resultados</div>
       <div class="ac-desc">Los tres agentes coinciden en Abelardo como favorito, pero la
         brecha está dentro del error estadístico. El orquestador calcula la probabilidad
         compuesta y señala las variables que el modelo no puede resolver.</div>
       <div class="math"><span class="cmt">// Outputs de los tres agentes</span>
 <span class="lbl">Agente 1 (encuestas):  </span>Abelardo <span class="val">46.9%</span>  Cepeda <span class="val">45.1%</span>  marg <span class="val">+1.8</span>
-<span class="lbl">Agente 2 (swing):      </span>Abelardo <span class="val">53.7%</span>  Cepeda <span class="val">46.3%</span>  marg <span class="val">+7.4</span>
+<span class="lbl">Agente 2 (votos en el aire):      </span>Abelardo <span class="val">53.7%</span>  Cepeda <span class="val">46.3%</span>  marg <span class="val">+7.4</span>
 <span class="lbl">Agente 3 (TVT):        </span>Abelardo favorito · dist. mediana: <span class="val">0.54 vs 1.01</span>
 
 <span class="cmt">// Consenso del orquestador</span>
@@ -548,8 +610,8 @@
 <span class="lbl">Intervalo confianza:  </span><span class="res">±8–10 puntos</span>
 
 <span class="cmt">// Variables que el modelo no puede resolver</span>
-<span class="dim">→ Encuestas dentro del IC: margen real podría ser cero.</span>
-<span class="dim">→ Fajardo (1M votos, sin endoso): bloque decisivo sin dirección clara.</span>
+<span class="dim">→ Encuestas dentro del Margen de error:margen real podría ser cero.</span>
+<span class="dim">→ Fajardo (1M votos, sin candidato definido): bloque decisivo sin dirección clara.</span>
 <span class="dim">→ Abstención diferencial: izquierda movilizó mejor en 2022 (Petro +10pts).</span>
 <span class="res">CONCLUSIÓN: Cualquiera puede ganar. Abelardo es favorito marginal.</span></div>
     </div>
@@ -599,11 +661,11 @@
 
     <div class="section-title">Paso 2 — El cálculo de la distancia</div>
     <div class="math">
-<span class="cmt">// Distancia al votante mediano (+0.21)</span>
+<span class="cmt">// Distancia al votante del centro (+0.21)</span>
 |Abelardo (+0.75) − mediana (+0.21)| = <span class="res">0.54 puntos</span>
 |Cepeda   (−0.80) − mediana (+0.21)| = <span class="res">1.01 puntos</span>
 
-<span class="cmt">// Predicción pura del Teorema del Votante Mediano</span>
+<span class="cmt">// Predicción pura del Teorema del Votante del Centro (Median Voter Theorem)</span>
 Abelardo está más cerca → <span class="res">TVT predice: ABELARDO GANA</span>
 
 <span class="cmt">// Colombia tiene cinco desviaciones del modelo teórico (ver abajo)</span></div>
@@ -647,8 +709,8 @@ Abelardo está más cerca → <span class="res">TVT predice: ABELARDO GANA</span
       <div class="dev-card">
         <div class="dev-num">04</div>
         <div>
-          <div class="dev-title">Eficiencia parcial del endoso de Paloma</div>
-          <div class="dev-text">Paloma (+0.82) es más extrema que Abelardo (+0.75). El endoso
+          <div class="dev-title">Eficiencia parcial del respaldo de Paloma</div>
+          <div class="dev-text">Paloma (+0.82) es más extrema que Abelardo (+0.75). El respaldo oficial
             formal no garantiza transferencia total — algunos votantes de CD están más cerca
             del centro. Estimación: 65% de eficiencia.</div>
           <span class="favors fav-ab">Favorece a Abelardo (parcial)</span>
@@ -679,7 +741,7 @@ Abelardo está más cerca → <span class="res">TVT predice: ABELARDO GANA</span
           <span class="sl-val" id="val-paloma">65%</span>
         </div>
         <input type="range" id="sl-paloma" min="40" max="90" value="65" oninput="calcUpdate()">
-        <div class="sl-sub">6.92% disponible · endoso oficial a Abelardo</div>
+        <div class="sl-sub">6.92% disponible · respaldo oficial a Abelardo</div>
       </div>
 
       <div>
@@ -688,12 +750,12 @@ Abelardo está más cerca → <span class="res">TVT predice: ABELARDO GANA</span
           <span class="sl-val" id="val-fajardo">35%</span>
         </div>
         <input type="range" id="sl-fajardo" min="15" max="60" value="35" oninput="calcUpdate()">
-        <div class="sl-sub">4.26% disponible · sin endoso · centro pragmático</div>
+        <div class="sl-sub">4.26% disponible · sin candidato definido · centro pragmático</div>
       </div>
 
       <div>
         <div class="sl-label-row">
-          <span class="sl-label">Movilización izquierda</span>
+          <span class="sl-label">Cuánto sale a votar la izquierda</span>
           <span class="sl-val" id="val-mob">0</span>
         </div>
         <input type="range" id="sl-mob" min="-4" max="4" value="0" oninput="calcUpdate()">
@@ -791,7 +853,7 @@ Abelardo está más cerca → <span class="res">TVT predice: ABELARDO GANA</span
       </div>
       <div class="poll-ftr">
         <span class="poll-badge pb--ab">Abelardo gana</span>
-        <span class="poll-note-sm">8.8% blanco/nulo</span>
+        <span class="poll-note-sm">8.8% voto en blanco</span>
       </div>
       <div class="poll-detail">
         <strong>Metodología:</strong> AtlasIntel reporta sobre el total de encuestados,
@@ -820,10 +882,10 @@ Abelardo está más cerca → <span class="res">TVT predice: ABELARDO GANA</span
       </div>
       <div class="poll-ftr">
         <span class="poll-badge pb--ab">Abelardo gana</span>
-        <span class="poll-note-sm">15.3% blanco/nulo</span>
+        <span class="poll-note-sm">15.3% voto en blanco</span>
       </div>
       <div class="poll-detail">
-        <strong>Metodología:</strong> Guarumo muestra el mayor porcentaje de blanco/nulo
+        <strong>Metodología:</strong> Guarumo muestra el mayor porcentaje de voto en blanco
         (15.3%), capturando más incertidumbre del electorado. La ventaja de Abelardo
         (+4.9 pts) es la mayor de las tres, pero sobre una base más baja de intención
         declarada para ambos.
@@ -832,7 +894,7 @@ Abelardo está más cerca → <span class="res">TVT predice: ABELARDO GANA</span
 
     <div class="callout">
       <strong>¿Por qué predicen ganadores distintos?</strong><br><br>
-      Todo depende del tratamiento del voto en blanco/nulo. Invamer lo redistribuye
+      Todo depende del tratamiento del voto en voto en blanco. Invamer lo redistribuye
       entre finalistas — resultado: Cepeda sobre el 50%. AtlasIntel y Guarumo lo
       excluyen del denominador — resultado: Abelardo adelante pero por debajo del 50%.
       Con 8–15% de voto en blanco, esa decisión metodológica cambia el ganador de la
