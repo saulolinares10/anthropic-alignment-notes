@@ -3,118 +3,116 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Colombia 2026 · Segunda Vuelta · Simulador</title>
-  <meta name="description" content="Simulador interactivo para la segunda vuelta presidencial de Colombia el 21 de junio de 2026. Análisis con sistema multi-agente: encuestas, votos en disputa y Teorema del Votante del Centro.">
-  <meta property="og:title" content="Colombia 2026 · Segunda Vuelta · Simulador Multi-Agente">
-  <meta property="og:description" content="¿Quién gana el 21 de junio? Ajusta los supuestos y ve la proyección en vivo. Datos reales del 31 de mayo.">
+  <title>Segunda Vuelta 2026 · Colombia · Análisis Electoral</title>
+  <meta name="description" content="Análisis editorial de la segunda vuelta presidencial de Colombia — 21 junio 2026. Candidatos, propuestas, endorsements y proyección multi-agente.">
+  <meta property="og:title" content="Segunda Vuelta Colombia 2026 · Análisis Electoral">
+  <meta property="og:description" content="Dos visiones. Un país. Un voto. Análisis con IA de la segunda vuelta presidencial.">
   <meta property="og:type" content="website">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+          integrity="sha512-ZwR1/gSZM3ai6vCdI+LVF1zSq/5HznD3oD+sCoJrzXJ+yKen9RtQ1KMnCjOwkZews9i/YceLy4XIwuFHpSIA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
-    /* ── Reset ──────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    /* ── Design tokens ───────────────────────────────── */
+    /* ── tokens ─────────────────────────────────────── */
     :root {
-      --bg:         #0a0e1a;
-      --surface:    #111827;
-      --surface-el: #1a2235;
-      --border:     #1e2d45;
-      --blue:       #3b82f6;
-      --blue-light: #93c5fd;
-      --blue-bg:    #1e3a5f;
-      --purple:     #8b5cf6;
-      --purple-light:#c4b5fd;
-      --purple-bg:  #2d1f4e;
-      --gray:       #6b7280;
-      --amber:      #f59e0b;
-      --amber-bg:   rgba(245,158,11,.12);
-      --amber-border:rgba(245,158,11,.35);
-      --text-1:     #f9fafb;
-      --text-2:     #9ca3af;
-      --text-3:     #4b5563;
-      --radius:     12px;
-      --radius-lg:  16px;
+      --bg:       #ffffff;
+      --surface:  #f8f7f5;
+      --border:   #e8e6e0;
+      --text-1:   #0a0a0a;
+      --text-2:   #5f5e5a;
+      --text-3:   #9ca3af;
+      --blue:     #2563eb;
+      --blue-lt:  #dbeafe;
+      --blue-dk:  #1d4ed8;
+      --purple:   #7c3aed;
+      --purple-lt:#ede9fe;
+      --purple-dk:#6d28d9;
+      --neutral:  #6b7280;
+      --neutral-lt:#f3f4f6;
+      --amber:    #d97706;
+      --amber-lt: #fef3c7;
     }
 
-    /* ── Base ────────────────────────────────────────── */
+    /* ── reset ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
-
     body {
-      font-family: 'Inter', -apple-system, system-ui, sans-serif;
-      font-size: 14px;
-      line-height: 1.6;
-      background: var(--bg);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
       color: var(--text-1);
+      background: var(--bg);
       -webkit-font-smoothing: antialiased;
     }
-
-    a { color: var(--blue-light); text-decoration: none; }
+    a { color: var(--blue); text-decoration: none; }
     a:hover { text-decoration: underline; }
+    img { display: block; }
 
-    /* ── Layout containers ───────────────────────────── */
-    .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; }
-    .wrap-lg { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    /* ── layout ──────────────────────────────────────── */
+    .wrap     { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+    .wrap-lg  { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .wrap-sm  { max-width: 760px; margin: 0 auto; padding: 0 24px; }
 
-    /* ── Fade-in ─────────────────────────────────────── */
-    .fade-in {
+    /* ── fade-in ─────────────────────────────────────── */
+    .reveal {
       opacity: 0;
-      transform: translateY(16px);
-      transition: opacity .5s ease, transform .5s ease;
+      transform: translateY(18px);
+      transition: opacity .55s ease, transform .55s ease;
     }
-    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .reveal.in { opacity: 1; transform: none; }
 
-    /* ═══════════════════════════════════════════════════
+    /* ══════════════════════════════════════════════════
        HEADER
-    ═══════════════════════════════════════════════════ */
+    ══════════════════════════════════════════════════ */
     .header {
       position: sticky;
       top: 0;
       z-index: 100;
       height: 60px;
-      background: rgba(10,14,26,.96);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.97);
+      backdrop-filter: blur(10px);
+      border-bottom: 0.5px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 24px;
+      padding: 0 28px;
     }
 
     .header-left { display: flex; align-items: center; gap: 10px; }
 
     .live-dot {
-      width: 8px;
-      height: 8px;
+      width: 8px; height: 8px;
       background: #ef4444;
       border-radius: 50%;
       flex-shrink: 0;
-      animation: livepulse 2s infinite;
+      animation: liveblink 2s ease-in-out infinite;
     }
-
-    @keyframes livepulse {
-      0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.5); }
-      50%      { box-shadow: 0 0 0 7px rgba(239,68,68,0); }
+    @keyframes liveblink {
+      0%,100% { opacity: 1; }
+      50%      { opacity: .3; }
     }
 
     .header-label {
-      font-size: 10.5px;
-      font-weight: 700;
-      letter-spacing: .10em;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .08em;
       text-transform: uppercase;
       color: var(--text-2);
     }
 
-    .lang-toggle {
+    .header-right { display: flex; align-items: center; gap: 16px; }
+
+    .lang-pills {
       display: flex;
       background: var(--surface);
-      border: 1px solid var(--border);
+      border: 0.5px solid var(--border);
       border-radius: 20px;
       padding: 3px;
       gap: 2px;
     }
 
-    .lang-btn {
+    .lang-pill {
       padding: 4px 13px;
       border-radius: 16px;
       font-size: 11.5px;
@@ -122,1615 +120,2135 @@
       cursor: pointer;
       border: none;
       background: transparent;
-      color: var(--text-2);
-      transition: all .15s;
+      color: var(--text-3);
+      transition: all .2s;
       letter-spacing: .04em;
+      font-family: inherit;
     }
 
-    .lang-btn.active {
-      background: var(--text-1);
-      color: #111;
-    }
+    .lang-pill.active { background: var(--text-1); color: #fff; }
 
-    /* ═══════════════════════════════════════════════════
-       HERO
-    ═══════════════════════════════════════════════════ */
-    .hero {
-      padding: 72px 20px 56px;
-      text-align: center;
-      background: var(--bg);
-    }
+    /* ══════════════════════════════════════════════════
+       SECTION HELPERS
+    ══════════════════════════════════════════════════ */
+    .section { padding: 72px 0; }
+    .section--gray { background: var(--surface); }
+    .section--border { border-top: 0.5px solid var(--border); }
 
-    .hero-eyebrow {
+    .section-eyebrow {
       font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: var(--text-2);
-      margin-bottom: 18px;
-    }
-
-    .hero-title {
-      font-size: clamp(44px, 7vw, 72px);
-      font-weight: 900;
-      color: var(--text-1);
-      line-height: 1.05;
-      letter-spacing: -.035em;
-      margin-bottom: 18px;
-    }
-
-    .hero-sub {
-      font-size: 15px;
-      color: var(--text-2);
-      line-height: 1.65;
-      max-width: 520px;
-      margin: 0 auto;
-    }
-
-    /* ═══════════════════════════════════════════════════
-       SECTION WRAPPER
-    ═══════════════════════════════════════════════════ */
-    .section {
-      padding: 56px 0;
-      border-top: 1px solid var(--border);
-    }
-
-    .section-header { margin-bottom: 28px; }
-
-    .section-title {
-      font-size: clamp(24px, 4vw, 32px);
-      font-weight: 900;
-      color: var(--text-1);
-      letter-spacing: -.025em;
-      margin-bottom: 8px;
-    }
-
-    .section-sub {
-      font-size: 14px;
-      color: var(--text-2);
-      line-height: 1.6;
-    }
-
-    /* ═══════════════════════════════════════════════════
-       PROJECTION CARD
-    ═══════════════════════════════════════════════════ */
-    .proj-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 28px;
-      margin-bottom: 0;
-    }
-
-    .proj-card-hdr {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .proj-card-label {
-      font-size: 10px;
-      font-weight: 800;
+      font-weight: 600;
       letter-spacing: .12em;
       text-transform: uppercase;
-      color: var(--text-2);
+      color: var(--text-3);
+      margin-bottom: 12px;
     }
 
-    .winner-pill {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
+    .section-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(28px, 4vw, 38px);
       font-weight: 700;
-      background: var(--blue);
-      color: #fff;
-      transition: background .3s;
-    }
-
-    /* Candidate columns */
-    .candidates-grid {
-      display: grid;
-      grid-template-columns: 1fr 88px 1fr;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    @media (max-width: 520px) {
-      .candidates-grid {
-        grid-template-columns: 1fr;
-        text-align: center;
-      }
-      .candidate--right { order: 3; }
-      .vs-col { order: 2; padding: 8px 0; }
-    }
-
-    .candidate { display: flex; flex-direction: column; gap: 4px; }
-    .candidate--right { align-items: flex-end; }
-    @media (max-width: 520px) { .candidate--right { align-items: center; } }
-
-    .cand-avatar {
-      width: 88px;
-      height: 88px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: 900;
+      color: var(--text-1);
+      line-height: 1.15;
       letter-spacing: -.02em;
-      flex-shrink: 0;
       margin-bottom: 10px;
     }
 
-    .avatar-abel {
-      background: var(--blue-bg);
-      color: var(--blue-light);
-      box-shadow: 0 0 0 4px var(--blue);
-    }
-
-    .avatar-cep {
-      background: var(--purple-bg);
-      color: var(--purple-light);
-      box-shadow: 0 0 0 4px var(--purple);
-    }
-
-    .cand-coalition {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: .10em;
-      text-transform: uppercase;
+    .section-sub {
+      font-size: 15px;
       color: var(--text-2);
-      margin-bottom: 3px;
+      line-height: 1.65;
+      max-width: 620px;
     }
 
-    .cand-name {
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--text-1);
-      margin-bottom: 4px;
+    .section-header { margin-bottom: 36px; }
+
+    /* ══════════════════════════════════════════════════
+       HERO
+    ══════════════════════════════════════════════════ */
+    .hero {
+      padding: 96px 24px 80px;
+      text-align: center;
     }
 
-    .cand-pct {
-      font-size: clamp(48px, 7vw, 64px);
-      font-weight: 900;
-      line-height: 1;
-      letter-spacing: -.03em;
-      font-variant-numeric: tabular-nums;
-      transition: color .3s;
-    }
-
-    .pct-abel { color: var(--blue); }
-    .pct-cep { color: var(--purple); }
-
-    .cand-votes {
-      font-size: 13.5px;
-      color: var(--text-2);
-      font-variant-numeric: tabular-nums;
-      margin-top: 4px;
-    }
-
-    .cand-base {
+    .hero-eyebrow {
       font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
       color: var(--text-3);
-      margin-top: 2px;
+      margin-bottom: 20px;
     }
 
-    /* VS divider */
-    .vs-col {
+    .hero-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(36px, 6vw, 72px);
+      font-weight: 900;
+      color: var(--text-1);
+      line-height: 1.08;
+      letter-spacing: -.03em;
+      margin-bottom: 16px;
+      white-space: pre-line;
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      color: var(--text-2);
+      margin-bottom: 52px;
+    }
+
+    /* Hero candidate cards */
+    .hero-cards {
+      display: flex;
+      gap: 32px;
+      max-width: 820px;
+      margin: 0 auto;
+      align-items: stretch;
+    }
+
+    @media (max-width: 640px) {
+      .hero-cards { flex-direction: column; gap: 16px; }
+    }
+
+    .hero-vs {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 5px;
-    }
-
-    .vs-text {
-      font-size: 22px;
-      font-weight: 900;
-      color: var(--text-3);
-      letter-spacing: -.02em;
-    }
-
-    .vs-dist-num {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--amber);
-      letter-spacing: -.02em;
-    }
-
-    .vs-dist-label {
-      font-size: 9.5px;
-      color: var(--text-2);
-      text-align: center;
-      letter-spacing: .04em;
-    }
-
-    /* Projection bar */
-    .proj-bar-wrap { margin: 4px 0 12px; }
-
-    .proj-bar {
-      height: 40px;
-      display: flex;
-      border-radius: 8px;
-      overflow: hidden;
-      background: var(--surface-el);
-    }
-
-    .bar-seg {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: width .45s cubic-bezier(.4,0,.2,1);
-      overflow: hidden;
-      min-width: 0;
-    }
-
-    .bar-seg span {
-      font-size: 12px;
-      font-weight: 800;
-      color: rgba(255,255,255,.9);
-      white-space: nowrap;
+      gap: 6px;
+      flex-shrink: 0;
       padding: 0 4px;
     }
 
-    .bar-abel { background: var(--blue); }
-    .bar-blank { background: var(--gray); }
-    .bar-cep { background: var(--purple); }
-
-    .proj-legend {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-top: 10px;
+    .vs-word {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 44px;
+      font-weight: 900;
+      color: var(--text-3);
+      line-height: 1;
     }
 
-    .legend-item {
-      display: flex;
+    .vs-gap {
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 11.5px;
-      color: var(--text-2);
+      gap: 5px;
+      background: var(--amber-lt);
+      border: 1px solid #fcd34d;
+      border-radius: 20px;
+      padding: 4px 11px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--amber);
     }
 
-    .legend-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 2px;
+    .vs-gap-label {
+      font-size: 10px;
+      color: var(--text-3);
+      text-align: center;
+      line-height: 1.35;
+    }
+
+    .hero-cand {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+    }
+
+    .hero-cand--abel { border-top: 4px solid var(--blue); }
+    .hero-cand--cep  { border-top: 4px solid var(--purple); }
+
+    .cand-photo-ring {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 14px;
       flex-shrink: 0;
     }
 
-    /* ═══════════════════════════════════════════════════
-       VOTE DISTRIBUTION
-    ═══════════════════════════════════════════════════ */
-    .cand-grid {
+    .cand-photo-ring--abel { box-shadow: 0 0 0 3px var(--blue); }
+    .cand-photo-ring--cep  { box-shadow: 0 0 0 3px var(--purple); }
+
+    .cand-photo {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .cand-photo-fallback {
+      width: 100%; height: 100%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .fb--abel { background: var(--blue); }
+    .fb--cep  { background: var(--purple); }
+    .fb--pv   { background: var(--neutral); }
+    .fb--sf   { background: #374151; }
+    .fb--cl   { background: #374151; }
+
+    .cand-coalition {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .10em;
+      color: var(--text-3);
+      margin-bottom: 4px;
+    }
+
+    .cand-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin-bottom: 4px;
+      line-height: 1.15;
+    }
+
+    .cand-tagline {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+
+    .tl--abel { color: var(--blue); }
+    .tl--cep  { color: var(--purple); }
+
+    .cand-pct {
+      font-size: 52px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -.03em;
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 4px;
+    }
+
+    .cp--abel { color: var(--blue); }
+    .cp--cep  { color: var(--purple); }
+
+    .cand-votes-sub {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-bottom: 14px;
+    }
+
+    .endorse-group { display: flex; flex-direction: column; gap: 4px; }
+
+    .endorse-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-3);
+    }
+
+    .endorse-pill {
+      display: inline-block;
+      padding: 5px 11px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .ep--blue   { background: var(--blue-lt);   color: var(--blue-dk); }
+    .ep--purple { background: var(--purple-lt);  color: var(--purple-dk); }
+    .ep--amber  { background: var(--amber-lt);   color: #92400e; }
+
+    /* ══════════════════════════════════════════════════
+       FIRST ROUND MAP
+    ══════════════════════════════════════════════════ */
+    .elim-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+      gap: 14px;
     }
 
-    @media (max-width: 720px) { .cand-grid { grid-template-columns: repeat(2,1fr); } }
-    @media (max-width: 460px) { .cand-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) { .elim-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .elim-grid { grid-template-columns: 1fr; } }
 
-    .cand-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
+    .elim-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
     }
 
-    .cand-card-hdr {
+    .elim-hdr {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 12px;
     }
 
-    .mini-avatar {
-      width: 44px;
-      height: 44px;
+    .mini-photo {
+      width: 44px; height: 44px;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 900;
+      overflow: hidden;
       flex-shrink: 0;
     }
 
-    .cand-card-name {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-1);
-      line-height: 1.2;
+    .mini-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .mini-photo .cand-photo-fallback { font-size: 14px; }
+
+    .elim-info {}
+    .elim-name { font-size: 13.5px; font-weight: 700; color: var(--text-1); line-height: 1.2; }
+    .elim-votes { font-size: 11.5px; color: var(--text-2); }
+
+    .elim-bar-wrap { margin-bottom: 12px; }
+
+    .elim-bar-track {
+      height: 7px;
+      background: var(--neutral-lt);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 3px;
     }
 
-    .cand-card-votes {
+    .elim-bar-fill { height: 100%; border-radius: 4px; }
+
+    .endorse-block {}
+
+    .endorse-status {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .endorse-arrow {
       font-size: 11px;
-      color: var(--text-2);
-      margin-top: 2px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .endorsement-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 9.5px;
       font-weight: 700;
       padding: 2px 8px;
       border-radius: 10px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .ea--ab { background: var(--blue-lt); color: var(--blue-dk); }
+    .ea--ce { background: var(--purple-lt); color: var(--purple-dk); }
+    .ea--nd { background: var(--amber-lt); color: #92400e; }
+
+    .endorse-quote {
+      font-size: 11.5px;
+      color: var(--text-2);
+      font-style: italic;
+      line-height: 1.45;
+    }
+
+    .endorse-source {
+      font-size: 10px;
+      color: var(--text-3);
       margin-top: 4px;
     }
 
-    .badge-abel { background: rgba(59,130,246,.18); color: var(--blue-light); }
-    .badge-none { background: rgba(245,158,11,.15); color: var(--amber); }
-
-    /* Split inputs */
-    .split-inputs {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 6px;
-      margin: 10px 0;
-    }
-
-    .split-group { display: flex; flex-direction: column; gap: 3px; }
-
-    .split-label {
-      font-size: 8.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .07em;
-    }
-
-    .sl-abel { color: var(--blue-light); }
-    .sl-blank { color: var(--text-2); }
-    .sl-cep { color: var(--purple-light); }
-
-    .split-input {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 5px 4px;
-      color: var(--text-1);
-      font-size: 14px;
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
-      text-align: center;
-      outline: none;
-      font-family: inherit;
-      transition: border-color .15s;
-    }
-
-    .split-input:focus { border-color: var(--blue); }
-    .split-input.si-abel { color: var(--blue-light); }
-    .split-input.si-blank { color: var(--text-2); }
-    .split-input.si-cep { color: var(--purple-light); }
-
-    /* Mini bar */
-    .mini-bar {
-      height: 6px;
-      display: flex;
-      border-radius: 3px;
-      overflow: hidden;
-      background: var(--surface-el);
-      margin: 8px 0;
-    }
-
-    .mini-seg { height: 100%; transition: width .3s ease; min-width: 0; overflow: hidden; }
-    .ms-abel { background: var(--blue); }
-    .ms-blank { background: var(--gray); }
-    .ms-cep { background: var(--purple); }
-
-    .vote-breakdown {
+    .endorse-note {
       font-size: 10.5px;
+      color: var(--text-2);
+      margin-top: 6px;
+      padding: 5px 8px;
+      background: var(--surface);
+      border-radius: 6px;
+    }
+
+    /* ══════════════════════════════════════════════════
+       PROPOSALS FACE-OFF
+    ══════════════════════════════════════════════════ */
+    .proposal-rows { display: flex; flex-direction: column; gap: 40px; }
+
+    .prop-row {}
+
+    .prop-topic-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin-bottom: 14px;
+    }
+
+    .prop-topic-icon { font-size: 14px; }
+
+    .prop-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 640px) { .prop-cards { grid-template-columns: 1fr; } }
+
+    .prop-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .prop-card--abel { border-left: 3px solid var(--blue); }
+    .prop-card--cep  { border-left: 3px solid var(--purple); }
+
+    .prop-card-headline {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .ph--abel { color: var(--blue); }
+    .ph--cep  { color: var(--purple); }
+
+    .prop-card-body {
+      font-size: 13px;
       color: var(--text-2);
       line-height: 1.6;
     }
 
-    /* New voters card */
-    .new-voters-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-top: 12px;
+    .prop-source {
+      font-size: 10px;
+      color: var(--text-3);
+      margin-top: 8px;
     }
 
-    .new-voters-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-1);
-      margin-bottom: 3px;
+    .prop-diff {
+      background: var(--amber-lt);
+      border-left: 3px solid var(--amber);
+      border-radius: 0 8px 8px 0;
+      padding: 9px 14px;
+      font-size: 12.5px;
+      color: #92400e;
+      font-weight: 500;
+      line-height: 1.5;
     }
 
-    .new-voters-sub {
-      font-size: 12px;
-      color: var(--text-2);
-      margin-bottom: 14px;
-    }
-
-    .new-voters-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-
-    .new-voters-input {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 14px;
-      color: var(--text-1);
-      font-size: 16px;
+    .prop-diff-label {
+      font-size: 9.5px;
       font-weight: 800;
-      font-variant-numeric: tabular-nums;
-      width: 160px;
-      outline: none;
-      font-family: inherit;
-      transition: border-color .15s;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      color: var(--amber);
+      display: block;
+      margin-bottom: 2px;
     }
 
-    .new-voters-input:focus { border-color: var(--blue); }
+    /* ══════════════════════════════════════════════════
+       MATH SECTION
+    ══════════════════════════════════════════════════ */
+    .spectrum-wrap {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 14px;
+    }
 
-    .quick-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-
-    .quick-btn {
-      padding: 7px 13px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: var(--surface-el);
+    .spectrum-desc {
+      font-size: 13px;
       color: var(--text-2);
-      transition: all .15s;
-      font-family: inherit;
-      min-height: 44px;
+      margin-bottom: 18px;
+      line-height: 1.5;
     }
 
-    .quick-btn:hover {
-      border-color: var(--blue);
-      color: var(--blue-light);
+    .chart-canvas-wrap { position: relative; height: 220px; }
+
+    .spectrum-stats {
+      display: flex;
+      gap: 24px;
+      margin-top: 14px;
+      flex-wrap: wrap;
     }
 
-    /* ═══════════════════════════════════════════════════
-       THREE AGENTS
-    ═══════════════════════════════════════════════════ */
+    .spectrum-stat {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .ss--ab { color: var(--blue); }
+    .ss--ce { color: var(--purple); }
+
+    .spectrum-note {
+      font-size: 12px;
+      color: var(--text-2);
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    /* Agents grid */
     .agents-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
+      gap: 14px;
+      margin: 28px 0 14px;
     }
 
     @media (max-width: 680px) { .agents-grid { grid-template-columns: 1fr; } }
 
     .agent-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
     }
 
-    .agent-card--p { border-left: 3px solid #8b5cf6; }
-    .agent-card--b { border-left: 3px solid var(--blue); }
-    .agent-card--a { border-left: 3px solid var(--amber); }
+    .ac--purple { border-top: 3px solid var(--purple); }
+    .ac--blue   { border-top: 3px solid var(--blue);   }
+    .ac--amber  { border-top: 3px solid var(--amber);  }
 
     .agent-num {
-      width: 24px;
-      height: 24px;
+      width: 24px; height: 24px;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800;
       margin-bottom: 10px;
     }
 
-    .agent-num--p { background: rgba(139,92,246,.2); color: var(--purple-light); }
-    .agent-num--b { background: rgba(59,130,246,.2); color: var(--blue-light); }
-    .agent-num--a { background: rgba(245,158,11,.2); color: var(--amber); }
-
-    .agent-tag {
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: .10em;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-
-    .at-p { color: var(--purple-light); }
-    .at-b { color: var(--blue-light); }
-    .at-a { color: var(--amber); }
+    .an--p { background: var(--purple-lt); color: var(--purple); }
+    .an--b { background: var(--blue-lt);   color: var(--blue);   }
+    .an--a { background: var(--amber-lt);  color: var(--amber);  }
 
     .agent-title {
       font-size: 14px;
       font-weight: 700;
       color: var(--text-1);
-      margin-bottom: 8px;
-      line-height: 1.3;
+      margin-bottom: 7px;
     }
 
     .agent-desc {
       font-size: 12.5px;
       color: var(--text-2);
       line-height: 1.6;
-      margin-bottom: 12px;
+      margin-bottom: 11px;
     }
 
     .agent-result {
-      background: var(--surface-el);
+      background: var(--surface);
       border-radius: 7px;
       padding: 9px 11px;
-      font-size: 11.5px;
-      font-weight: 500;
+      font-size: 12px;
       color: var(--text-2);
       line-height: 1.5;
     }
 
     .orch-box {
-      background: var(--surface-el);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      text-align: center;
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text-1);
-      line-height: 1.6;
-    }
-
-    /* ═══════════════════════════════════════════════════
-       POLLS
-    ═══════════════════════════════════════════════════ */
-    .polls-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    @media (max-width: 680px) { .polls-grid { grid-template-columns: 1fr; } }
-
-    .poll-card {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
-    }
-
-    .poll-src {
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .09em;
-      color: var(--text-2);
-      margin-bottom: 12px;
-    }
-
-    .poll-badge {
-      display: inline-block;
-      font-size: 10.5px;
-      font-weight: 700;
-      padding: 3px 10px;
+      border: 0.5px solid var(--amber);
       border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .orch-label {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      color: var(--amber);
+      display: block;
       margin-bottom: 14px;
     }
 
-    .pb-abel { background: rgba(59,130,246,.18); color: var(--blue-light); }
-    .pb-cep  { background: rgba(139,92,246,.18); color: var(--purple-light); }
-
-    .poll-row { margin-bottom: 8px; }
-
-    .poll-row-hdr {
+    .orch-nums {
       display: flex;
-      justify-content: space-between;
       align-items: baseline;
-      margin-bottom: 4px;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
     }
 
-    .poll-cname { font-size: 12px; font-weight: 500; color: var(--text-1); }
-
-    .poll-num {
-      font-size: 15px;
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
+    .orch-num {
+      font-size: 52px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -.03em;
+      font-feature-settings: "tnum";
     }
 
-    .pn-ab { color: var(--blue-light); }
-    .pn-ce { color: var(--purple-light); }
-    .pn-gr { color: var(--text-2); }
+    .on--ab { color: var(--blue); }
+    .on--ce { color: var(--purple); }
 
-    .poll-track {
-      height: 8px;
-      background: var(--surface-el);
-      border-radius: 4px;
-      overflow: hidden;
-    }
+    .orch-name { font-size: 12px; font-weight: 600; display: block; }
+    .oname--ab { color: var(--blue); }
+    .oname--ce { color: var(--purple); }
 
-    .poll-fill { height: 100%; border-radius: 4px; }
-    .pf-ab { background: var(--blue); }
-    .pf-ce { background: var(--purple); }
-    .pf-gr { background: var(--gray); }
+    .orch-sep { font-size: 28px; font-weight: 300; color: var(--border); }
 
-    .poll-why-note {
-      background: rgba(245,158,11,.08);
-      border-left: 2px solid var(--amber);
-      border-radius: 0 5px 5px 0;
-      padding: 8px 10px;
-      font-size: 11px;
-      color: var(--amber);
-      margin-top: 12px;
-      line-height: 1.5;
-    }
-
-    .polls-callout {
-      background: var(--amber-bg);
-      border: 1px solid var(--amber-border);
-      border-radius: var(--radius);
-      padding: 16px 20px;
-      font-size: 14px;
-      color: #fcd34d;
-      line-height: 1.65;
-      text-align: center;
-    }
-
-    /* ═══════════════════════════════════════════════════
-       FOOTER
-    ═══════════════════════════════════════════════════ */
-    .footer {
-      border-top: 1px solid var(--border);
-      padding: 40px 20px;
-      text-align: center;
-    }
-
-    .footer-main {
+    .orch-margin {
       font-size: 14px;
       color: var(--text-2);
       margin-bottom: 8px;
     }
 
-    .footer-link { font-size: 13px; color: var(--blue-light); margin-bottom: 12px; display: block; }
+    .orch-disclaimer { font-size: 11.5px; color: var(--text-3); }
 
-    .footer-small {
+    /* ══════════════════════════════════════════════════
+       VOTE EXPLORER
+    ══════════════════════════════════════════════════ */
+    .live-proj {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+
+    .live-nums {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .live-num { font-size: 56px; font-weight: 900; line-height: 1; letter-spacing: -.03em; font-feature-settings: "tnum"; }
+    .ln--ab { color: var(--blue); }
+    .ln--ce { color: var(--purple); }
+    .live-vs { font-size: 22px; color: var(--text-3); }
+
+    .live-bar {
+      height: 48px;
+      display: flex;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--neutral-lt);
+      margin-bottom: 12px;
+    }
+
+    .lb-abel {
+      background: var(--blue);
+      transition: width .4s ease;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    .lb-blank {
+      background: #d1d5db;
+      transition: width .4s ease;
+    }
+
+    .lb-cep {
+      background: var(--purple);
+      transition: width .4s ease;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    .lb-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: rgba(255,255,255,.9);
+      white-space: nowrap;
+      padding: 0 6px;
+    }
+
+    .winner-ind {
+      text-align: center;
+      font-size: 13.5px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all .3s;
+    }
+
+    .wi--ab   { background: var(--blue-lt);   color: var(--blue-dk); }
+    .wi--ce   { background: var(--purple-lt);  color: var(--purple-dk); }
+    .wi--toss { background: var(--amber-lt);   color: #92400e; }
+
+    /* Candidate input blocks */
+    .explorer-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    @media (max-width: 580px) { .explorer-grid { grid-template-columns: 1fr; } }
+
+    .ex-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .ex-hdr {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .ex-photo {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .ex-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .ex-photo .cand-photo-fallback { font-size: 11px; }
+
+    .ex-info {}
+    .ex-name { font-size: 13px; font-weight: 700; color: var(--text-1); line-height: 1.2; }
+    .ex-votes { font-size: 11px; color: var(--text-2); }
+
+    .ex-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .eb--ab { background: var(--blue-lt); color: var(--blue-dk); }
+    .eb--am { background: var(--amber-lt); color: #92400e; }
+    .eb--pu { background: var(--purple-lt); color: var(--purple-dk); }
+
+    /* Pill inputs */
+    .pill-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .pill-col {}
+
+    .pill-label {
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .pl--ab { color: var(--blue); }
+    .pl--bl { color: var(--neutral); }
+    .pl--ce { color: var(--purple); }
+
+    .pill-ctrl {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: 20px;
+      padding: 3px;
+      gap: 1px;
+    }
+
+    .pill-btn {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-2);
+      transition: background .1s;
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+
+    .pill-btn:hover { background: var(--border); }
+
+    .pill-val {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 800;
+      font-feature-settings: "tnum";
+      border: none;
+      background: transparent;
+      outline: none;
+      font-family: inherit;
+      color: var(--text-1);
+      width: 0; /* flex handles size */
+    }
+
+    .ex-mini-bar {
+      height: 5px;
+      display: flex;
+      border-radius: 3px;
+      overflow: hidden;
+      background: var(--neutral-lt);
+      margin-bottom: 6px;
+    }
+
+    .mb-seg { height: 100%; transition: width .25s ease; }
+    .mb-ab { background: var(--blue); }
+    .mb-bl { background: #d1d5db; }
+    .mb-ce { background: var(--purple); }
+
+    .ex-breakdown { font-size: 10.5px; color: var(--text-2); line-height: 1.5; }
+
+    /* New voters */
+    .new-voters-box {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 14px;
+    }
+
+    .nv-title { font-size: 14px; font-weight: 700; color: var(--text-1); margin-bottom: 3px; }
+    .nv-sub   { font-size: 12px; color: var(--text-2); margin-bottom: 14px; }
+
+    .nv-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+
+    .nv-input {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 15px;
+      font-weight: 700;
+      width: 130px;
+      outline: none;
+      font-feature-settings: "tnum";
+      font-family: inherit;
+      color: var(--text-1);
+      transition: border-color .15s;
+    }
+
+    .nv-input:focus { border-color: var(--blue); }
+
+    .quick-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .quick-btn {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 0.5px solid var(--border);
+      background: var(--bg);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-2);
+      transition: all .15s;
+      font-family: inherit;
+      min-height: 36px;
+    }
+
+    .quick-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* ══════════════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════════════ */
+    .footer {
+      background: var(--surface);
+      border-top: 0.5px solid var(--border);
+      padding: 48px 24px 40px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 36px;
+      max-width: 980px;
+      margin: 0 auto 32px;
+    }
+
+    @media (max-width: 640px) { .footer-grid { grid-template-columns: 1fr; gap: 24px; } }
+
+    .footer-col {}
+    .footer-logo { font-family: 'Playfair Display', Georgia, serif; font-size: 18px; font-weight: 700; color: var(--text-1); margin-bottom: 6px; }
+    .footer-tagline { font-size: 13px; color: var(--text-2); }
+    .footer-col-title { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 10px; }
+    .footer-sources { list-style: none; }
+    .footer-sources li { font-size: 12.5px; color: var(--text-2); line-height: 1.8; }
+
+    .footer-bottom {
+      text-align: center;
+      border-top: 0.5px solid var(--border);
+      padding-top: 20px;
       font-size: 11.5px;
       color: var(--text-3);
-      line-height: 1.6;
+      line-height: 1.7;
     }
-
-    /* ═══════════════════════════════════════════════════
-       RESPONSIVE TWEAKS
-    ═══════════════════════════════════════════════════ */
-    @media (max-width: 640px) {
-      .header { padding: 0 14px; }
-      .header-label { font-size: 9px; letter-spacing: .07em; }
-      .proj-card { padding: 18px; }
-      .cand-avatar { width: 68px; height: 68px; font-size: 19px; }
-    }
-
-    /* ─ Number format animation ─ */
-    [data-animating] { transition: opacity .15s; }
   </style>
 </head>
 <body>
 
-<!-- ════════════ HEADER ════════════ -->
+<!-- ══════ HEADER ══════ -->
 <header class="header">
   <div class="header-left">
     <div class="live-dot"></div>
-    <span class="header-label" data-i18n="header.label">ELECCIONES · COLOMBIA · 21 JUNIO 2026</span>
+    <span class="header-label" data-t="header.label">ELECCIONES PRESIDENCIALES · COLOMBIA · 21 JUNIO 2026</span>
   </div>
-  <div class="lang-toggle">
-    <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
-    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  <div class="header-right">
+    <div class="lang-pills">
+      <button class="lang-pill active" id="btn-es" onclick="setLang('es')">ES</button>
+      <button class="lang-pill" id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
   </div>
 </header>
 
-<!-- ════════════ HERO ════════════ -->
+<!-- ══════ SECTION 1: HERO ══════ -->
 <section class="hero">
-  <p class="hero-eyebrow" data-i18n="hero.eyebrow">PROYECCIÓN SEGUNDA VUELTA</p>
-  <h1 class="hero-title" data-i18n-html="hero.title">¿Quién gana el<br>21 de junio?</h1>
-  <p class="hero-sub" data-i18n="hero.sub">Simulador basado en análisis multi-agente · Datos reales del 31 de mayo · Recalcula en vivo</p>
-</section>
+  <p class="hero-eyebrow" data-t="hero.eyebrow">SEGUNDA VUELTA PRESIDENCIAL</p>
+  <h1 class="hero-title" data-t-html="hero.title">Dos visiones.
+Un país. Un voto.</h1>
+  <p class="hero-sub" data-t="hero.sub">Colombia decide el 21 de junio de 2026</p>
 
-<!-- ════════════ PROJECTION CARD ════════════ -->
-<section class="section" style="padding-top:8px;border-top:none">
-  <div class="wrap">
-    <div class="proj-card fade-in">
+  <div class="hero-cards">
 
-      <!-- Card header -->
-      <div class="proj-card-hdr">
-        <span class="proj-card-label" data-i18n="proj.label">PROYECCIÓN 2ª VUELTA</span>
-        <div class="winner-pill" id="winner-pill">
-          <span id="winner-pill-text">Abelardo de la Espriella · 52.0% · +6.3pts</span>
-        </div>
+    <!-- Abelardo -->
+    <div class="hero-cand hero-cand--abel">
+      <div class="cand-photo-ring cand-photo-ring--abel">
+        <img class="cand-photo" src="https://unavatar.io/twitter/ABDELAESPRIELLA"
+             alt="Abelardo de la Espriella"
+             onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="cand-photo-fallback fb--abel">AE</div>
       </div>
-
-      <!-- Candidates -->
-      <div class="candidates-grid">
-
-        <!-- Abelardo -->
-        <div class="candidate">
-          <div class="cand-avatar avatar-abel">AE</div>
-          <div class="cand-coalition" data-i18n="abel.coalition">DEFENSORES DE LA PATRIA</div>
-          <div class="cand-name" data-i18n="abel.name">Abelardo de la Espriella</div>
-          <div class="cand-pct pct-abel" id="pct-abel">52.0%</div>
-          <div class="cand-votes"><span id="votes-abel">12.073.017</span> <span data-i18n="votes">votos</span></div>
-          <div class="cand-base"><span data-i18n="abel.base">Base 10.361.413</span> · <span data-i18n="abel.added">sumados</span> +<span id="added-abel">1.711.604</span></div>
-        </div>
-
-        <!-- VS -->
-        <div class="vs-col">
-          <span class="vs-text">VS</span>
-          <span class="vs-dist-num">1.55</span>
-          <span class="vs-dist-label" data-i18n="vs.dist">distancia<br>ideológica</span>
-        </div>
-
-        <!-- Cepeda -->
-        <div class="candidate candidate--right">
-          <div class="cand-avatar avatar-cep">IC</div>
-          <div class="cand-coalition" data-i18n="cep.coalition">PACTO HISTÓRICO</div>
-          <div class="cand-name" data-i18n="cep.name">Iván Cepeda Castro</div>
-          <div class="cand-pct pct-cep" id="pct-cep">45.7%</div>
-          <div class="cand-votes"><span id="votes-cep">10.593.025</span> <span data-i18n="votes">votos</span></div>
-          <div class="cand-base"><span data-i18n="cep.base">Base 9.688.245</span> · <span data-i18n="cep.added">sumados</span> +<span id="added-cep">904.780</span></div>
-        </div>
-
+      <div class="cand-coalition" data-t="abel.coalition">DEFENSORES DE LA PATRIA</div>
+      <div class="cand-name">Abelardo de la Espriella</div>
+      <div class="cand-tagline tl--abel" data-t="abel.tagline">Patria Milagro</div>
+      <div class="cand-pct cp--abel">43.74%</div>
+      <div class="cand-votes-sub" data-t="abel.votes-sub">10,361,499 votos · 1ª vuelta</div>
+      <div class="endorse-group">
+        <span class="endorse-label" data-t="abel.endorse.label">Apoyos confirmados:</span>
+        <span class="endorse-pill ep--blue" data-t="abel.endorse.names">Paloma Valencia · Centro Democrático</span>
       </div>
-
-      <!-- Projection bar -->
-      <div class="proj-bar-wrap">
-        <div class="proj-bar">
-          <div class="bar-seg bar-abel" id="bar-abel" style="width:52%">
-            <span id="bar-abel-lbl">52.0%</span>
-          </div>
-          <div class="bar-seg bar-blank" id="bar-blank" style="width:2.4%">
-            <span id="bar-blank-lbl"></span>
-          </div>
-          <div class="bar-seg bar-cep" id="bar-cep" style="width:45.7%">
-            <span id="bar-cep-lbl">45.7%</span>
-          </div>
-        </div>
-        <div class="proj-legend">
-          <div class="legend-item">
-            <div class="legend-dot" style="background:var(--blue)"></div>
-            <span data-i18n="abel.name">Abelardo de la Espriella</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:var(--gray)"></div>
-            <span data-i18n="blank.legend">Voto en blanco</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:var(--purple)"></div>
-            <span data-i18n="cep.name">Iván Cepeda Castro</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ════════════ VOTE DISTRIBUTION ════════════ -->
-<section class="section">
-  <div class="wrap">
-    <div class="section-header fade-in">
-      <h2 class="section-title" data-i18n="dist.title">¿A dónde van los votos?</h2>
-      <p class="section-sub" data-i18n="dist.sub">Ajusta cómo se reparten los votos de los candidatos eliminados</p>
     </div>
 
-    <div class="cand-grid">
+    <!-- VS -->
+    <div class="hero-vs">
+      <span class="vs-word">VS</span>
+      <span class="vs-gap">1.55 pts</span>
+      <span class="vs-gap-label" data-t="vs.label">brecha<br>ideológica</span>
+    </div>
+
+    <!-- Cepeda -->
+    <div class="hero-cand hero-cand--cep">
+      <div class="cand-photo-ring cand-photo-ring--cep">
+        <img class="cand-photo" src="https://unavatar.io/twitter/IvanCepedaCast"
+             alt="Iván Cepeda Castro"
+             onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="cand-photo-fallback fb--cep">IC</div>
+      </div>
+      <div class="cand-coalition">PACTO HISTÓRICO</div>
+      <div class="cand-name">Iván Cepeda Castro</div>
+      <div class="cand-tagline tl--cep" data-t="cep.tagline">El poder de la verdad</div>
+      <div class="cand-pct cp--cep">40.90%</div>
+      <div class="cand-votes-sub" data-t="cep.votes-sub">9,688,245 votos · 1ª vuelta</div>
+      <div class="endorse-group">
+        <span class="endorse-label" data-t="cep.endorse.label">En negociación:</span>
+        <span class="endorse-pill ep--amber" data-t="cep.endorse.names">Buscando: Fajardo · Claudia López</span>
+      </div>
+    </div>
+
+  </div><!-- /hero-cards -->
+</section>
+
+<!-- ══════ SECTION 2: FIRST ROUND MAP ══════ -->
+<section class="section section--gray section--border">
+  <div class="wrap">
+    <div class="section-header reveal">
+      <div class="section-eyebrow" data-t="elim.eyebrow">Primera vuelta · 31 mayo 2026</div>
+      <h2 class="section-title" data-t="elim.title">Los que quedaron en el camino</h2>
+      <p class="section-sub" data-t="elim.sub">3,162,911 votos en juego para el 21 de junio</p>
+    </div>
+
+    <div class="elim-grid">
 
       <!-- Paloma Valencia -->
-      <div class="cand-card fade-in" data-cand="paloma">
-        <div class="cand-card-hdr">
-          <div class="mini-avatar" style="background:#1e2e50;color:#93c5fd">PV</div>
-          <div>
-            <div class="cand-card-name">Paloma Valencia</div>
-            <div class="cand-card-votes" id="votes-paloma">1.639.685 · 6.9%</div>
-            <span class="endorsement-badge badge-abel" data-i18n="badge.abel">Apoya a Abelardo</span>
+      <div class="elim-card reveal">
+        <div class="elim-hdr">
+          <div class="mini-photo">
+            <img src="https://unavatar.io/twitter/PalomaValenciaL" alt="Paloma Valencia"
+                 onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="cand-photo-fallback fb--pv" style="display:none">PV</div>
+          </div>
+          <div class="elim-info">
+            <div class="elim-name">Paloma Valencia</div>
+            <div class="elim-votes">1,639,685 · 6.92%</div>
           </div>
         </div>
-        <div class="split-inputs">
-          <div class="split-group">
-            <span class="split-label sl-abel" data-i18n="col.abel">Abelardo</span>
-            <input class="split-input si-abel" id="paloma-abel" type="number" min="0" max="100" value="72">
-          </div>
-          <div class="split-group">
-            <span class="split-label sl-blank" data-i18n="col.blank">Blanco</span>
-            <input class="split-input si-blank" id="paloma-blank" type="number" min="0" max="100" value="8">
-          </div>
-          <div class="split-group">
-            <span class="split-label sl-cep" data-i18n="col.cep">Cepeda</span>
-            <input class="split-input si-cep" id="paloma-cep" type="number" min="0" max="100" value="20">
+        <div class="elim-bar-wrap">
+          <div class="elim-bar-track">
+            <div class="elim-bar-fill" style="width:6.92%;background:#6b7280"></div>
           </div>
         </div>
-        <div class="mini-bar">
-          <div class="mini-seg ms-abel" id="paloma-mb-abel" style="width:72%"></div>
-          <div class="mini-seg ms-blank" id="paloma-mb-blank" style="width:8%"></div>
-          <div class="mini-seg ms-cep" id="paloma-mb-cep" style="width:20%"></div>
+        <div class="endorse-block">
+          <div class="endorse-status">
+            <span class="endorse-arrow ea--ab" data-t="badge.abel">→ Abelardo</span>
+            <div class="endorse-quote" data-t="paloma.quote">"Tenemos el corazón dispuesto para servir a Colombia. Felicito a Abelardo."</div>
+          </div>
+          <div class="endorse-source" data-t="paloma.source">El Colombiano, 31 mayo 2026</div>
         </div>
-        <div class="vote-breakdown" id="paloma-bk"></div>
       </div>
 
       <!-- Fajardo -->
-      <div class="cand-card fade-in" data-cand="fajardo">
-        <div class="cand-card-hdr">
-          <div class="mini-avatar" style="background:#1a2535;color:#9ca3af">SF</div>
-          <div>
-            <div class="cand-card-name">Sergio Fajardo</div>
-            <div class="cand-card-votes" id="votes-fajardo">1.009.073 · 4.3%</div>
-            <span class="endorsement-badge badge-none" data-i18n="badge.none">Sin candidato</span>
+      <div class="elim-card reveal">
+        <div class="elim-hdr">
+          <div class="mini-photo">
+            <img src="https://unavatar.io/twitter/FajardoGober" alt="Sergio Fajardo"
+                 onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="cand-photo-fallback fb--sf" style="display:none">SF</div>
+          </div>
+          <div class="elim-info">
+            <div class="elim-name">Sergio Fajardo</div>
+            <div class="elim-votes">1,009,073 · 4.26%</div>
           </div>
         </div>
-        <div class="split-inputs">
-          <div class="split-group">
-            <span class="split-label sl-abel" data-i18n="col.abel">Abelardo</span>
-            <input class="split-input si-abel" id="fajardo-abel" type="number" min="0" max="100" value="35">
-          </div>
-          <div class="split-group">
-            <span class="split-label sl-blank" data-i18n="col.blank">Blanco</span>
-            <input class="split-input si-blank" id="fajardo-blank" type="number" min="0" max="100" value="30">
-          </div>
-          <div class="split-group">
-            <span class="split-label sl-cep" data-i18n="col.cep">Cepeda</span>
-            <input class="split-input si-cep" id="fajardo-cep" type="number" min="0" max="100" value="35">
+        <div class="elim-bar-wrap">
+          <div class="elim-bar-track">
+            <div class="elim-bar-fill" style="width:4.26%;background:#6b7280"></div>
           </div>
         </div>
-        <div class="mini-bar">
-          <div class="mini-seg ms-abel" id="fajardo-mb-abel" style="width:35%"></div>
-          <div class="mini-seg ms-blank" id="fajardo-mb-blank" style="width:30%"></div>
-          <div class="mini-seg ms-cep" id="fajardo-mb-cep" style="width:35%"></div>
+        <div class="endorse-block">
+          <div class="endorse-status">
+            <span class="endorse-arrow ea--nd" data-t="badge.pending">Pendiente</span>
+            <div class="endorse-quote" data-t="fajardo.quote">"Los votos no les pertenecen a los candidatos. Le pertenecen a los ciudadanos."</div>
+          </div>
+          <div class="endorse-source" data-t="fajardo.source">El Tiempo, 31 mayo 2026</div>
+          <div class="endorse-note" data-t="fajardo.note">Cepeda lo invitó a un café el 1 de junio</div>
         </div>
-        <div class="vote-breakdown" id="fajardo-bk"></div>
       </div>
 
       <!-- Claudia López -->
-      <div class="cand-card fade-in" data-cand="lopez">
-        <div class="cand-card-hdr">
-          <div class="mini-avatar" style="background:#1e1e35;color:#a78bfa">CL</div>
-          <div>
-            <div class="cand-card-name">Claudia López</div>
-            <div class="cand-card-votes" id="votes-lopez">225.517 · 1.0%</div>
+      <div class="elim-card reveal">
+        <div class="elim-hdr">
+          <div class="mini-photo">
+            <img src="https://unavatar.io/twitter/ClaudiaLopez" alt="Claudia López"
+                 onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="cand-photo-fallback fb--cl" style="display:none">CL</div>
+          </div>
+          <div class="elim-info">
+            <div class="elim-name">Claudia López</div>
+            <div class="elim-votes">225,517 · 0.95%</div>
           </div>
         </div>
-        <div class="split-inputs">
-          <div class="split-group">
-            <span class="split-label sl-abel" data-i18n="col.abel">Abelardo</span>
-            <input class="split-input si-abel" id="lopez-abel" type="number" min="0" max="100" value="20">
-          </div>
-          <div class="split-group">
-            <span class="split-label sl-blank" data-i18n="col.blank">Blanco</span>
-            <input class="split-input si-blank" id="lopez-blank" type="number" min="0" max="100" value="25">
-          </div>
-          <div class="split-group">
-            <span class="split-label sl-cep" data-i18n="col.cep">Cepeda</span>
-            <input class="split-input si-cep" id="lopez-cep" type="number" min="0" max="100" value="55">
+        <div class="elim-bar-wrap">
+          <div class="elim-bar-track">
+            <div class="elim-bar-fill" style="width:0.95%;background:#6b7280"></div>
           </div>
         </div>
-        <div class="mini-bar">
-          <div class="mini-seg ms-abel" id="lopez-mb-abel" style="width:20%"></div>
-          <div class="mini-seg ms-blank" id="lopez-mb-blank" style="width:25%"></div>
-          <div class="mini-seg ms-cep" id="lopez-mb-cep" style="width:55%"></div>
+        <div class="endorse-block">
+          <div class="endorse-status">
+            <span class="endorse-arrow ea--nd" data-t="badge.ruled-out-abel">Descartó a Abelardo</span>
+            <div class="endorse-quote" data-t="lopez.quote">"Descarto a De la Espriella. Necesito días para reflexionar."</div>
+          </div>
+          <div class="endorse-source" data-t="lopez.source">El Tiempo, 31 mayo 2026</div>
+          <div class="endorse-note" data-t="lopez.note">Sus votantes tienden más hacia la izquierda</div>
         </div>
-        <div class="vote-breakdown" id="lopez-bk"></div>
       </div>
 
-      <!-- Raúl Botero -->
-      <div class="cand-card fade-in" data-cand="botero">
-        <div class="cand-card-hdr">
-          <div class="mini-avatar" style="background:#1a2535;color:#9ca3af">RB</div>
-          <div>
-            <div class="cand-card-name">Raúl Botero</div>
-            <div class="cand-card-votes" id="votes-botero">206.140 · 0.9%</div>
+      <!-- Botero -->
+      <div class="elim-card reveal">
+        <div class="elim-hdr">
+          <div class="mini-photo">
+            <div class="cand-photo-fallback fb--sf" style="display:flex;width:100%;height:100%">RB</div>
+          </div>
+          <div class="elim-info">
+            <div class="elim-name">Raúl Botero</div>
+            <div class="elim-votes">206,140 · 0.87%</div>
           </div>
         </div>
-        <div class="split-inputs">
-          <div class="split-group">
-            <span class="split-label sl-abel" data-i18n="col.abel">Abelardo</span>
-            <input class="split-input si-abel" id="botero-abel" type="number" min="0" max="100" value="45">
-          </div>
-          <div class="split-group">
-            <span class="split-label sl-blank" data-i18n="col.blank">Blanco</span>
-            <input class="split-input si-blank" id="botero-blank" type="number" min="0" max="100" value="20">
-          </div>
-          <div class="split-group">
-            <span class="split-label sl-cep" data-i18n="col.cep">Cepeda</span>
-            <input class="split-input si-cep" id="botero-cep" type="number" min="0" max="100" value="35">
+        <div class="elim-bar-wrap">
+          <div class="elim-bar-track">
+            <div class="elim-bar-fill" style="width:0.87%;background:#6b7280"></div>
           </div>
         </div>
-        <div class="mini-bar">
-          <div class="mini-seg ms-abel" id="botero-mb-abel" style="width:45%"></div>
-          <div class="mini-seg ms-blank" id="botero-mb-blank" style="width:20%"></div>
-          <div class="mini-seg ms-cep" id="botero-mb-cep" style="width:35%"></div>
+        <div class="endorse-block">
+          <div class="endorse-status">
+            <span class="endorse-arrow ea--ab" data-t="badge.abel-trend">Tendencia Abelardo</span>
+            <div class="endorse-quote" data-t="botero.quote">"Su perfil claramente tiende hacia De la Espriella."</div>
+          </div>
+          <div class="endorse-source" data-t="botero.source">El Tiempo, análisis 1 junio 2026</div>
         </div>
-        <div class="vote-breakdown" id="botero-bk"></div>
       </div>
 
-      <!-- Óscar Lizcano -->
-      <div class="cand-card fade-in" data-cand="lizcano">
-        <div class="cand-card-hdr">
-          <div class="mini-avatar" style="background:#1a2535;color:#9ca3af">OL</div>
-          <div>
-            <div class="cand-card-name">Óscar Lizcano</div>
-            <div class="cand-card-votes" id="votes-lizcano">53.839 · 0.2%</div>
+      <!-- Lizcano -->
+      <div class="elim-card reveal">
+        <div class="elim-hdr">
+          <div class="mini-photo">
+            <div class="cand-photo-fallback fb--sf" style="display:flex;width:100%;height:100%">ML</div>
+          </div>
+          <div class="elim-info">
+            <div class="elim-name">Mauricio Lizcano</div>
+            <div class="elim-votes">53,839 · 0.22%</div>
           </div>
         </div>
-        <div class="split-inputs">
-          <div class="split-group">
-            <span class="split-label sl-abel" data-i18n="col.abel">Abelardo</span>
-            <input class="split-input si-abel" id="lizcano-abel" type="number" min="0" max="100" value="45">
-          </div>
-          <div class="split-group">
-            <span class="split-label sl-blank" data-i18n="col.blank">Blanco</span>
-            <input class="split-input si-blank" id="lizcano-blank" type="number" min="0" max="100" value="20">
-          </div>
-          <div class="split-group">
-            <span class="split-label sl-cep" data-i18n="col.cep">Cepeda</span>
-            <input class="split-input si-cep" id="lizcano-cep" type="number" min="0" max="100" value="35">
+        <div class="elim-bar-wrap">
+          <div class="elim-bar-track">
+            <div class="elim-bar-fill" style="width:0.22%;background:#6b7280"></div>
           </div>
         </div>
-        <div class="mini-bar">
-          <div class="mini-seg ms-abel" id="lizcano-mb-abel" style="width:45%"></div>
-          <div class="mini-seg ms-blank" id="lizcano-mb-blank" style="width:20%"></div>
-          <div class="mini-seg ms-cep" id="lizcano-mb-cep" style="width:35%"></div>
+        <div class="endorse-block">
+          <div class="endorse-status">
+            <span class="endorse-arrow ea--nd" data-t="badge.tbd">Por definir</span>
+          </div>
         </div>
-        <div class="vote-breakdown" id="lizcano-bk"></div>
       </div>
 
-      <!-- Miguel Uribe -->
-      <div class="cand-card fade-in" data-cand="uribe">
-        <div class="cand-card-hdr">
-          <div class="mini-avatar" style="background:#1e2e50;color:#93c5fd">MU</div>
-          <div>
-            <div class="cand-card-name">Miguel Uribe Londoño</div>
-            <div class="cand-card-votes" id="votes-uribe">28.657 · 0.1%</div>
+      <!-- Uribe Londoño -->
+      <div class="elim-card reveal">
+        <div class="elim-hdr">
+          <div class="mini-photo">
+            <div class="cand-photo-fallback fb--pv" style="display:flex;width:100%;height:100%">MU</div>
+          </div>
+          <div class="elim-info">
+            <div class="elim-name">Miguel Uribe Londoño</div>
+            <div class="elim-votes">28,657 · 0.12%</div>
           </div>
         </div>
-        <div class="split-inputs">
-          <div class="split-group">
-            <span class="split-label sl-abel" data-i18n="col.abel">Abelardo</span>
-            <input class="split-input si-abel" id="uribe-abel" type="number" min="0" max="100" value="55">
-          </div>
-          <div class="split-group">
-            <span class="split-label sl-blank" data-i18n="col.blank">Blanco</span>
-            <input class="split-input si-blank" id="uribe-blank" type="number" min="0" max="100" value="15">
-          </div>
-          <div class="split-group">
-            <span class="split-label sl-cep" data-i18n="col.cep">Cepeda</span>
-            <input class="split-input si-cep" id="uribe-cep" type="number" min="0" max="100" value="30">
+        <div class="elim-bar-wrap">
+          <div class="elim-bar-track">
+            <div class="elim-bar-fill" style="width:0.12%;background:#6b7280"></div>
           </div>
         </div>
-        <div class="mini-bar">
-          <div class="mini-seg ms-abel" id="uribe-mb-abel" style="width:55%"></div>
-          <div class="mini-seg ms-blank" id="uribe-mb-blank" style="width:15%"></div>
-          <div class="mini-seg ms-cep" id="uribe-mb-cep" style="width:30%"></div>
+        <div class="endorse-block">
+          <div class="endorse-status">
+            <span class="endorse-arrow ea--nd" data-t="badge.tbd">Por definir</span>
+          </div>
         </div>
-        <div class="vote-breakdown" id="uribe-bk"></div>
       </div>
 
-    </div><!-- /cand-grid -->
-
-    <!-- New voters -->
-    <div class="new-voters-card fade-in">
-      <div class="new-voters-title" data-i18n="dist.newvoters.title">Votos nuevos</div>
-      <p class="new-voters-sub" data-i18n="dist.newvoters.sub">Personas que no votaron en 1ª vuelta y ahora sí salen a votar</p>
-      <div class="new-voters-row">
-        <input class="new-voters-input" id="new-voters-num" type="number" min="0" value="0" placeholder="0">
-        <div class="quick-btns">
-          <button class="quick-btn" onclick="setNewVoters(500000)" data-i18n="btn.500k">500 mil</button>
-          <button class="quick-btn" onclick="setNewVoters(1000000)" data-i18n="btn.1m">1 millón</button>
-          <button class="quick-btn" onclick="setNewVoters(2000000)" data-i18n="btn.2m">2 millones</button>
-          <button class="quick-btn" onclick="setNewVoters(5000000)" data-i18n="btn.5m">5 millones</button>
-        </div>
-      </div>
-      <div class="split-inputs" style="max-width:360px">
-        <div class="split-group">
-          <span class="split-label sl-abel" data-i18n="col.abel">Abelardo</span>
-          <input class="split-input si-abel" id="new-abel" type="number" min="0" max="100" value="45">
-        </div>
-        <div class="split-group">
-          <span class="split-label sl-blank" data-i18n="col.blank">Blanco</span>
-          <input class="split-input si-blank" id="new-blank" type="number" min="0" max="100" value="10">
-        </div>
-        <div class="split-group">
-          <span class="split-label sl-cep" data-i18n="col.cep">Cepeda</span>
-          <input class="split-input si-cep" id="new-cep" type="number" min="0" max="100" value="45">
-        </div>
-      </div>
-      <div class="mini-bar" style="margin-top:8px;max-width:360px">
-        <div class="mini-seg ms-abel" id="new-mb-abel" style="width:45%"></div>
-        <div class="mini-seg ms-blank" id="new-mb-blank" style="width:10%"></div>
-        <div class="mini-seg ms-cep" id="new-mb-cep" style="width:45%"></div>
-      </div>
-    </div>
-
+    </div><!-- /elim-grid -->
   </div>
 </section>
 
-<!-- ════════════ THREE AGENTS ════════════ -->
-<section class="section">
+<!-- ══════ SECTION 3: PROPOSALS ══════ -->
+<section class="section section--border">
   <div class="wrap">
-    <div class="section-header fade-in">
-      <h2 class="section-title" data-i18n="agents.title">Cómo funciona el análisis</h2>
+    <div class="section-header reveal">
+      <h2 class="section-title" data-t="prop.title">¿Qué ofrece cada uno?</h2>
+      <p class="section-sub" data-t="prop.sub">Propuestas reales de sus programas de gobierno. Fuentes: Semana, Bloomberg Línea, La Silla Vacía.</p>
     </div>
 
+    <div class="proposal-rows">
+
+      <!-- Security -->
+      <div class="prop-row reveal">
+        <div class="prop-topic-pill"><span class="prop-topic-icon">🛡️</span><span data-t="prop.security.topic">SEGURIDAD</span></div>
+        <div class="prop-cards">
+          <div class="prop-card prop-card--abel">
+            <div class="prop-card-headline ph--abel" data-t="prop.security.abel.h">Mano dura contra el crimen</div>
+            <div class="prop-card-body" data-t="prop.security.abel.body">Mega cárceles de máxima seguridad · Fin a la Paz Total · Fumigación de 330,000 ha de coca · 30,000 nuevos militares y policías · Recuperación territorial.</div>
+            <div class="prop-source" data-t="prop.security.abel.src">Fuente: Bloomberg Línea</div>
+          </div>
+          <div class="prop-card prop-card--cep">
+            <div class="prop-card-headline ph--cep" data-t="prop.security.cep.h">Paz como estrategia de seguridad</div>
+            <div class="prop-card-body" data-t="prop.security.cep.body">Continuar diálogos de paz · Combatir grandes estructuras del narcotráfico · "Jóvenes en Paz" contra el reclutamiento · Enfoque en causas estructurales de la violencia.</div>
+            <div class="prop-source" data-t="prop.security.cep.src">Fuente: Cambio Colombia</div>
+          </div>
+        </div>
+        <div class="prop-diff"><span class="prop-diff-label" data-t="diff.label">La diferencia clave</span><span data-t="prop.security.diff">Fuerza pública vs. negociación como primer instrumento.</span></div>
+      </div>
+
+      <!-- Economy -->
+      <div class="prop-row reveal">
+        <div class="prop-topic-pill"><span class="prop-topic-icon">📊</span><span data-t="prop.economy.topic">ECONOMÍA</span></div>
+        <div class="prop-cards">
+          <div class="prop-card prop-card--abel">
+            <div class="prop-card-headline ph--abel" data-t="prop.economy.abel.h">Crecimiento al 7% anual</div>
+            <div class="prop-card-body" data-t="prop.economy.abel.body">Reducción de impuestos empresariales · Eliminar ministerios y fusionar entidades · Reducir el Estado hasta un 40% · Modelo inspirado en Corea del Sur.</div>
+            <div class="prop-source" data-t="prop.economy.abel.src">Fuente: La Silla Vacía</div>
+          </div>
+          <div class="prop-card prop-card--cep">
+            <div class="prop-card-headline ph--cep" data-t="prop.economy.cep.h">Economía productiva y diversificada</div>
+            <div class="prop-card-body" data-t="prop.economy.cep.body">No estatización · Ampliar Colombia Mayor a 5M beneficiarios · Banco del Pueblo para erradicar pobreza · Fortalecer Ecopetrol.</div>
+            <div class="prop-source" data-t="prop.economy.cep.src">Fuente: Bloomberg Línea</div>
+          </div>
+        </div>
+        <div class="prop-diff"><span class="prop-diff-label" data-t="diff.label">La diferencia clave</span><span data-t="prop.economy.diff">Austeridad y mercado vs. gasto social y estado activo.</span></div>
+      </div>
+
+      <!-- Health -->
+      <div class="prop-row reveal">
+        <div class="prop-topic-pill"><span class="prop-topic-icon">❤️</span><span data-t="prop.health.topic">SALUD</span></div>
+        <div class="prop-cards">
+          <div class="prop-card prop-card--abel">
+            <div class="prop-card-headline ph--abel" data-t="prop.health.abel.h">Resolver citas represadas</div>
+            <div class="prop-card-body" data-t="prop.health.abel.body">Resolver millones de citas represadas en primeros meses · Fortalecer cobertura · Modelo mixto público-privado · No a la reforma Petro.</div>
+            <div class="prop-source" data-t="prop.health.abel.src">Fuente: Semana</div>
+          </div>
+          <div class="prop-card prop-card--cep">
+            <div class="prop-card-headline ph--cep" data-t="prop.health.cep.h">Continuar reforma a la salud</div>
+            <div class="prop-card-body" data-t="prop.health.cep.body">Continuar la reforma del gobierno Petro · Sistema más público · Fortalecer EPS comunitarias · Bienestar como derecho fundamental.</div>
+            <div class="prop-source" data-t="prop.health.cep.src">Fuente: Semana</div>
+          </div>
+        </div>
+        <div class="prop-diff"><span class="prop-diff-label" data-t="diff.label">La diferencia clave</span><span data-t="prop.health.diff">Ajustar el sistema actual vs. reformarlo estructuralmente.</span></div>
+      </div>
+
+      <!-- Education -->
+      <div class="prop-row reveal">
+        <div class="prop-topic-pill"><span class="prop-topic-icon">📚</span><span data-t="prop.education.topic">EDUCACIÓN</span></div>
+        <div class="prop-cards">
+          <div class="prop-card prop-card--abel">
+            <div class="prop-card-headline ph--abel" data-t="prop.education.abel.h">Bonos escolares y formación en IA</div>
+            <div class="prop-card-body" data-t="prop.education.abel.body">Bonos escolares · Becas · Formación en inteligencia artificial · Bilingüismo · Calidad antes que cobertura.</div>
+            <div class="prop-source" data-t="prop.education.abel.src">Fuente: Canal 1</div>
+          </div>
+          <div class="prop-card prop-card--cep">
+            <div class="prop-card-headline ph--cep" data-t="prop.education.cep.h">Universidad pública gratuita</div>
+            <div class="prop-card-body" data-t="prop.education.cep.body">Universidad pública gratuita · Educación superior en zonas rurales (modelo multicampus) · Reducir brechas entre regiones · Educación popular.</div>
+            <div class="prop-source" data-t="prop.education.cep.src">Fuente: Cambio Colombia</div>
+          </div>
+        </div>
+        <div class="prop-diff"><span class="prop-diff-label" data-t="diff.label">La diferencia clave</span><span data-t="prop.education.diff">Subsidio individual (vouchers) vs. fortalecimiento del sistema público.</span></div>
+      </div>
+
+      <!-- Energy -->
+      <div class="prop-row reveal">
+        <div class="prop-topic-pill"><span class="prop-topic-icon">⚡</span><span data-t="prop.energy.topic">ENERGÍA</span></div>
+        <div class="prop-cards">
+          <div class="prop-card prop-card--abel">
+            <div class="prop-card-headline ph--abel" data-t="prop.energy.abel.h">Fracking regulado</div>
+            <div class="prop-card-body" data-t="prop.energy.abel.body">Fracking regulado · Producción energética para financiar el Estado · Transición gradual con responsabilidad fiscal · Cooperación con EE.UU.</div>
+            <div class="prop-source" data-t="prop.energy.abel.src">Fuente: Bloomberg Línea</div>
+          </div>
+          <div class="prop-card prop-card--cep">
+            <div class="prop-card-headline ph--cep" data-t="prop.energy.cep.h">No al fracking</div>
+            <div class="prop-card-body" data-t="prop.energy.cep.body">No al fracking · Transición energética acelerada · Colombia potencia de energías limpias · Continuar política Petro de no más contratos de petróleo.</div>
+            <div class="prop-source" data-t="prop.energy.cep.src">Fuente: La Silla Vacía</div>
+          </div>
+        </div>
+        <div class="prop-diff"><span class="prop-diff-label" data-t="diff.label">La diferencia clave</span><span data-t="prop.energy.diff">Petróleo como puente vs. ruptura con los combustibles fósiles.</span></div>
+      </div>
+
+    </div><!-- /proposal-rows -->
+  </div>
+</section>
+
+<!-- ══════ SECTION 4: MATH ══════ -->
+<section class="section section--gray section--border">
+  <div class="wrap">
+    <div class="section-header reveal">
+      <h2 class="section-title" data-t="math.title">Lo que dice la matemática</h2>
+      <p class="section-sub" data-t="math.sub">Tres agentes de IA analizaron este escenario. Aquí está el modelo.</p>
+    </div>
+
+    <!-- Spectrum chart -->
+    <div class="spectrum-wrap reveal">
+      <div class="section-eyebrow" data-t="math.spectrum.label">El espectro ideológico</div>
+      <p class="spectrum-desc" data-t="math.spectrum.desc">Posición de cada candidato en escala de −1 (izquierda) a +1 (derecha). Tamaño del círculo = votos en primera vuelta.</p>
+      <div class="chart-canvas-wrap">
+        <canvas id="spectrumChart"></canvas>
+      </div>
+      <div class="spectrum-stats">
+        <span class="spectrum-stat ss--ab" data-t="math.dist.abel">Abelardo → centro: 0.693 pts</span>
+        <span class="spectrum-stat ss--ce" data-t="math.dist.cep">Cepeda → centro: 0.857 pts</span>
+      </div>
+      <p class="spectrum-note" data-t="math.spectrum.note">El candidato más cerca del centro matemático tiene ventaja según el teorema del votante del centro.</p>
+    </div>
+
+    <!-- Three agents -->
     <div class="agents-grid">
 
-      <div class="agent-card agent-card--p fade-in">
-        <div class="agent-num agent-num--p">1</div>
-        <div class="agent-tag at-p" data-i18n="agent1.tag">AGENTE 1</div>
-        <div class="agent-title" data-i18n="agent1.title">Agente de encuestas</div>
-        <div class="agent-desc" data-i18n="agent1.desc">Reconcilia tres encuestas con resultados opuestos. La diferencia no es estadística — es metodológica.</div>
-        <div class="agent-result" data-i18n="agent1.result">Consenso: Abelardo +2.3pts · Margen de error ±4.2</div>
+      <div class="agent-card ac--purple reveal">
+        <div class="agent-num an--p">1</div>
+        <div class="agent-title" data-t="agent1.title">Agente de encuestas</div>
+        <div class="agent-desc" data-t="agent1.desc">Reconcilia tres firmas con metodologías distintas. La diferencia no es estadística — es cómo preguntan.</div>
+        <div class="agent-result" data-t="agent1.result">Consenso ponderado: Abelardo 46.8% · Cepeda 44.5% · Margen de error ±4.2 pts</div>
       </div>
 
-      <div class="agent-card agent-card--b fade-in">
-        <div class="agent-num agent-num--b">2</div>
-        <div class="agent-tag at-b" data-i18n="agent2.tag">AGENTE 2</div>
-        <div class="agent-title" data-i18n="agent2.title">Agente de votos en disputa</div>
-        <div class="agent-desc" data-i18n="agent2.desc">Modela hacia dónde van los votos de los candidatos eliminados y el efecto de abstención.</div>
-        <div class="agent-result" data-i18n="agent2.result">Variable clave: votos de Fajardo sin candidato definido</div>
+      <div class="agent-card ac--blue reveal">
+        <div class="agent-num an--b">2</div>
+        <div class="agent-title" data-t="agent2.title">Agente de votos en disputa</div>
+        <div class="agent-desc" data-t="agent2.desc">Modela hacia dónde van los votos de Paloma (apoya Abelardo), Fajardo (sin definir) y la abstención diferencial.</div>
+        <div class="agent-result" data-t="agent2.result">Variable clave: votos Fajardo sin candidato. ±10% de transferencia mueve ±0.4 pts finales.</div>
       </div>
 
-      <div class="agent-card agent-card--a fade-in">
-        <div class="agent-num agent-num--a">3</div>
-        <div class="agent-tag at-a" data-i18n="agent3.tag">AGENTE 3</div>
-        <div class="agent-title" data-i18n="agent3.title">Agente del centro matemático</div>
-        <div class="agent-desc" data-i18n="agent3.desc">Aplica el teorema que dice: en dos candidatos, gana quien esté más cerca del votante del centro.</div>
-        <div class="agent-result" data-i18n="agent3.result">MVT: favorece a Abelardo · 5 ajustes por Colombia</div>
+      <div class="agent-card ac--amber reveal">
+        <div class="agent-num an--a">3</div>
+        <div class="agent-title" data-t="agent3.title">Agente del centro matemático</div>
+        <div class="agent-desc" data-t="agent3.desc">Aplica el Teorema del Votante del Centro: en dos candidatos, gana quien esté más cerca del elector del medio. Colombia tiene 5 ajustes al teorema puro.</div>
+        <div class="agent-result" data-t="agent3.result">MVT ajustado: Abelardo 51-53% · 5 factores colombianos reducen la ventaja.</div>
       </div>
 
     </div>
 
-    <div class="orch-box fade-in" data-i18n="orch.text">
-      El orquestador combina los tres agentes: Abelardo 55% · Cepeda 45% · Margen de error ±8 puntos
+    <!-- Orchestrator -->
+    <div class="orch-box reveal">
+      <span class="orch-label" data-t="orch.label">Orquestador — Síntesis final</span>
+      <div class="orch-nums">
+        <div>
+          <div class="orch-num on--ab">55%</div>
+          <span class="orch-name oname--ab">Abelardo</span>
+        </div>
+        <div class="orch-sep">·</div>
+        <div>
+          <div class="orch-num on--ce">45%</div>
+          <span class="orch-name oname--ce">Cepeda</span>
+        </div>
+      </div>
+      <p class="orch-margin" data-t="orch.margin">Margen de error: ±8 puntos · Cualquiera puede ganar</p>
+      <p class="orch-disclaimer" data-t="orch.disclaimer">Análisis académico basado en datos reales. No es una predicción oficial.</p>
     </div>
 
   </div>
 </section>
 
-<!-- ════════════ POLLS ════════════ -->
-<section class="section">
+<!-- ══════ SECTION 5: VOTE EXPLORER ══════ -->
+<section class="section section--border">
   <div class="wrap">
-    <div class="section-header fade-in">
-      <h2 class="section-title" data-i18n="polls.title">Lo que dicen las encuestas</h2>
-      <p class="section-sub" data-i18n="polls.sub">Tres firmas serias. Resultados opuestos. Aquí está la razón.</p>
+    <div class="section-header reveal">
+      <h2 class="section-title" data-t="expl.title">¿Y si los votos fueran así?</h2>
+      <p class="section-sub" data-t="expl.sub">Mueve los porcentajes y ve cómo cambia la proyección en tiempo real.</p>
     </div>
 
-    <div class="polls-grid">
-
-      <div class="poll-card fade-in">
-        <div class="poll-src">Invamer · CNN Colombia</div>
-        <span class="poll-badge pb-cep" data-i18n="wins.cep">Gana Cepeda</span>
-        <div class="poll-row">
-          <div class="poll-row-hdr">
-            <span class="poll-cname" data-i18n="cep.name">Iván Cepeda Castro</span>
-            <span class="poll-num pn-ce">52.4%</span>
-          </div>
-          <div class="poll-track"><div class="poll-fill pf-ce" style="width:52.4%"></div></div>
+    <!-- Live projection -->
+    <div class="live-proj reveal">
+      <div class="live-nums">
+        <div>
+          <div class="live-num ln--ab" id="live-abel">51.2%</div>
         </div>
-        <div class="poll-row">
-          <div class="poll-row-hdr">
-            <span class="poll-cname" data-i18n="abel.name">Abelardo de la Espriella</span>
-            <span class="poll-num pn-ab">45.3%</span>
-          </div>
-          <div class="poll-track"><div class="poll-fill pf-ab" style="width:45.3%"></div></div>
+        <div class="live-vs">VS</div>
+        <div>
+          <div class="live-num ln--ce" id="live-cep">48.8%</div>
         </div>
-        <div class="poll-row" style="margin-top:4px">
-          <div class="poll-row-hdr">
-            <span class="poll-cname" data-i18n="blank.legend">Voto en blanco</span>
-            <span class="poll-num pn-gr">2.3%</span>
-          </div>
-          <div class="poll-track"><div class="poll-fill pf-gr" style="width:2.3%"></div></div>
-        </div>
-        <div class="poll-why-note" data-i18n="poll1.why">Metodología: fuerza al encuestado a elegir. Solo 2.3% voto en blanco.</div>
       </div>
-
-      <div class="poll-card fade-in">
-        <div class="poll-src">AtlasIntel · Revista Semana</div>
-        <span class="poll-badge pb-abel" data-i18n="wins.abel">Gana Abelardo</span>
-        <div class="poll-row">
-          <div class="poll-row-hdr">
-            <span class="poll-cname" data-i18n="abel.name">Abelardo de la Espriella</span>
-            <span class="poll-num pn-ab">50.0%</span>
-          </div>
-          <div class="poll-track"><div class="poll-fill pf-ab" style="width:50%"></div></div>
-        </div>
-        <div class="poll-row">
-          <div class="poll-row-hdr">
-            <span class="poll-cname" data-i18n="cep.name">Iván Cepeda Castro</span>
-            <span class="poll-num pn-ce">41.3%</span>
-          </div>
-          <div class="poll-track"><div class="poll-fill pf-ce" style="width:41.3%"></div></div>
-        </div>
-        <div class="poll-row" style="margin-top:4px">
-          <div class="poll-row-hdr">
-            <span class="poll-cname" data-i18n="blank.legend">Voto en blanco</span>
-            <span class="poll-num pn-gr">8.8%</span>
-          </div>
-          <div class="poll-track"><div class="poll-fill pf-gr" style="width:8.8%"></div></div>
-        </div>
-        <div class="poll-why-note" data-i18n="poll2.why">Metodología online. Deja más votos sin asignar.</div>
+      <div class="live-bar">
+        <div class="lb-abel" id="bar-abel" style="width:51.2%"><span class="lb-label" id="bar-abel-lbl">51.2%</span></div>
+        <div class="lb-blank" id="bar-blank" style="width:1%"></div>
+        <div class="lb-cep" id="bar-cep" style="width:47.8%"><span class="lb-label" id="bar-cep-lbl">47.8%</span></div>
       </div>
-
-      <div class="poll-card fade-in">
-        <div class="poll-src">Guarumo · Ecoanalítica · El Tiempo</div>
-        <span class="poll-badge pb-abel" data-i18n="wins.abel">Gana Abelardo</span>
-        <div class="poll-row">
-          <div class="poll-row-hdr">
-            <span class="poll-cname" data-i18n="abel.name">Abelardo de la Espriella</span>
-            <span class="poll-num pn-ab">44.8%</span>
-          </div>
-          <div class="poll-track"><div class="poll-fill pf-ab" style="width:44.8%"></div></div>
-        </div>
-        <div class="poll-row">
-          <div class="poll-row-hdr">
-            <span class="poll-cname" data-i18n="cep.name">Iván Cepeda Castro</span>
-            <span class="poll-num pn-ce">39.9%</span>
-          </div>
-          <div class="poll-track"><div class="poll-fill pf-ce" style="width:39.9%"></div></div>
-        </div>
-        <div class="poll-row" style="margin-top:4px">
-          <div class="poll-row-hdr">
-            <span class="poll-cname" data-i18n="blank.legend">Voto en blanco</span>
-            <span class="poll-num pn-gr">15.3%</span>
-          </div>
-          <div class="poll-track"><div class="poll-fill pf-gr" style="width:15.3%"></div></div>
-        </div>
-        <div class="poll-why-note" data-i18n="poll3.why">El mayor porcentaje de indecisos de los tres.</div>
-      </div>
-
+      <div class="winner-ind wi--ab" id="winner-ind" data-t="winner.abel">Abelardo de la Espriella — proyectado ganador</div>
     </div>
 
-    <div class="polls-callout fade-in" data-i18n="polls.callout">
-      La diferencia entre encuestadoras no es error — es diseño. Cómo preguntas cambia el resultado.
+    <!-- Candidate explorer blocks -->
+    <div class="explorer-grid">
+
+      <!-- Paloma -->
+      <div class="ex-card reveal">
+        <div class="ex-hdr">
+          <div class="ex-photo">
+            <img src="https://unavatar.io/twitter/PalomaValenciaL" alt="Paloma"
+                 onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="cand-photo-fallback fb--pv" style="display:none">PV</div>
+          </div>
+          <div class="ex-info">
+            <div class="ex-name">Paloma Valencia</div>
+            <div class="ex-votes">1,639,685 votos</div>
+          </div>
+        </div>
+        <span class="ex-badge eb--ab" data-t="expl.badge.paloma">Ya apoyó a Abelardo</span>
+        <div class="pill-row">
+          <div class="pill-col">
+            <span class="pill-label pl--ab" data-t="col.abel">Abelardo</span>
+            <div class="pill-ctrl">
+              <button class="pill-btn" onclick="step('paloma','abel',-1)">−</button>
+              <input class="pill-val" id="paloma-abel" type="number" value="72" min="0" max="100" readonly>
+              <button class="pill-btn" onclick="step('paloma','abel',1)">+</button>
+            </div>
+          </div>
+          <div class="pill-col">
+            <span class="pill-label pl--bl" data-t="col.blank">Blanco</span>
+            <div class="pill-ctrl">
+              <button class="pill-btn" onclick="step('paloma','blank',-1)">−</button>
+              <input class="pill-val" id="paloma-blank" type="number" value="8" min="0" max="100" readonly>
+              <button class="pill-btn" onclick="step('paloma','blank',1)">+</button>
+            </div>
+          </div>
+          <div class="pill-col">
+            <span class="pill-label pl--ce" data-t="col.cep">Cepeda</span>
+            <div class="pill-ctrl">
+              <button class="pill-btn" onclick="step('paloma','cep',-1)">−</button>
+              <input class="pill-val" id="paloma-cep" type="number" value="20" min="0" max="100" readonly>
+              <button class="pill-btn" onclick="step('paloma','cep',1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="ex-mini-bar">
+          <div class="mb-seg mb-ab" id="paloma-mb-ab" style="width:72%"></div>
+          <div class="mb-seg mb-bl" id="paloma-mb-bl" style="width:8%"></div>
+          <div class="mb-seg mb-ce" id="paloma-mb-ce" style="width:20%"></div>
+        </div>
+        <div class="ex-breakdown" id="paloma-bk"></div>
+      </div>
+
+      <!-- Fajardo -->
+      <div class="ex-card reveal">
+        <div class="ex-hdr">
+          <div class="ex-photo">
+            <img src="https://unavatar.io/twitter/FajardoGober" alt="Fajardo"
+                 onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="cand-photo-fallback fb--sf" style="display:none">SF</div>
+          </div>
+          <div class="ex-info">
+            <div class="ex-name">Sergio Fajardo</div>
+            <div class="ex-votes">1,009,073 votos</div>
+          </div>
+        </div>
+        <span class="ex-badge eb--am" data-t="expl.badge.fajardo">Sin candidato definido · La variable más importante</span>
+        <div class="pill-row">
+          <div class="pill-col">
+            <span class="pill-label pl--ab" data-t="col.abel">Abelardo</span>
+            <div class="pill-ctrl">
+              <button class="pill-btn" onclick="step('fajardo','abel',-1)">−</button>
+              <input class="pill-val" id="fajardo-abel" type="number" value="35" min="0" max="100" readonly>
+              <button class="pill-btn" onclick="step('fajardo','abel',1)">+</button>
+            </div>
+          </div>
+          <div class="pill-col">
+            <span class="pill-label pl--bl" data-t="col.blank">Blanco</span>
+            <div class="pill-ctrl">
+              <button class="pill-btn" onclick="step('fajardo','blank',-1)">−</button>
+              <input class="pill-val" id="fajardo-blank" type="number" value="30" min="0" max="100" readonly>
+              <button class="pill-btn" onclick="step('fajardo','blank',1)">+</button>
+            </div>
+          </div>
+          <div class="pill-col">
+            <span class="pill-label pl--ce" data-t="col.cep">Cepeda</span>
+            <div class="pill-ctrl">
+              <button class="pill-btn" onclick="step('fajardo','cep',-1)">−</button>
+              <input class="pill-val" id="fajardo-cep" type="number" value="35" min="0" max="100" readonly>
+              <button class="pill-btn" onclick="step('fajardo','cep',1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="ex-mini-bar">
+          <div class="mb-seg mb-ab" id="fajardo-mb-ab" style="width:35%"></div>
+          <div class="mb-seg mb-bl" id="fajardo-mb-bl" style="width:30%"></div>
+          <div class="mb-seg mb-ce" id="fajardo-mb-ce" style="width:35%"></div>
+        </div>
+        <div class="ex-breakdown" id="fajardo-bk"></div>
+      </div>
+
+      <!-- Claudia López -->
+      <div class="ex-card reveal">
+        <div class="ex-hdr">
+          <div class="ex-photo">
+            <img src="https://unavatar.io/twitter/ClaudiaLopez" alt="Claudia"
+                 onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="cand-photo-fallback fb--cl" style="display:none">CL</div>
+          </div>
+          <div class="ex-info">
+            <div class="ex-name">Claudia López</div>
+            <div class="ex-votes">225,517 votos</div>
+          </div>
+        </div>
+        <span class="ex-badge eb--pu" data-t="expl.badge.lopez">Descartó a Abelardo · Sus votantes tienden a la izquierda</span>
+        <div class="pill-row">
+          <div class="pill-col">
+            <span class="pill-label pl--ab" data-t="col.abel">Abelardo</span>
+            <div class="pill-ctrl">
+              <button class="pill-btn" onclick="step('lopez','abel',-1)">−</button>
+              <input class="pill-val" id="lopez-abel" type="number" value="15" min="0" max="100" readonly>
+              <button class="pill-btn" onclick="step('lopez','abel',1)">+</button>
+            </div>
+          </div>
+          <div class="pill-col">
+            <span class="pill-label pl--bl" data-t="col.blank">Blanco</span>
+            <div class="pill-ctrl">
+              <button class="pill-btn" onclick="step('lopez','blank',-1)">−</button>
+              <input class="pill-val" id="lopez-blank" type="number" value="25" min="0" max="100" readonly>
+              <button class="pill-btn" onclick="step('lopez','blank',1)">+</button>
+            </div>
+          </div>
+          <div class="pill-col">
+            <span class="pill-label pl--ce" data-t="col.cep">Cepeda</span>
+            <div class="pill-ctrl">
+              <button class="pill-btn" onclick="step('lopez','cep',-1)">−</button>
+              <input class="pill-val" id="lopez-cep" type="number" value="60" min="0" max="100" readonly>
+              <button class="pill-btn" onclick="step('lopez','cep',1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="ex-mini-bar">
+          <div class="mb-seg mb-ab" id="lopez-mb-ab" style="width:15%"></div>
+          <div class="mb-seg mb-bl" id="lopez-mb-bl" style="width:25%"></div>
+          <div class="mb-seg mb-ce" id="lopez-mb-ce" style="width:60%"></div>
+        </div>
+        <div class="ex-breakdown" id="lopez-bk"></div>
+      </div>
+
+      <!-- Others combined -->
+      <div class="ex-card reveal">
+        <div class="ex-hdr">
+          <div class="ex-photo">
+            <div class="cand-photo-fallback fb--pv" style="display:flex;width:100%;height:100%;font-size:11px">+3</div>
+          </div>
+          <div class="ex-info">
+            <div class="ex-name" data-t="expl.others.name">Botero · Lizcano · Uribe</div>
+            <div class="ex-votes">288,636 votos</div>
+          </div>
+        </div>
+        <span class="ex-badge eb--ab" data-t="expl.badge.others">Tendencia Abelardo</span>
+        <div class="pill-row">
+          <div class="pill-col">
+            <span class="pill-label pl--ab" data-t="col.abel">Abelardo</span>
+            <div class="pill-ctrl">
+              <button class="pill-btn" onclick="step('others','abel',-1)">−</button>
+              <input class="pill-val" id="others-abel" type="number" value="50" min="0" max="100" readonly>
+              <button class="pill-btn" onclick="step('others','abel',1)">+</button>
+            </div>
+          </div>
+          <div class="pill-col">
+            <span class="pill-label pl--bl" data-t="col.blank">Blanco</span>
+            <div class="pill-ctrl">
+              <button class="pill-btn" onclick="step('others','blank',-1)">−</button>
+              <input class="pill-val" id="others-blank" type="number" value="20" min="0" max="100" readonly>
+              <button class="pill-btn" onclick="step('others','blank',1)">+</button>
+            </div>
+          </div>
+          <div class="pill-col">
+            <span class="pill-label pl--ce" data-t="col.cep">Cepeda</span>
+            <div class="pill-ctrl">
+              <button class="pill-btn" onclick="step('others','cep',-1)">−</button>
+              <input class="pill-val" id="others-cep" type="number" value="30" min="0" max="100" readonly>
+              <button class="pill-btn" onclick="step('others','cep',1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="ex-mini-bar">
+          <div class="mb-seg mb-ab" id="others-mb-ab" style="width:50%"></div>
+          <div class="mb-seg mb-bl" id="others-mb-bl" style="width:20%"></div>
+          <div class="mb-seg mb-ce" id="others-mb-ce" style="width:30%"></div>
+        </div>
+        <div class="ex-breakdown" id="others-bk"></div>
+      </div>
+
+    </div><!-- /explorer-grid -->
+
+    <!-- New voters -->
+    <div class="new-voters-box reveal">
+      <div class="nv-title" data-t="expl.newvot.title">+ Votos nuevos</div>
+      <p class="nv-sub" data-t="expl.newvot.sub">Personas que no votaron en 1ª vuelta y ahora sí salen a votar</p>
+      <div class="nv-row">
+        <input class="nv-input" id="nv-count" type="number" value="0" min="0" placeholder="0">
+        <div class="quick-btns">
+          <button class="quick-btn" onclick="setNV(500000)" data-t="btn.500k">500 mil</button>
+          <button class="quick-btn" onclick="setNV(1000000)" data-t="btn.1m">1 millón</button>
+          <button class="quick-btn" onclick="setNV(2000000)" data-t="btn.2m">2 millones</button>
+        </div>
+      </div>
+      <div class="pill-row" style="max-width:360px">
+        <div class="pill-col">
+          <span class="pill-label pl--ab" data-t="col.abel">Abelardo</span>
+          <div class="pill-ctrl">
+            <button class="pill-btn" onclick="step('new','abel',-1)">−</button>
+            <input class="pill-val" id="new-abel" value="45" readonly>
+            <button class="pill-btn" onclick="step('new','abel',1)">+</button>
+          </div>
+        </div>
+        <div class="pill-col">
+          <span class="pill-label pl--bl" data-t="col.blank">Blanco</span>
+          <div class="pill-ctrl">
+            <button class="pill-btn" onclick="step('new','blank',-1)">−</button>
+            <input class="pill-val" id="new-blank" value="10" readonly>
+            <button class="pill-btn" onclick="step('new','blank',1)">+</button>
+          </div>
+        </div>
+        <div class="pill-col">
+          <span class="pill-label pl--ce" data-t="col.cep">Cepeda</span>
+          <div class="pill-ctrl">
+            <button class="pill-btn" onclick="step('new','cep',-1)">−</button>
+            <input class="pill-val" id="new-cep" value="45" readonly>
+            <button class="pill-btn" onclick="step('new','cep',1)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="ex-mini-bar" style="max-width:360px;margin-top:8px">
+        <div class="mb-seg mb-ab" id="new-mb-ab" style="width:45%"></div>
+        <div class="mb-seg mb-bl" id="new-mb-bl" style="width:10%"></div>
+        <div class="mb-seg mb-ce" id="new-mb-ce" style="width:45%"></div>
+      </div>
     </div>
 
   </div>
 </section>
 
-<!-- ════════════ FOOTER ════════════ -->
+<!-- ══════ FOOTER ══════ -->
 <footer class="footer">
-  <p class="footer-main">Construido con Claude API · Código abierto</p>
-  <a class="footer-link" href="https://github.com/saulolinares10/anthropic-alignment-notes">
-    github.com/saulolinares10/anthropic-alignment-notes
-  </a>
-  <p class="footer-small" data-i18n="footer.tool">
-    Herramienta de simulación académica. No es una predicción electoral oficial.<br>
-    Datos: Registraduría Nacional · 31 mayo 2026
-  </p>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <div class="footer-logo">Segunda Vuelta 2026</div>
+      <p class="footer-tagline" data-t="footer.tagline">Análisis electoral con inteligencia artificial</p>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title" data-t="footer.sources.title">Fuentes</div>
+      <ul class="footer-sources">
+        <li>Registraduría Nacional</li>
+        <li>Semana · El Tiempo</li>
+        <li>Bloomberg Línea</li>
+        <li>La Silla Vacía</li>
+        <li>Cambio Colombia</li>
+        <li>El Colombiano</li>
+        <li>Invamer · AtlasIntel · Guarumo</li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title" data-t="footer.oss.title">Código abierto</div>
+      <a href="https://github.com/saulolinares10/anthropic-alignment-notes" class="footer-link" style="display:block;margin-bottom:8px;font-size:13px">
+        github.com/saulolinares10/<br>anthropic-alignment-notes
+      </a>
+      <p style="font-size:12px;color:var(--text-3)" data-t="footer.credit">Construido con Claude API · Saulo Linares · Junio 2026</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p data-t="footer.disclaimer">Herramienta académica de simulación. No es una predicción electoral oficial. Datos de primera vuelta: 31 mayo 2026.</p>
+  </div>
 </footer>
 
 <script>
-/* ════════════════════════════════════════════════════════
-   STATE
-════════════════════════════════════════════════════════ */
-const ABEL_BASE = 10_361_413;
-const CEP_BASE  =  9_688_245;
-
-const state = {
-  lang: 'es',
-  cands: {
-    paloma:  { votes: 1_639_685, abel: 72, blank:  8, cep: 20 },
-    fajardo: { votes: 1_009_073, abel: 35, blank: 30, cep: 35 },
-    lopez:   { votes:   225_517, abel: 20, blank: 25, cep: 55 },
-    botero:  { votes:   206_140, abel: 45, blank: 20, cep: 35 },
-    lizcano: { votes:    53_839, abel: 45, blank: 20, cep: 35 },
-    uribe:   { votes:    28_657, abel: 55, blank: 15, cep: 30 },
-  },
-  newVoters: 0,
-  newSplit:  { abel: 45, blank: 10, cep: 45 },
-  prevAbel: 0,
-  prevCep: 0,
-};
-
-/* ════════════════════════════════════════════════════════
-   I18N
-════════════════════════════════════════════════════════ */
-const i18n = {
+/* ════════════════════════════════════════════════════
+   TRANSLATIONS
+════════════════════════════════════════════════════ */
+const T = {
   es: {
-    'header.label':      'ELECCIONES · COLOMBIA · 21 JUNIO 2026',
-    'hero.eyebrow':      'PROYECCIÓN SEGUNDA VUELTA',
-    'hero.title':        '¿Quién gana el<br>21 de junio?',
-    'hero.sub':          'Simulador basado en análisis multi-agente · Datos reales del 31 de mayo · Recalcula en vivo',
-    'proj.label':        'PROYECCIÓN 2ª VUELTA',
-    'abel.coalition':    'DEFENSORES DE LA PATRIA',
-    'cep.coalition':     'PACTO HISTÓRICO',
-    'abel.name':         'Abelardo de la Espriella',
-    'cep.name':          'Iván Cepeda Castro',
-    'abel.base':         'Base 10.361.413',
-    'cep.base':          'Base 9.688.245',
-    'abel.added':        'sumados',
-    'cep.added':         'sumados',
-    'vs.dist':           'distancia<br>ideológica',
-    'votes':             'votos',
-    'blank.legend':      'Voto en blanco',
-    'dist.title':        '¿A dónde van los votos?',
-    'dist.sub':          'Ajusta cómo se reparten los votos de los candidatos eliminados',
-    'dist.newvoters.title': 'Votos nuevos',
-    'dist.newvoters.sub':   'Personas que no votaron en 1ª vuelta y ahora sí salen a votar',
-    'btn.500k': '500 mil',
-    'btn.1m':   '1 millón',
-    'btn.2m':   '2 millones',
-    'btn.5m':   '5 millones',
-    'col.abel':   'Abelardo',
-    'col.blank':  'Blanco',
-    'col.cep':    'Cepeda',
-    'badge.abel': '✓ Apoya a Abelardo',
-    'badge.none': '— Sin candidato',
-    'agents.title': 'Cómo funciona el análisis',
-    'agent1.tag':   'AGENTE 1',
-    'agent1.title': 'Agente de encuestas',
-    'agent1.desc':  'Reconcilia tres encuestas con resultados opuestos. La diferencia no es estadística — es metodológica.',
-    'agent1.result':'Consenso: Abelardo +2.3pts · Margen de error ±4.2',
-    'agent2.tag':   'AGENTE 2',
-    'agent2.title': 'Agente de votos en disputa',
-    'agent2.desc':  'Modela hacia dónde van los votos de los candidatos eliminados y el efecto de abstención.',
-    'agent2.result':'Variable clave: votos de Fajardo sin candidato definido',
-    'agent3.tag':   'AGENTE 3',
-    'agent3.title': 'Agente del centro matemático',
-    'agent3.desc':  'Aplica el teorema que dice: en dos candidatos, gana quien esté más cerca del votante del centro.',
-    'agent3.result':'MVT: favorece a Abelardo · 5 ajustes por Colombia',
-    'orch.text':    'El orquestador combina los tres agentes: Abelardo 55% · Cepeda 45% · Margen de error ±8 puntos',
-    'polls.title':  'Lo que dicen las encuestas',
-    'polls.sub':    'Tres firmas serias. Resultados opuestos. Aquí está la razón.',
-    'poll1.why':    'Metodología: fuerza al encuestado a elegir. Solo 2.3% voto en blanco.',
-    'poll2.why':    'Metodología online. Deja más votos sin asignar.',
-    'poll3.why':    'El mayor porcentaje de indecisos de los tres.',
-    'polls.callout':'La diferencia entre encuestadoras no es error — es diseño. Cómo preguntas cambia el resultado.',
-    'wins.abel':    'Gana Abelardo',
-    'wins.cep':     'Gana Cepeda',
-    'footer.tool':  'Herramienta de simulación académica. No es una predicción electoral oficial.<br>Datos: Registraduría Nacional · 31 mayo 2026',
-    'to.abel':  '→ Abelardo',
-    'in.blank': 'en blanco',
-    'to.cep':   '→ Cepeda',
+    'header.label':           'ELECCIONES PRESIDENCIALES · COLOMBIA · 21 JUNIO 2026',
+    'hero.eyebrow':           'SEGUNDA VUELTA PRESIDENCIAL',
+    'hero.title':             'Dos visiones.\nUn país. Un voto.',
+    'hero.sub':               'Colombia decide el 21 de junio de 2026',
+    'abel.coalition':         'DEFENSORES DE LA PATRIA',
+    'abel.tagline':           'Patria Milagro',
+    'abel.votes-sub':         '10,361,499 votos · 1ª vuelta',
+    'abel.endorse.label':     'Apoyos confirmados:',
+    'abel.endorse.names':     'Paloma Valencia · Centro Democrático',
+    'cep.tagline':            'El poder de la verdad',
+    'cep.votes-sub':          '9,688,245 votos · 1ª vuelta',
+    'cep.endorse.label':      'En negociación:',
+    'cep.endorse.names':      'Buscando: Fajardo · Claudia López',
+    'vs.label':               'brecha\nideológica',
+    'elim.eyebrow':           'Primera vuelta · 31 mayo 2026',
+    'elim.title':             'Los que quedaron en el camino',
+    'elim.sub':               '3,162,911 votos en juego para el 21 de junio',
+    'badge.abel':             '→ Abelardo',
+    'badge.pending':          'Pendiente',
+    'badge.ruled-out-abel':   'Descartó a Abelardo',
+    'badge.abel-trend':       'Tendencia Abelardo',
+    'badge.tbd':              'Por definir',
+    'paloma.quote':           '"Tenemos el corazón dispuesto para servir a Colombia. Felicito a Abelardo."',
+    'paloma.source':          'El Colombiano, 31 mayo 2026',
+    'fajardo.quote':          '"Los votos no les pertenecen a los candidatos. Le pertenecen a los ciudadanos."',
+    'fajardo.source':         'El Tiempo, 31 mayo 2026',
+    'fajardo.note':           'Cepeda lo invitó a un café el 1 de junio',
+    'lopez.quote':            '"Descarto a De la Espriella. Necesito días para reflexionar."',
+    'lopez.source':           'El Tiempo, 31 mayo 2026',
+    'lopez.note':             'Sus votantes tienden más hacia la izquierda',
+    'botero.quote':           '"Su perfil claramente tiende hacia De la Espriella."',
+    'botero.source':          'El Tiempo, análisis 1 junio 2026',
+    'prop.title':             '¿Qué ofrece cada uno?',
+    'prop.sub':               'Propuestas reales de sus programas de gobierno. Fuentes: Semana, Bloomberg Línea, La Silla Vacía.',
+    'prop.security.topic':    'SEGURIDAD',
+    'prop.security.abel.h':   'Mano dura contra el crimen',
+    'prop.security.abel.body':'Mega cárceles de máxima seguridad · Fin a la Paz Total · Fumigación de 330,000 ha de coca · 30,000 nuevos militares y policías · Recuperación territorial.',
+    'prop.security.abel.src': 'Fuente: Bloomberg Línea',
+    'prop.security.cep.h':    'Paz como estrategia de seguridad',
+    'prop.security.cep.body': 'Continuar diálogos de paz · Combatir grandes estructuras del narcotráfico · "Jóvenes en Paz" contra el reclutamiento · Enfoque en causas estructurales de la violencia.',
+    'prop.security.cep.src':  'Fuente: Cambio Colombia',
+    'prop.security.diff':     'Fuerza pública vs. negociación como primer instrumento.',
+    'prop.economy.topic':     'ECONOMÍA',
+    'prop.economy.abel.h':    'Crecimiento al 7% anual',
+    'prop.economy.abel.body': 'Reducción de impuestos empresariales · Eliminar ministerios y fusionar entidades · Reducir el Estado hasta un 40% · Modelo inspirado en Corea del Sur.',
+    'prop.economy.abel.src':  'Fuente: La Silla Vacía',
+    'prop.economy.cep.h':     'Economía productiva y diversificada',
+    'prop.economy.cep.body':  'No estatización · Ampliar Colombia Mayor a 5M beneficiarios · Banco del Pueblo para erradicar pobreza · Fortalecer Ecopetrol.',
+    'prop.economy.cep.src':   'Fuente: Bloomberg Línea',
+    'prop.economy.diff':      'Austeridad y mercado vs. gasto social y estado activo.',
+    'prop.health.topic':      'SALUD',
+    'prop.health.abel.h':     'Resolver citas represadas',
+    'prop.health.abel.body':  'Resolver millones de citas represadas en primeros meses · Fortalecer cobertura · Modelo mixto público-privado · No a la reforma Petro.',
+    'prop.health.abel.src':   'Fuente: Semana',
+    'prop.health.cep.h':      'Continuar reforma a la salud',
+    'prop.health.cep.body':   'Continuar la reforma del gobierno Petro · Sistema más público · Fortalecer EPS comunitarias · Bienestar como derecho fundamental.',
+    'prop.health.cep.src':    'Fuente: Semana',
+    'prop.health.diff':       'Ajustar el sistema actual vs. reformarlo estructuralmente.',
+    'prop.education.topic':   'EDUCACIÓN',
+    'prop.education.abel.h':  'Bonos escolares y formación en IA',
+    'prop.education.abel.body':'Bonos escolares · Becas · Formación en inteligencia artificial · Bilingüismo · Calidad antes que cobertura.',
+    'prop.education.abel.src':'Fuente: Canal 1',
+    'prop.education.cep.h':   'Universidad pública gratuita',
+    'prop.education.cep.body':'Universidad pública gratuita · Educación superior en zonas rurales (modelo multicampus) · Reducir brechas entre regiones · Educación popular.',
+    'prop.education.cep.src': 'Fuente: Cambio Colombia',
+    'prop.education.diff':    'Subsidio individual (vouchers) vs. fortalecimiento del sistema público.',
+    'prop.energy.topic':      'ENERGÍA',
+    'prop.energy.abel.h':     'Fracking regulado',
+    'prop.energy.abel.body':  'Fracking regulado · Producción energética para financiar el Estado · Transición gradual con responsabilidad fiscal · Cooperación con EE.UU.',
+    'prop.energy.abel.src':   'Fuente: Bloomberg Línea',
+    'prop.energy.cep.h':      'No al fracking',
+    'prop.energy.cep.body':   'No al fracking · Transición energética acelerada · Colombia potencia de energías limpias · No más contratos de petróleo.',
+    'prop.energy.cep.src':    'Fuente: La Silla Vacía',
+    'prop.energy.diff':       'Petróleo como puente vs. ruptura con los combustibles fósiles.',
+    'diff.label':             'La diferencia clave',
+    'math.title':             'Lo que dice la matemática',
+    'math.sub':               'Tres agentes de IA analizaron este escenario. Aquí está el modelo.',
+    'math.spectrum.label':    'El espectro ideológico',
+    'math.spectrum.desc':     'Posición de cada candidato en escala de −1 (izquierda) a +1 (derecha). Tamaño del círculo = votos en primera vuelta.',
+    'math.dist.abel':         'Abelardo → centro: 0.693 pts',
+    'math.dist.cep':          'Cepeda → centro: 0.857 pts',
+    'math.spectrum.note':     'El candidato más cerca del centro matemático tiene ventaja según el teorema del votante del centro.',
+    'agent1.title':           'Agente de encuestas',
+    'agent1.desc':            'Reconcilia tres firmas con metodologías distintas. La diferencia no es estadística — es cómo preguntan.',
+    'agent1.result':          'Consenso ponderado: Abelardo 46.8% · Cepeda 44.5% · Margen de error ±4.2 pts',
+    'agent2.title':           'Agente de votos en disputa',
+    'agent2.desc':            'Modela hacia dónde van los votos de Paloma (apoya Abelardo), Fajardo (sin definir) y la abstención diferencial.',
+    'agent2.result':          'Variable clave: votos Fajardo sin candidato. ±10% de transferencia mueve ±0.4 pts finales.',
+    'agent3.title':           'Agente del centro matemático',
+    'agent3.desc':            'Aplica el Teorema del Votante del Centro: en dos candidatos, gana quien esté más cerca del elector del medio. Colombia tiene 5 ajustes al teorema puro.',
+    'agent3.result':          'MVT ajustado: Abelardo 51-53% · 5 factores colombianos reducen la ventaja.',
+    'orch.label':             'ORQUESTADOR — SÍNTESIS FINAL',
+    'orch.margin':            'Margen de error: ±8 puntos · Cualquiera puede ganar',
+    'orch.disclaimer':        'Análisis académico basado en datos reales. No es una predicción oficial.',
+    'expl.title':             '¿Y si los votos fueran así?',
+    'expl.sub':               'Mueve los porcentajes y ve cómo cambia la proyección en tiempo real.',
+    'expl.badge.paloma':      'Ya apoyó a Abelardo',
+    'expl.badge.fajardo':     'Sin candidato definido · La variable más importante',
+    'expl.badge.lopez':       'Descartó a Abelardo · Sus votantes tienden a la izquierda',
+    'expl.badge.others':      'Tendencia Abelardo',
+    'expl.others.name':       'Botero · Lizcano · Uribe',
+    'expl.newvot.title':      '+ Votos nuevos',
+    'expl.newvot.sub':        'Personas que no votaron en 1ª vuelta y ahora sí salen a votar',
+    'col.abel':               'Abelardo',
+    'col.blank':              'Blanco',
+    'col.cep':                'Cepeda',
+    'btn.500k':               '500 mil',
+    'btn.1m':                 '1 millón',
+    'btn.2m':                 '2 millones',
+    'to.abel':                '→ Abelardo',
+    'in.blank':               'en blanco',
+    'to.cep':                 '→ Cepeda',
+    'winner.abel':            'Abelardo de la Espriella — proyectado ganador',
+    'winner.cep':             'Iván Cepeda Castro — proyectado ganador',
+    'winner.toss':            'Empate técnico — dentro del margen de error',
+    'footer.tagline':         'Análisis electoral con inteligencia artificial',
+    'footer.sources.title':   'Fuentes',
+    'footer.oss.title':       'Código abierto',
+    'footer.credit':          'Construido con Claude API · Saulo Linares · Junio 2026',
+    'footer.disclaimer':      'Herramienta académica de simulación. No es una predicción electoral oficial. Datos de primera vuelta: 31 mayo 2026.',
   },
   en: {
-    'header.label':      'ELECTIONS · COLOMBIA · JUNE 21, 2026',
-    'hero.eyebrow':      'SECOND ROUND PROJECTION',
-    'hero.title':        'Who wins on<br>June 21st?',
-    'hero.sub':          'Multi-agent analysis simulator · Real May 31st data · Updates live',
-    'proj.label':        '2ND ROUND PROJECTION',
-    'abel.coalition':    'DEFENDERS OF THE HOMELAND',
-    'cep.coalition':     'PACTO HISTÓRICO',
-    'abel.name':         'Abelardo de la Espriella',
-    'cep.name':          'Iván Cepeda Castro',
-    'abel.base':         'Base 10,361,413',
-    'cep.base':          'Base 9,688,245',
-    'abel.added':        'added',
-    'cep.added':         'added',
-    'vs.dist':           'ideological<br>gap',
-    'votes':             'votes',
-    'blank.legend':      'Blank vote',
-    'dist.title':        'Where do the votes go?',
-    'dist.sub':          'Adjust how eliminated candidates\' votes are split',
-    'dist.newvoters.title': 'New voters',
-    'dist.newvoters.sub':   'People who didn\'t vote in round 1 but will vote now',
-    'btn.500k': '500K',
-    'btn.1m':   '1M',
-    'btn.2m':   '2M',
-    'btn.5m':   '5M',
-    'col.abel':   'Abelardo',
-    'col.blank':  'Blank',
-    'col.cep':    'Cepeda',
-    'badge.abel': '✓ Supports Abelardo',
-    'badge.none': '— No endorsement',
-    'agents.title': 'How the analysis works',
-    'agent1.tag':   'AGENT 1',
-    'agent1.title': 'Survey agent',
-    'agent1.desc':  'Reconciles three polls with opposite results. The difference isn\'t statistical — it\'s methodological.',
-    'agent1.result':'Consensus: Abelardo +2.3pts · Error margin ±4.2',
-    'agent2.tag':   'AGENT 2',
-    'agent2.title': 'Swing vote agent',
-    'agent2.desc':  'Models where eliminated candidates\' votes go and the abstention effect.',
-    'agent2.result':'Key variable: Fajardo\'s votes with no endorsement',
-    'agent3.tag':   'AGENT 3',
-    'agent3.title': 'Median voter agent',
-    'agent3.desc':  'Applies the theorem: in a two-candidate race, the candidate closest to the center wins.',
-    'agent3.result':'MVT: favors Abelardo · 5 Colombian adjustments',
-    'orch.text':    'The orchestrator combines three agents: Abelardo 55% · Cepeda 45% · Error margin ±8 points',
-    'polls.title':  'What the polls say',
-    'polls.sub':    'Three serious firms. Opposite results. Here\'s why.',
-    'poll1.why':    'Methodology: forces respondents to choose. Only 2.3% blank vote.',
-    'poll2.why':    'Online methodology. Leaves more votes unassigned.',
-    'poll3.why':    'Highest undecided rate of the three.',
-    'polls.callout':'The difference between pollsters isn\'t error — it\'s design. How you ask changes the result.',
-    'wins.abel':    'Abelardo wins',
-    'wins.cep':     'Cepeda wins',
-    'footer.tool':  'Academic simulation tool. Not an official electoral prediction.<br>Data: Registraduría Nacional · May 31, 2026',
-    'to.abel':  '→ Abelardo',
-    'in.blank': 'blank',
-    'to.cep':   '→ Cepeda',
+    'header.label':           'PRESIDENTIAL ELECTIONS · COLOMBIA · JUNE 21, 2026',
+    'hero.eyebrow':           'PRESIDENTIAL SECOND ROUND',
+    'hero.title':             'Two visions.\nOne country. One vote.',
+    'hero.sub':               'Colombia decides on June 21, 2026',
+    'abel.coalition':         'DEFENDERS OF THE HOMELAND',
+    'abel.tagline':           'Miracle Homeland',
+    'abel.votes-sub':         '10,361,499 votes · Round 1',
+    'abel.endorse.label':     'Confirmed support:',
+    'abel.endorse.names':     'Paloma Valencia · Centro Democrático',
+    'cep.tagline':            'The power of truth',
+    'cep.votes-sub':          '9,688,245 votes · Round 1',
+    'cep.endorse.label':      'In negotiations:',
+    'cep.endorse.names':      'Seeking: Fajardo · Claudia López',
+    'vs.label':               'ideological\ngap',
+    'elim.eyebrow':           'First round · May 31, 2026',
+    'elim.title':             "Those who didn't make it",
+    'elim.sub':               '3,162,911 votes at play for June 21st',
+    'badge.abel':             '→ Abelardo',
+    'badge.pending':          'Pending',
+    'badge.ruled-out-abel':   'Ruled out Abelardo',
+    'badge.abel-trend':       'Trend: Abelardo',
+    'badge.tbd':              'TBD',
+    'paloma.quote':           '"We congratulate Abelardo and support a unified right."',
+    'paloma.source':          'El Colombiano, May 31, 2026',
+    'fajardo.quote':          '"Votes belong to citizens, not to candidates."',
+    'fajardo.source':         'El Tiempo, May 31, 2026',
+    'fajardo.note':           "Cepeda's team invited him to a meeting June 1",
+    'lopez.quote':            '"I rule out De la Espriella. I need days to reflect."',
+    'lopez.source':           'El Tiempo, May 31, 2026',
+    'lopez.note':             'Her voters lean more left',
+    'botero.quote':           '"His profile clearly trends toward De la Espriella."',
+    'botero.source':          'El Tiempo, analysis June 1, 2026',
+    'prop.title':             'What does each one offer?',
+    'prop.sub':               'Real proposals from their government programs. Sources: Semana, Bloomberg Línea, La Silla Vacía.',
+    'prop.security.topic':    'SECURITY',
+    'prop.security.abel.h':   'Maximum security mega-prisons',
+    'prop.security.abel.body':'Maximum security mega-prisons · End to Total Peace · Aerial fumigation of 330K coca hectares · 30,000 new military and police · Territorial recovery.',
+    'prop.security.abel.src': 'Source: Bloomberg Línea',
+    'prop.security.cep.h':    'Peace as a security strategy',
+    'prop.security.cep.body': 'Continue peace dialogues · Target large drug trafficking structures · Youth peace program against recruitment · Focus on structural causes of violence.',
+    'prop.security.cep.src':  'Source: Cambio Colombia',
+    'prop.security.diff':     'Military force vs. negotiation as the primary instrument.',
+    'prop.economy.topic':     'ECONOMY',
+    'prop.economy.abel.h':    '7% annual growth target',
+    'prop.economy.abel.body': 'Corporate tax reduction · Eliminate ministries · Reduce the State by up to 40% · South Korea-inspired model.',
+    'prop.economy.abel.src':  'Source: La Silla Vacía',
+    'prop.economy.cep.h':     'Productive and diversified economy',
+    'prop.economy.cep.body':  'No nationalization · Expand Colombia Mayor to 5M beneficiaries · People\'s Bank to eradicate poverty · Strengthen Ecopetrol.',
+    'prop.economy.cep.src':   'Source: Bloomberg Línea',
+    'prop.economy.diff':      'Austerity and market vs. social spending and active state.',
+    'prop.health.topic':      'HEALTH',
+    'prop.health.abel.h':     'Resolve backlogged appointments',
+    'prop.health.abel.body':  'Resolve millions of backlogged appointments · Strengthen coverage · Mixed public-private model · No to Petro\'s reform.',
+    'prop.health.abel.src':   'Source: Semana',
+    'prop.health.cep.h':      'Continue health reform',
+    'prop.health.cep.body':   'Continue Petro\'s health reform · Stronger public system · Community health providers · Health as a fundamental right.',
+    'prop.health.cep.src':    'Source: Semana',
+    'prop.health.diff':       'Adjust the current system vs. structural reform.',
+    'prop.education.topic':   'EDUCATION',
+    'prop.education.abel.h':  'School vouchers and AI training',
+    'prop.education.abel.body':'School vouchers · Scholarships · AI training · Bilingualism · Quality over coverage.',
+    'prop.education.abel.src':'Source: Canal 1',
+    'prop.education.cep.h':   'Free public university',
+    'prop.education.cep.body':'Free public university · Higher education in rural areas · Reduce regional gaps · Community education.',
+    'prop.education.cep.src': 'Source: Cambio Colombia',
+    'prop.education.diff':    'Individual subsidies (vouchers) vs. strengthening the public system.',
+    'prop.energy.topic':      'ENERGY',
+    'prop.energy.abel.h':     'Regulated fracking',
+    'prop.energy.abel.body':  'Regulated fracking · Energy production to finance the State · Gradual transition with fiscal responsibility · Cooperation with the US.',
+    'prop.energy.abel.src':   'Source: Bloomberg Línea',
+    'prop.energy.cep.h':      'No fracking',
+    'prop.energy.cep.body':   'No fracking · Accelerated energy transition · Colombia as clean energy power · No new oil contracts.',
+    'prop.energy.cep.src':    'Source: La Silla Vacía',
+    'prop.energy.diff':       'Oil as a bridge vs. break from fossil fuels.',
+    'diff.label':             'Key difference',
+    'math.title':             'What the math says',
+    'math.sub':               'Three AI agents analyzed this scenario. Here is the model.',
+    'math.spectrum.label':    'Ideological spectrum',
+    'math.spectrum.desc':     'Each candidate\'s position on a −1 (left) to +1 (right) scale. Circle size = first round votes.',
+    'math.dist.abel':         'Abelardo → center: 0.693 pts',
+    'math.dist.cep':          'Cepeda → center: 0.857 pts',
+    'math.spectrum.note':     'The candidate closest to the mathematical center has an advantage per the median voter theorem.',
+    'agent1.title':           'Survey agent',
+    'agent1.desc':            'Reconciles three firms with different methodologies. The difference isn\'t statistical — it\'s how they ask.',
+    'agent1.result':          'Weighted consensus: Abelardo 46.8% · Cepeda 44.5% · Error margin ±4.2 pts',
+    'agent2.title':           'Swing vote agent',
+    'agent2.desc':            "Models where Paloma's votes go (supports Abelardo), Fajardo's (TBD), and differential abstention.",
+    'agent2.result':          "Key variable: Fajardo's votes with no endorsement. ±10% transfer moves ±0.4 pts final.",
+    'agent3.title':           'Median voter agent',
+    'agent3.desc':            'Applies the Median Voter Theorem: in two candidates, whoever is closest to the center wins. Colombia has 5 adjustments to the pure theorem.',
+    'agent3.result':          'Adjusted MVT: Abelardo 51-53% · 5 Colombian factors reduce the advantage.',
+    'orch.label':             'ORCHESTRATOR — FINAL SYNTHESIS',
+    'orch.margin':            'Error margin: ±8 points · Either can win',
+    'orch.disclaimer':        'Academic analysis based on real data. Not an official prediction.',
+    'expl.title':             'What if the votes went like this?',
+    'expl.sub':               'Move the percentages and see how the projection changes in real time.',
+    'expl.badge.paloma':      'Already endorsed Abelardo',
+    'expl.badge.fajardo':     'No endorsement · The most important variable',
+    'expl.badge.lopez':       'Ruled out Abelardo · Her voters lean left',
+    'expl.badge.others':      'Trend: Abelardo',
+    'expl.others.name':       'Botero · Lizcano · Uribe',
+    'expl.newvot.title':      '+ New voters',
+    'expl.newvot.sub':        "People who didn't vote in round 1 but will vote now",
+    'col.abel':               'Abelardo',
+    'col.blank':              'Blank',
+    'col.cep':                'Cepeda',
+    'btn.500k':               '500K',
+    'btn.1m':                 '1M',
+    'btn.2m':                 '2M',
+    'to.abel':                '→ Abelardo',
+    'in.blank':               'blank',
+    'to.cep':                 '→ Cepeda',
+    'winner.abel':            'Abelardo de la Espriella — projected winner',
+    'winner.cep':             'Iván Cepeda Castro — projected winner',
+    'winner.toss':            'Statistical tie — within the margin of error',
+    'footer.tagline':         'Electoral analysis with artificial intelligence',
+    'footer.sources.title':   'Sources',
+    'footer.oss.title':       'Open source',
+    'footer.credit':          'Built with Claude API · Saulo Linares · June 2026',
+    'footer.disclaimer':      'Academic simulation tool. Not an official electoral prediction. First round data: May 31, 2026.',
   }
 };
 
-/* ════════════════════════════════════════════════════════
-   NUMBER FORMATTING
-════════════════════════════════════════════════════════ */
-function fmt(n, dec = 0) {
-  const locale = state.lang === 'es' ? 'es-CO' : 'en-US';
-  return new Intl.NumberFormat(locale, {
-    minimumFractionDigits: dec,
-    maximumFractionDigits: dec,
-  }).format(Math.round(n));
+/* ════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════ */
+let lang = 'es';
+const t = (k) => T[lang][k] || k;
+
+const BASE = { abel: 10_361_413, cep: 9_688_245 };
+
+const CANDS = {
+  paloma:  { votes: 1_639_685, abel: 72, blank:  8, cep: 20 },
+  fajardo: { votes: 1_009_073, abel: 35, blank: 30, cep: 35 },
+  lopez:   { votes:   225_517, abel: 15, blank: 25, cep: 60 },
+  others:  { votes:   288_636, abel: 50, blank: 20, cep: 30 },
+};
+
+let nvCount = 0;
+const nvSplit = { abel: 45, blank: 10, cep: 45 };
+
+const numFmt = () => new Intl.NumberFormat(lang === 'es' ? 'es-CO' : 'en-US');
+const fmtN   = (n) => numFmt().format(Math.round(n));
+const fmtP   = (n) => n.toFixed(1) + '%';
+
+/* ════════════════════════════════════════════════════
+   STEP INPUT LOGIC
+════════════════════════════════════════════════════ */
+function step(candId, field, delta) {
+  const d = candId === 'new' ? nvSplit : CANDS[candId];
+  if (!d) return;
+  const nv = d[field] + delta;
+  if (nv < 0 || nv > 100) return;
+
+  const others = ['abel', 'blank', 'cep'].filter(f => f !== field);
+
+  if (delta > 0) {
+    // Field increasing — take from first available other
+    const donor = others.find(f => d[f] > 0);
+    if (!donor) return;
+    d[donor]--;
+  } else {
+    // Field decreasing — give to blank if possible, else first other
+    const recip = (field !== 'blank' && others.includes('blank')) ? 'blank' : others[0];
+    d[recip]++;
+  }
+
+  d[field] = nv;
+  syncInputs(candId, d);
+  recalculate();
 }
 
-function fmtPct(n) { return n.toFixed(1) + '%'; }
+function syncInputs(id, d) {
+  ['abel', 'blank', 'cep'].forEach(f => {
+    const el = document.getElementById(`${id}-${f}`);
+    if (el) el.value = d[f];
+  });
+  updateMiniBar(id, d);
+  if (id !== 'new') updateBreakdown(id, d);
+}
 
-/* ════════════════════════════════════════════════════════
-   NUMBER ANIMATION
-════════════════════════════════════════════════════════ */
-const animState = {};
+function updateMiniBar(id, d) {
+  ['ab', 'bl', 'ce'].forEach((suffix, i) => {
+    const field = ['abel', 'blank', 'cep'][i];
+    const el = document.getElementById(`${id}-mb-${suffix}`);
+    if (el) el.style.width = d[field] + '%';
+  });
+}
 
-function animateNum(elId, target, formatFn) {
-  const el = document.getElementById(elId);
+function updateBreakdown(id, d) {
+  const el = document.getElementById(`${id}-bk`);
   if (!el) return;
-  const from = animState[elId] !== undefined ? animState[elId] : target;
-  animState[elId] = target;
-  const duration = 280;
-  const start = performance.now();
+  const votes = CANDS[id]?.votes || 0;
+  const ab = Math.round(votes * d.abel  / 100);
+  const bl = Math.round(votes * d.blank / 100);
+  const ce = Math.round(votes * d.cep   / 100);
+  el.innerHTML =
+    `<span style="color:var(--blue-dk)">${fmtN(ab)} ${t('to.abel')}</span>` +
+    `<span style="color:var(--neutral)"> · ${fmtN(bl)} ${t('in.blank')} · </span>` +
+    `<span style="color:var(--purple-dk)">${fmtN(ce)} ${t('to.cep')}</span>`;
+}
+
+/* ════════════════════════════════════════════════════
+   RECALCULATE
+════════════════════════════════════════════════════ */
+const prev = { abel: 0, cep: 0 };
+
+function recalculate() {
+  let abel = BASE.abel, cep = BASE.cep, blank = 0;
+
+  Object.values(CANDS).forEach(c => {
+    abel  += c.votes * (c.abel  / 100);
+    cep   += c.votes * (c.cep   / 100);
+    blank += c.votes * (c.blank / 100);
+  });
+
+  abel  += nvCount * (nvSplit.abel  / 100);
+  cep   += nvCount * (nvSplit.cep   / 100);
+  blank += nvCount * (nvSplit.blank / 100);
+
+  const tot   = abel + cep + blank;
+  const aPct  = abel / tot * 100;
+  const cPct  = cep  / tot * 100;
+  const bPct  = blank / tot * 100;
+  const margin = aPct - cPct;
+
+  // Animate main numbers
+  animNum('live-abel', prev.abel, aPct, fmtP);
+  animNum('live-cep',  prev.cep,  cPct, fmtP);
+  prev.abel = aPct; prev.cep = cPct;
+
+  // Projection bar
+  setW('bar-abel',  aPct);
+  setW('bar-blank', bPct);
+  setW('bar-cep',   cPct);
+
+  const al = document.getElementById('bar-abel-lbl');
+  const cl = document.getElementById('bar-cep-lbl');
+  if (al) al.textContent = aPct > 8 ? fmtP(aPct) : '';
+  if (cl) cl.textContent = cPct > 8 ? fmtP(cPct) : '';
+
+  // Winner indicator
+  const wi = document.getElementById('winner-ind');
+  if (wi) {
+    const m = Math.abs(margin).toFixed(1);
+    if (margin > 2)  { wi.className = 'winner-ind wi--ab'; wi.textContent = t('winner.abel'); }
+    else if (margin < -2) { wi.className = 'winner-ind wi--ce'; wi.textContent = t('winner.cep'); }
+    else             { wi.className = 'winner-ind wi--toss'; wi.textContent = t('winner.toss'); }
+  }
+
+  // All breakdowns
+  Object.keys(CANDS).forEach(id => updateBreakdown(id, CANDS[id]));
+}
+
+function setW(id, w) {
+  const el = document.getElementById(id);
+  if (el) el.style.width = Math.max(0, w).toFixed(2) + '%';
+}
+
+function setNV(n) {
+  nvCount = n;
+  const el = document.getElementById('nv-count');
+  if (el) el.value = n;
+  recalculate();
+}
+
+/* ════════════════════════════════════════════════════
+   NUMBER ANIMATION
+════════════════════════════════════════════════════ */
+function animNum(id, from, to, fmt, dur = 300) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const t0 = performance.now();
   const tick = (now) => {
-    const p = Math.min((now - start) / duration, 1);
+    const p = Math.min((now - t0) / dur, 1);
     const ease = 1 - Math.pow(1 - p, 3);
-    el.textContent = formatFn(from + (target - from) * ease);
+    el.textContent = fmt(from + (to - from) * ease);
     if (p < 1) requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
 }
 
-/* ════════════════════════════════════════════════════════
-   RECALCULATE
-════════════════════════════════════════════════════════ */
-function recalculate() {
-  let abelTransfer = 0, cepTransfer = 0, blankTransfer = 0;
-
-  for (const [id, c] of Object.entries(state.cands)) {
-    abelTransfer  += c.votes * (c.abel  / 100);
-    cepTransfer   += c.votes * (c.cep   / 100);
-    blankTransfer += c.votes * (c.blank / 100);
-  }
-
-  // New voters
-  abelTransfer  += state.newVoters * (state.newSplit.abel  / 100);
-  cepTransfer   += state.newVoters * (state.newSplit.cep   / 100);
-  blankTransfer += state.newVoters * (state.newSplit.blank / 100);
-
-  const abelTotal  = ABEL_BASE + abelTransfer;
-  const cepTotal   = CEP_BASE  + cepTransfer;
-  const grandTotal = abelTotal + cepTotal + blankTransfer;
-
-  const abelPct  = abelTotal  / grandTotal * 100;
-  const cepPct   = cepTotal   / grandTotal * 100;
-  const blankPct = blankTransfer / grandTotal * 100;
-
-  // Animate main numbers
-  animateNum('pct-abel', abelPct, fmtPct);
-  animateNum('pct-cep',  cepPct,  fmtPct);
-  animateNum('votes-abel', abelTotal, n => fmt(n));
-  animateNum('votes-cep',  cepTotal,  n => fmt(n));
-  animateNum('added-abel', abelTransfer, n => fmt(n));
-  animateNum('added-cep',  cepTransfer,  n => fmt(n));
-
-  // Projection bar
-  setBarWidth('bar-abel',  abelPct);
-  setBarWidth('bar-blank', blankPct);
-  setBarWidth('bar-cep',   cepPct);
-
-  const abelLbl  = document.getElementById('bar-abel-lbl');
-  const cepLbl   = document.getElementById('bar-cep-lbl');
-  const blankLbl = document.getElementById('bar-blank-lbl');
-
-  if (abelLbl)  abelLbl.textContent  = abelPct > 6  ? fmtPct(abelPct)  : '';
-  if (cepLbl)   cepLbl.textContent   = cepPct  > 6  ? fmtPct(cepPct)   : '';
-  if (blankLbl) blankLbl.textContent = blankPct > 4 ? fmtPct(blankPct) : '';
-
-  // Winner pill
-  const pill = document.getElementById('winner-pill');
-  const txt  = document.getElementById('winner-pill-text');
-  if (pill && txt) {
-    const margin = Math.abs(abelPct - cepPct).toFixed(1);
-    if (abelPct >= cepPct) {
-      pill.style.background = '#3b82f6';
-      txt.textContent = `${t('abel.name')} · ${fmtPct(abelPct)} · +${margin}pts`;
-    } else {
-      pill.style.background = '#8b5cf6';
-      txt.textContent = `${t('cep.name')} · ${fmtPct(cepPct)} · +${margin}pts`;
-    }
-  }
-
-  // Update all candidate card breakdowns
-  for (const [id, c] of Object.entries(state.cands)) {
-    updateBreakdown(id, c);
-  }
-}
-
-function setBarWidth(id, pct) {
-  const el = document.getElementById(id);
-  if (el) el.style.width = Math.max(0, pct).toFixed(2) + '%';
-}
-
-function updateBreakdown(id, c) {
-  const el = document.getElementById(`${id}-bk`);
-  if (!el) return;
-  const ab = Math.round(c.votes * c.abel  / 100);
-  const bl = Math.round(c.votes * c.blank / 100);
-  const ce = Math.round(c.votes * c.cep   / 100);
-  el.innerHTML =
-    `<span style="color:var(--blue-light)">${fmt(ab)} ${t('to.abel')}</span>` +
-    `<span style="color:var(--text-3)"> · ${fmt(bl)} ${t('in.blank')} · </span>` +
-    `<span style="color:var(--purple-light)">${fmt(ce)} ${t('to.cep')}</span>`;
-}
-
-/* ════════════════════════════════════════════════════════
-   SPLIT INPUT LOGIC
-════════════════════════════════════════════════════════ */
-function adjustSplit(prefix, field, rawVal, isNew) {
-  const data = isNew ? state.newSplit : state.cands[prefix];
-  if (!data) return;
-
-  const value = Math.max(0, Math.min(100, parseInt(rawVal) || 0));
-  const other1 = field === 'abel' ? 'blank' : field === 'blank' ? 'abel'  : 'abel';
-  const other2 = field === 'abel' ? 'cep'   : field === 'blank' ? 'cep'   : 'blank';
-
-  data[field] = value;
-  const remaining = 100 - value;
-  const sumOthers = data[other1] + data[other2];
-
-  if (sumOthers === 0) {
-    data[other1] = Math.floor(remaining / 2);
-    data[other2] = remaining - data[other1];
-  } else {
-    data[other1] = Math.round(data[other1] / sumOthers * remaining);
-    data[other2] = remaining - data[other1];
-  }
-
-  data[other1] = Math.max(0, data[other1]);
-  data[other2] = Math.max(0, data[other2]);
-
-  const p = isNew ? 'new' : prefix;
-  const el1 = document.getElementById(`${p}-${other1}`);
-  const el2 = document.getElementById(`${p}-${other2}`);
-  if (el1) el1.value = data[other1];
-  if (el2) el2.value = data[other2];
-
-  updateMiniBar(p, data);
-  recalculate();
-}
-
-function updateMiniBar(p, data) {
-  const set = (sfx, w) => {
-    const el = document.getElementById(`${p}-mb-${sfx}`);
-    if (el) el.style.width = w + '%';
-  };
-  set('abel',  data.abel);
-  set('blank', data.blank);
-  set('cep',   data.cep);
-}
-
-/* ════════════════════════════════════════════════════════
-   NEW VOTERS
-════════════════════════════════════════════════════════ */
-function setNewVoters(n) {
-  state.newVoters = n;
-  const el = document.getElementById('new-voters-num');
-  if (el) el.value = n;
-  recalculate();
-}
-
-/* ════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════
    LANGUAGE
-════════════════════════════════════════════════════════ */
-function t(key) {
-  return i18n[state.lang][key] || key;
-}
+════════════════════════════════════════════════════ */
+function setLang(l) {
+  lang = l;
+  document.documentElement.lang = l;
+  document.getElementById('btn-es').classList.toggle('active', l === 'es');
+  document.getElementById('btn-en').classList.toggle('active', l === 'en');
 
-function setLang(lang) {
-  state.lang = lang;
-  document.documentElement.lang = lang;
-
-  document.getElementById('btn-es').classList.toggle('active', lang === 'es');
-  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    const val = t(key);
-    if (val !== undefined) el.textContent = val;
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const v = T[l][el.dataset.t];
+    if (v !== undefined) el.textContent = v;
   });
 
-  document.querySelectorAll('[data-i18n-html]').forEach(el => {
-    const key = el.dataset.i18nHtml;
-    const val = t(key);
-    if (val !== undefined) el.innerHTML = val;
-  });
+  // Multiline hero title
+  const ht = document.querySelector('.hero-title');
+  if (ht) ht.textContent = T[l]['hero.title'];
 
-  // Hero title uses data-i18n-html
-  const heroTitle = document.querySelector('.hero-title');
-  if (heroTitle) heroTitle.innerHTML = t('hero.title');
-
-  // VS dist label
-  const vsDist = document.querySelector('.vs-dist-label');
-  if (vsDist) vsDist.innerHTML = t('vs.dist');
-
-  // Footer tool text
-  const footerSmall = document.querySelector('.footer-small');
-  if (footerSmall) footerSmall.innerHTML = t('footer.tool');
-
-  // Refresh breakdowns
-  for (const [id, c] of Object.entries(state.cands)) updateBreakdown(id, c);
-
-  // Refresh number formats
   recalculate();
 }
 
-/* ════════════════════════════════════════════════════════
-   INPUT WIRING
-════════════════════════════════════════════════════════ */
-function wireInputs() {
-  const candIds = ['paloma','fajardo','lopez','botero','lizcano','uribe'];
-  const fields  = ['abel','blank','cep'];
+/* ════════════════════════════════════════════════════
+   CHART.JS — SPECTRUM
+════════════════════════════════════════════════════ */
+const medianPlugin = {
+  id: 'medianLine',
+  afterDraw(chart) {
+    const { ctx, scales } = chart;
+    const x    = scales.x.getPixelForValue(0.057);
+    const yTop = scales.y.getPixelForValue(0.92);
+    const yBot = scales.y.getPixelForValue(0.08);
 
-  candIds.forEach(id => {
-    fields.forEach(field => {
-      const el = document.getElementById(`${id}-${field}`);
-      if (!el) return;
-      el.addEventListener('input', () => adjustSplit(id, field, el.value, false));
-      el.addEventListener('blur',  () => {
-        el.value = state.cands[id][field];
-      });
-    });
-  });
+    ctx.save();
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = '#d97706';
+    ctx.lineWidth   = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, yTop);
+    ctx.lineTo(x, yBot);
+    ctx.stroke();
+    ctx.setLineDash([]);
 
-  // New voters split
-  fields.forEach(field => {
-    const el = document.getElementById(`new-${field}`);
-    if (!el) return;
-    el.addEventListener('input', () => adjustSplit('new', field, el.value, true));
-    el.addEventListener('blur',  () => { el.value = state.newSplit[field]; });
-  });
-
-  // New voters count
-  const nvEl = document.getElementById('new-voters-num');
-  if (nvEl) {
-    nvEl.addEventListener('input', () => {
-      state.newVoters = Math.max(0, parseInt(nvEl.value) || 0);
-      recalculate();
-    });
+    // Label background
+    ctx.font = '500 11px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    const labelEs = 'Votante del centro  +0.057';
+    const tw = ctx.measureText(labelEs).width;
+    ctx.fillStyle = '#fef3c7';
+    ctx.beginPath();
+    ctx.roundRect(x - tw/2 - 7, yTop - 28, tw + 14, 20, 4);
+    ctx.fill();
+    ctx.fillStyle = '#d97706';
+    ctx.fillText(labelEs, x, yTop - 13);
+    ctx.restore();
   }
+};
+
+function initChart() {
+  const canvas = document.getElementById('spectrumChart');
+  if (!canvas || !window.Chart) return;
+
+  new Chart(canvas, {
+    type: 'bubble',
+    data: {
+      datasets: [
+        { label: 'Iván Cepeda',         data: [{ x: -0.80, y: 0.5, r: 28 }], backgroundColor: 'rgba(124,58,237,.22)', borderColor: '#7c3aed', borderWidth: 2 },
+        { label: 'Claudia López',        data: [{ x: -0.10, y: 0.5, r:  8 }], backgroundColor: 'rgba(107,114,128,.2)', borderColor: '#9ca3af', borderWidth: 1 },
+        { label: 'Sergio Fajardo',       data: [{ x:  0.05, y: 0.5, r: 14 }], backgroundColor: 'rgba(107,114,128,.2)', borderColor: '#9ca3af', borderWidth: 1 },
+        { label: 'Abelardo de la E.',    data: [{ x:  0.75, y: 0.5, r: 30 }], backgroundColor: 'rgba(37,99,235,.22)',  borderColor: '#2563eb', borderWidth: 2 },
+        { label: 'Paloma Valencia',      data: [{ x:  0.82, y: 0.5, r: 10 }], backgroundColor: 'rgba(107,114,128,.2)', borderColor: '#9ca3af', borderWidth: 1 },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.x > 0 ? '+' : ''}${ctx.raw.x}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          min: -1.2, max: 1.2,
+          grid:  { color: '#f3f4f6' },
+          border: { color: '#e8e6e0' },
+          ticks: {
+            font:     { size: 11, family: 'Inter, system-ui, sans-serif' },
+            color:    '#9ca3af',
+            callback: (v) => [-1, -0.5, 0, 0.5, 1].includes(v) ? (v > 0 ? '+' + v : String(v)) : '',
+          }
+        },
+        y: {
+          display: false,
+          min: 0, max: 1,
+        }
+      }
+    },
+    plugins: [medianPlugin]
+  });
 }
 
-/* ════════════════════════════════════════════════════════
-   INTERSECTION OBSERVER — fade in
-════════════════════════════════════════════════════════ */
-function initFadeIn() {
+/* ════════════════════════════════════════════════════
+   INTERSECTION OBSERVER
+════════════════════════════════════════════════════ */
+function initReveal() {
   const obs = new IntersectionObserver((entries) => {
     entries.forEach(e => {
-      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+      if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); }
     });
-  }, { threshold: 0.08 });
-  document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+  }, { threshold: 0.06 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 }
 
-/* ════════════════════════════════════════════════════════
+/* ════════════════════════════════════════════════════
    BOOT
-════════════════════════════════════════════════════════ */
+════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
-  wireInputs();
-  initFadeIn();
+  // Wire new voters count input
+  document.getElementById('nv-count')?.addEventListener('input', (e) => {
+    nvCount = Math.max(0, parseInt(e.target.value) || 0);
+    recalculate();
+  });
+
+  // Init all breakdowns and mini bars
+  Object.keys(CANDS).forEach(id => {
+    syncInputs(id, CANDS[id]);
+  });
+  syncInputs('new', nvSplit);
+
+  initReveal();
+  initChart();
   recalculate();
-  // Trigger hero fade manually (above fold)
-  document.querySelectorAll('.hero *').forEach(el => el.classList.add('visible'));
-  document.querySelector('.proj-card')?.classList.add('visible');
+
+  // Hero and above-fold sections: force visible immediately
+  document.querySelectorAll('.hero *, .header *').forEach(el => el.classList.add('in'));
 });
 </script>
 </body>
