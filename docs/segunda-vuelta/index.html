@@ -1077,18 +1077,18 @@ MVT puro &rarr; Abelardo m&aacute;s cercano &rarr; <span style="color:#86efac">v
       <div class="nv-title" data-t="nv.title">+ Votos nuevos</div>
       <p class="nv-sub-txt" data-t="nv.sub">Personas que no votaron en 1ª vuelta y ahora sí salen a votar</p>
       <div class="nv-input-row">
-        <input class="nv-count-in mono" id="nv-count" type="number" min="0" value="0" oninput="setNV(this.value)">
+        <input class="nv-count-in mono" id="nv-count" type="number" min="0" value="0" oninput="nvCount=Math.max(0,parseInt(this.value)||0);document.getElementById('nv-count').value=nvCount;updateVoteCounts('new',nvSplit);recalc()">
         <div class="quick-pills">
-          <button class="qpill" onclick="setNV(500000)" data-t="btn.500k">500 mil</button>
-          <button class="qpill" onclick="setNV(1000000)" data-t="btn.1m">1 millón</button>
-          <button class="qpill" onclick="setNV(2000000)" data-t="btn.2m">2 millones</button>
-          <button class="qpill" onclick="setNV(5000000)" data-t="btn.5m">5 millones</button>
+          <button class="qpill" onclick="nvCount=500000;document.getElementById('nv-count').value=500000;updateVoteCounts('new',nvSplit);recalc()" data-t="btn.500k">500 mil</button>
+          <button class="qpill" onclick="nvCount=1000000;document.getElementById('nv-count').value=1000000;updateVoteCounts('new',nvSplit);recalc()" data-t="btn.1m">1 millón</button>
+          <button class="qpill" onclick="nvCount=2000000;document.getElementById('nv-count').value=2000000;updateVoteCounts('new',nvSplit);recalc()" data-t="btn.2m">2 millones</button>
+          <button class="qpill" onclick="nvCount=5000000;document.getElementById('nv-count').value=5000000;updateVoteCounts('new',nvSplit);recalc()" data-t="btn.5m">5 millones</button>
         </div>
       </div>
       <div class="inputs-row" style="max-width:340px">
-        <div class="num-group"><div class="num-group-label ngl-ab" data-t="col.a">ABELARDO</div><input class="num-in ni-ab" id="new-abel" type="number" min="0" max="100" value="45" oninput="handleInput('new','abel',this.value)"><div class="num-vote-count mono" id="new-abel-v"></div></div>
-        <div class="num-group"><div class="num-group-label ngl-bk" data-t="col.b">BLANCO</div><input class="num-in ni-bk" id="new-blank" type="number" min="0" max="100" value="10" oninput="handleInput('new','blank',this.value)"><div class="num-vote-count mono" id="new-blank-v"></div></div>
-        <div class="num-group"><div class="num-group-label ngl-ce" data-t="col.c">CEPEDA</div><input class="num-in ni-ce" id="new-cep" type="number" min="0" max="100" value="45" oninput="handleInput('new','cep',this.value)"><div class="num-vote-count mono" id="new-cep-v"></div></div>
+        <div class="num-group"><div class="num-group-label ngl-ab" data-t="col.a">ABELARDO</div><input class="num-in ni-ab" id="new-abel" type="number" min="0" max="100" value="45" oninput="handleInput('new','abel',this.value);recalc()"><div class="num-vote-count mono" id="new-abel-v"></div></div>
+        <div class="num-group"><div class="num-group-label ngl-bk" data-t="col.b">BLANCO</div><input class="num-in ni-bk" id="new-blank" type="number" min="0" max="100" value="10" oninput="handleInput('new','blank',this.value);recalc()"><div class="num-vote-count mono" id="new-blank-v"></div></div>
+        <div class="num-group"><div class="num-group-label ngl-ce" data-t="col.c">CEPEDA</div><input class="num-in ni-ce" id="new-cep" type="number" min="0" max="100" value="45" oninput="handleInput('new','cep',this.value);recalc()"><div class="num-vote-count mono" id="new-cep-v"></div></div>
       </div>
       <div class="expl-mini-bar" style="max-width:340px"><div class="mb-s mb-a" id="new-mb-a" style="width:45%"></div><div class="mb-s mb-b" id="new-mb-b" style="width:10%"></div><div class="mb-s mb-c" id="new-mb-c" style="width:45%"></div></div>
     </div>
@@ -1245,9 +1245,15 @@ function setNV(val){
 
 /* ── RECALCULATE ────────────────────────────── */
 function recalc(){
+  // 1. Start with first-round base votes
   let a=BASE.abel,c=BASE.cep,b=0;
+  // 2. Add eliminated candidate vote transfers
   Object.values(CANDS).forEach(x=>{a+=x.votes*(x.abel/100);c+=x.votes*(x.cep/100);b+=x.votes*(x.blank/100)});
-  a+=nvCount*(nvSplit.abel/100);c+=nvCount*(nvSplit.cep/100);b+=nvCount*(nvSplit.blank/100);
+  // 3. Add new voters (people who didn't vote in round 1)
+  a+=nvCount*(nvSplit.abel/100);
+  c+=nvCount*(nvSplit.cep/100);
+  b+=nvCount*(nvSplit.blank/100);
+  // 4. Calculate final totals and percentages from the combined sum
   const tot=a+c+b,aP=a/tot*100,cP=c/tot*100;
   animN('live-abel',prev.abel,aP,fmtP);
   animN('live-cep',prev.cep,cP,fmtP);
@@ -1352,8 +1358,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   // Init all mini bars and vote counts
   Object.keys(CANDS).forEach(id=>{updateMB(id,CANDS[id]);updateVoteCounts(id,CANDS[id])});
   updateMB('new',nvSplit);updateVoteCounts('new',nvSplit);
-  // Wire nv count input
-  document.getElementById('nv-count')?.addEventListener('input',e=>setNV(e.target.value));
   initObservers();
   initChart();
   recalc();
