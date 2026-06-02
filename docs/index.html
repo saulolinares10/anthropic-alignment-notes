@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anthropic Alignment Notes · Tools</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      background: #f2f1ed;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 60px 20px;
+    }
+    .page { max-width: 560px; width: 100%; }
+    .eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 500;
+      letter-spacing: -.018em;
+      color: #111;
+      margin-bottom: 28px;
+    }
+    .tool-card {
+      background: #fff;
+      border: 1px solid #e8e6e0;
+      border-radius: 10px;
+      padding: 20px 22px;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: box-shadow .14s;
+    }
+    .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+    .tool-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 4px;
+    }
+    .tool-desc { font-size: 13px; color: #5f5e5a; line-height: 1.55; }
+    .tool-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #BA7517;
+      background: #FAEEDA;
+      border-radius: 10px;
+      padding: 2px 8px;
+      margin-top: 10px;
+    }
+    .footer {
+      font-size: 11px;
+      color: #bbb;
+      margin-top: 24px;
+      text-align: center;
+    }
+    .footer a { color: #BA7517; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="eyebrow">Anthropic Alignment Notes</div>
+  <h1>Tools</h1>
+
+  <a class="tool-card" href="colombia-dashboard/">
+    <div class="tool-title">Colombia 2026 · Dashboard Electoral</div>
+    <div class="tool-desc">Análisis multi-agente de la segunda vuelta presidencial.
+    Tres agentes especializados + orquestador. Explorador interactivo con la matemática expuesta.</div>
+    <span class="tool-tag">21 jun 2026 · Multi-Agente</span>
+  </a>
+
+  <div class="footer">
+    <a href="https://github.com/saulolinares10/anthropic-alignment-notes">github.com/saulolinares10/anthropic-alignment-notes</a>
+  </div>
+</div>
+</body>
+</html>

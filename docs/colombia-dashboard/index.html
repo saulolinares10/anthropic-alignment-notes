@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Colombia 2026 · Análisis Electoral · Multi-Agente</title>
+  <meta name="description" content="Dashboard interactivo — segunda vuelta presidencial Colombia 21 junio 2026. Análisis con sistema multi-agente: encuestas, transferencias de voto y Teorema del Votante Mediano.">
+  <meta property="og:title" content="Colombia 2026 · Segunda Vuelta · Análisis Multi-Agente">
+  <meta property="og:description" content="Tres agentes de IA analizaron la segunda vuelta. Explorador interactivo con la matemática expuesta.">
+  <meta property="og:type" content="website">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+          integrity="sha512-ZwR1/gSZM3ai6vCdI+LVF1zSq/5HznD3oD+sCoJrzXJ+yKen9RtQ1KMnCjOwkZews9i/YceLy4XIwuFHpSIA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ab:      #E24B4A;
+      --ab-bg:   #FCEBEB;
+      --ab-text: #b52b2b;
+      --ce:      #378ADD;
+      --ce-bg:   #E6F1FB;
+      --ce-text: #1a5f9e;
+      --amber:   #BA7517;
+      --amber-bg:#FAEEDA;
+      --p1:      #534AB7;
+      --p1-bg:   #EEEDFE;
+      --p2:      #0F6E56;
+      --p2-bg:   #E1F5EE;
+      --p3:      #854F0B;
+      --p3-bg:   #FAEEDA;
+      --border:  #e8e6e0;
+      --text:    #1a1a1a;
+      --muted:   #5f5e5a;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text);
+      background: #f2f1ed;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      min-height: 100vh;
+      padding: 36px 28px 72px;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .eyebrow {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: #aaa;
+      margin-bottom: 7px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 500;
+      color: #111;
+      letter-spacing: -.022em;
+      margin-bottom: 13px;
+      line-height: 1.2;
+    }
+
+    .page-desc {
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 600px;
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    /* ── Tabs ───────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      border-bottom: 1.5px solid var(--border);
+      margin-bottom: 26px;
+      gap: 2px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tab {
+      padding: 8px 15px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #999;
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1.5px;
+      white-space: nowrap;
+      transition: color .14s, border-color .14s;
+    }
+
+    .tab.active { color: #111; border-bottom-color: #111; }
+    .tab:hover:not(.active) { color: #555; }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Utilities ──────────────────────────────────── */
+    .section-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      color: #ccc;
+      margin: 22px 0 10px;
+    }
+
+    .section-title:first-child { margin-top: 0; }
+
+    /* ── Agent cards ────────────────────────────────── */
+    .agent-card {
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 12px;
+    }
+
+    .ac--p1 { background: var(--p1-bg); border-left: 3px solid var(--p1); }
+    .ac--p2 { background: var(--p2-bg); border-left: 3px solid var(--p2); }
+    .ac--p3 { background: var(--p3-bg); border-left: 3px solid var(--p3); }
+    .ac--oc { background: #f5f4f2;      border-left: 3px solid #555; }
+
+    .ac-tag {
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .11em;
+      margin-bottom: 4px;
+    }
+
+    .ac-tag--p1 { color: var(--p1); }
+    .ac-tag--p2 { color: var(--p2); }
+    .ac-tag--p3 { color: var(--p3); }
+    .ac-tag--oc { color: #555; }
+
+    .ac-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 7px;
+    }
+
+    .ac-desc {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      line-height: 1.6;
+    }
+
+    /* Math boxes */
+    .math {
+      background: #1a2332;
+      color: #e8f0f8;
+      font-family: 'Courier New', Consolas, monospace;
+      font-size: 11.5px;
+      line-height: 1.65;
+      padding: 14px 16px;
+      border-radius: 7px;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .math .dim     { color: #4a5a70; }
+    .math .val     { color: #7dd3a8; }
+    .math .res     { color: #fbbf24; font-weight: 700; }
+    .math .lbl     { color: #93c5fd; }
+    .math .cmt     { color: #546380; }
+
+    /* ── Spectrum (Tab 2) ───────────────────────────── */
+    svg.spectrum { width: 100%; display: block; }
+
+    /* ── Deviations ─────────────────────────────────── */
+    .dev-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .dev-card {
+      background: #f9f8f6;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .dev-num {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: var(--amber);
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+
+    .dev-title {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #111;
+      margin-bottom: 3px;
+    }
+
+    .dev-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    .favors {
+      display: inline-block;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 10px;
+      margin-top: 4px;
+    }
+
+    .fav-ab { background: var(--ab-bg); color: var(--ab-text); }
+    .fav-ce { background: var(--ce-bg); color: var(--ce-text); }
+    .fav-ne { background: #f5f4f2; color: #666; }
+
+    /* ── Explorer sliders ───────────────────────────── */
+    .sliders-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px 28px;
+      margin-bottom: 22px;
+    }
+
+    @media (max-width: 520px) { .sliders-grid { grid-template-columns: 1fr; } }
+
+    .sl-label-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .sl-label { font-size: 12px; font-weight: 500; color: #444; }
+
+    .sl-val {
+      font-size: 12px;
+      font-weight: 700;
+      color: #111;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type=range] {
+      width: 100%;
+      height: 4px;
+      -webkit-appearance: none;
+      background: #e8e6e0;
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      background: #111;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1.5px #111;
+    }
+
+    .sl-sub { font-size: 10px; color: #c0bdb8; margin-top: 5px; }
+
+    /* Result bars */
+    .res-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .res-name { font-size: 12.5px; font-weight: 600; width: 72px; flex-shrink: 0; }
+    .res-name--ab { color: var(--ab-text); }
+    .res-name--ce { color: var(--ce-text); }
+
+    .res-track { flex: 1; height: 10px; background: #f0efed; border-radius: 5px; overflow: hidden; }
+
+    .res-fill { height: 100%; border-radius: 5px; transition: width .22s cubic-bezier(.4,0,.2,1); }
+    .res-fill--ab { background: var(--ab); }
+    .res-fill--ce { background: var(--ce); }
+
+    .res-pct {
+      font-size: 13px;
+      font-weight: 700;
+      width: 44px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .res-pct--ab { color: var(--ab-text); }
+    .res-pct--ce { color: var(--ce-text); }
+
+    .verdict {
+      border-radius: 7px;
+      padding: 11px 16px;
+      font-size: 12.5px;
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: 16px;
+      transition: background .22s, color .22s;
+    }
+
+    .verd--ab   { background: var(--ab-bg);    color: var(--ab-text); }
+    .verd--ce   { background: var(--ce-bg);    color: var(--ce-text); }
+    .verd--toss { background: var(--amber-bg); color: #7a4e0c; }
+
+    .math-fn {
+      font-size: 11px;
+      color: #c0bdb8;
+      border-top: 1px solid #f0efed;
+      padding-top: 12px;
+      line-height: 1.65;
+    }
+
+    /* ── Polls ──────────────────────────────────────── */
+    .chart-wrap { position: relative; height: 165px; margin: 6px 0 20px; }
+
+    .poll-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 10px;
+    }
+
+    .poll-src {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #999;
+      margin-bottom: 14px;
+    }
+
+    .poll-row { margin-bottom: 8px; }
+
+    .poll-row-hdr {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 3px;
+    }
+
+    .poll-cname { font-size: 12.5px; font-weight: 500; color: #333; }
+
+    .poll-num { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .poll-num--ab { color: var(--ab-text); }
+    .poll-num--ce { color: var(--ce-text); }
+
+    .poll-track { height: 8px; background: #f0efed; border-radius: 4px; overflow: hidden; }
+    .poll-fill { height: 100%; border-radius: 4px; }
+    .poll-fill--ab { background: var(--ab); }
+    .poll-fill--ce { background: var(--ce); }
+
+    .poll-ftr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .poll-badge {
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .pb--ab { background: var(--ab-bg); color: var(--ab-text); }
+    .pb--ce { background: var(--ce-bg); color: var(--ce-text); }
+
+    .poll-note-sm { font-size: 10.5px; color: #bbb; }
+
+    .poll-detail {
+      font-size: 11.5px;
+      color: #777;
+      margin-top: 10px;
+      line-height: 1.55;
+      border-top: 1px solid #f5f4f2;
+      padding-top: 10px;
+    }
+
+    .callout {
+      background: var(--amber-bg);
+      border-left: 3px solid var(--amber);
+      border-radius: 0 7px 7px 0;
+      padding: 13px 16px;
+      font-size: 12.5px;
+      color: #7a4e0c;
+      line-height: 1.65;
+      margin-top: 18px;
+    }
+
+    /* ── Footer ─────────────────────────────────────── */
+    .page-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+      margin-top: 44px;
+      font-size: 11.5px;
+      color: #bbb;
+      line-height: 1.7;
+    }
+
+    .page-footer a { color: var(--amber); text-decoration: none; }
+    .page-footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ── Header ──────────────────────────────────── -->
+  <div class="eyebrow">Colombia · Segunda Vuelta · 21 junio 2026</div>
+  <h1 class="page-title">Dashboard de análisis electoral multi-agente</h1>
+  <p class="page-desc">
+    Un sistema de tres agentes especializados analizó el escenario del 21 de junio.
+    Cada agente aborda una dimensión distinta del problema — encuestas, transferencias de voto,
+    y teoría política. Un orquestador pondera los tres outputs. La matemática está expuesta.
+  </p>
+
+  <!-- ── Tabs ────────────────────────────────────── -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('agentes',this)">Los 3 agentes</button>
+    <button class="tab" onclick="showTab('matematica',this)">La matemática</button>
+    <button class="tab" onclick="showTab('explorador',this)">Explorador</button>
+    <button class="tab" onclick="showTab('encuestas',this)">Encuestas</button>
+  </div>
+
+  <!-- ══════════════════ TAB 1: LOS 3 AGENTES ══════════════════════ -->
+  <div class="tab-panel active" id="panel-agentes">
+
+    <!-- Agent 1 — Survey Analyst -->
+    <div class="agent-card ac--p1">
+      <div class="ac-tag ac-tag--p1">Agente 1 · Analista de encuestas</div>
+      <div class="ac-title">Reconciliación de encuestas contradictorias</div>
+      <div class="ac-desc">Tres encuestadoras midieron la misma segunda vuelta y llegaron
+        a conclusiones opuestas. El agente explica la divergencia, produce un consenso
+        ponderado, e identifica las limitaciones estructurales del sondeo.</div>
+      <div class="math"><span class="cmt">// Datos crudos — tres encuestadoras</span>
+<span class="lbl">Invamer (CNN):</span>      Cepeda   <span class="val">52.4%</span>  Abelardo <span class="val">45.3%</span>  B/N <span class="val">2.3%</span>   → <span class="res">CEPEDA GANA</span>
+<span class="lbl">AtlasIntel (Semana):</span> Abelardo <span class="val">50.0%</span>  Cepeda   <span class="val">41.3%</span>  B/N <span class="val">8.8%</span>   → <span class="res">ABELARDO GANA</span>
+<span class="lbl">Guarumo (El Tiempo):</span> Abelardo <span class="val">44.8%</span>  Cepeda   <span class="val">39.9%</span>  B/N <span class="val">15.3%</span>  → <span class="res">ABELARDO GANA</span>
+
+<span class="cmt">// Consenso ponderado (Invamer y AtlasIntel × 1.5, Guarumo × 1.0)</span>
+<span class="lbl">Abelardo:</span>  (1.5×45.3 + 1.5×50.0 + 1.0×44.8) / 4.0 = <span class="res">46.9%</span>
+<span class="lbl">Cepeda:  </span>  (1.5×52.4 + 1.5×41.3 + 1.0×39.9) / 4.0 = <span class="res">45.1%</span>
+<span class="lbl">Margen:  </span>  Abelardo <span class="res">+1.8 pts</span>  ·  IC: <span class="res">±3.5 puntos</span>
+
+<span class="cmt">// Diagnóstico de la divergencia</span>
+<span class="dim">→ Invamer redistribuye el voto en blanco entre los dos finalistas.</span>
+<span class="dim">  Eso eleva a Cepeda sobre el 50% — el único escenario en que ocurre.</span>
+<span class="dim">→ AtlasIntel y Guarumo lo excluyen del denominador.</span>
+<span class="dim">  Con 8–15% de blanco/nulo, esa decisión metodológica cambia el ganador.</span></div>
+    </div>
+
+    <!-- Agent 2 — Swing Analyst -->
+    <div class="agent-card ac--p2">
+      <div class="ac-tag ac-tag--p2">Agente 2 · Variables de swing</div>
+      <div class="ac-title">Modelado de transferencias de voto</div>
+      <div class="ac-desc">1.6 millones de votos de Paloma Valencia tienen endoso formal
+        hacia Abelardo. 1 millón de Fajardo no tienen endoso. El agente construye tres
+        escenarios calibrados con el precedente histórico de 2022.</div>
+      <div class="math"><span class="cmt">// Base — primera vuelta 31 mayo 2026</span>
+<span class="lbl">Abelardo: </span><span class="val">43.74%</span>  (10,361,413 votos)
+<span class="lbl">Cepeda:   </span><span class="val">40.90%</span>   (9,688,245 votos)
+<span class="lbl">Diferencia:</span> <span class="val">+2.84 puntos</span> a favor de Abelardo
+
+<span class="cmt">// Bloque Paloma Valencia (6.92% disponible — endoso formal a Abelardo)</span>
+<span class="lbl">→ Abelardo:</span>  6.92 × 0.65 = <span class="val">+4.50%</span>  <span class="dim">(eficiencia estimada: 65%)</span>
+<span class="lbl">→ Cepeda:  </span>  6.92 × 0.05 = <span class="val">+0.35%</span>  <span class="dim">(piso mínimo)</span>
+<span class="lbl">→ Abstención: </span>6.92 × 0.30 = <span class="dim">1.73%</span>
+
+<span class="cmt">// Bloque Fajardo (4.26% — sin endoso, centro pragmático)</span>
+<span class="lbl">→ Abelardo:</span>  4.26 × 0.35 = <span class="val">+1.49%</span>
+<span class="lbl">→ Cepeda:  </span>  4.26 × 0.65 = <span class="val">+2.77%</span>
+<span class="dim">  (históricamente anti-uribismo · en 2022 ~60% fue a Petro)</span>
+
+<span class="cmt">// Bloque otros (4.18%: Claudia 0.95% + otros 3.23%)</span>
+<span class="lbl">→ Abelardo:</span>  4.18 × 0.55 = <span class="val">+2.30%</span>
+<span class="lbl">→ Cepeda:  </span>  4.18 × 0.35 = <span class="val">+1.46%</span>
+
+<span class="cmt">// Anti-Petrismo (factor no-ideológico · 2 puntos × 0.4% c/u)</span>
+<span class="lbl">→ Abelardo:</span>  <span class="val">+0.80%</span>
+
+<span class="cmt">// Escenario central (antes de normalizar a 100%)</span>
+<span class="lbl">Abelardo:</span> 43.74+4.50+1.49+2.30+0.80 = <span class="val">52.83</span>
+<span class="lbl">Cepeda:  </span> 40.90+0.35+2.77+1.46     = <span class="val">45.48</span>
+<span class="lbl">Total:   </span> 98.31  →  normalizar  →  <span class="res">Abelardo 53.7%  ·  Cepeda 46.3%</span></div>
+    </div>
+
+    <!-- Agent 3 — MVT -->
+    <div class="agent-card ac--p3">
+      <div class="ac-tag ac-tag--p3">Agente 3 · Votante mediano (TVT)</div>
+      <div class="ac-title">Teorema del Votante Mediano aplicado a Colombia</div>
+      <div class="ac-desc">En una carrera de dos candidatos, el TVT predice que gana quien
+        está más cerca del votante mediano. El agente calcula esa posición usando votos reales
+        como pesos, e identifica cinco desviaciones estructurales del caso colombiano.</div>
+      <div class="math"><span class="cmt">// Pesos ideológicos — votantes del 31 mayo</span>
+<span class="lbl">Candidato      Ideología    % votos   Producto</span>
+<span class="dim">────────────────────────────────────────────</span>
+<span class="dim">Cepeda         </span><span class="val">-0.80</span><span class="dim">        40.90%    </span><span class="val">-32.72</span>
+<span class="dim">López          </span><span class="val">-0.10</span><span class="dim">         0.95%     </span><span class="val">-0.10</span>
+<span class="dim">Fajardo        </span><span class="val">+0.05</span><span class="dim">         4.26%     </span><span class="val">+0.21</span>
+<span class="dim">Otros          </span><span class="val">+0.20</span><span class="dim">         3.23%     </span><span class="val">+0.65</span>
+<span class="dim">Abelardo       </span><span class="val">+0.75</span><span class="dim">        43.74%    </span><span class="val">+32.81</span>
+<span class="dim">Paloma         </span><span class="val">+0.82</span><span class="dim">         6.92%     </span><span class="val">+5.67</span>
+<span class="dim">────────────────────────────────────────────</span>
+<span class="lbl">Total:                     100.0%     </span><span class="val">+6.52</span>
+
+<span class="cmt">// Mediana (50% acumulado de izquierda a derecha)</span>
+<span class="dim">Cepeda  40.90 → acum: 40.90%</span>
+<span class="dim">López    0.95 → acum: 41.85%</span>
+<span class="dim">Fajardo  4.26 → acum: 46.11%</span>
+<span class="dim">Otros    3.23 → acum: 49.34%</span>
+<span class="dim">Abelardo43.74 → acum: 93.08%  ← mediana cae en este bloque</span>
+<span class="dim">Interpolación: 0.20 + (0.66/43.74) × (0.75-0.20)</span>
+<span class="res">Mediana ponderada = +0.21</span>
+
+<span class="cmt">// Distancia candidatos ↔ mediana</span>
+<span class="dim">|Abelardo (+0.75) − mediana (+0.21)| = </span><span class="res">0.54</span>
+<span class="dim">|Cepeda   (−0.80) − mediana (+0.21)| = </span><span class="res">1.01</span>
+<span class="res">TVT puro: Abelardo gana  (5 desviaciones → tab "La matemática")</span></div>
+    </div>
+
+    <!-- Orchestrator -->
+    <div class="agent-card ac--oc">
+      <div class="ac-tag ac-tag--oc">Orquestador · Síntesis final</div>
+      <div class="ac-title">Ponderación de los tres outputs</div>
+      <div class="ac-desc">Los tres agentes coinciden en Abelardo como favorito, pero la
+        brecha está dentro del error estadístico. El orquestador calcula la probabilidad
+        compuesta y señala las variables que el modelo no puede resolver.</div>
+      <div class="math"><span class="cmt">// Outputs de los tres agentes</span>
+<span class="lbl">Agente 1 (encuestas):  </span>Abelardo <span class="val">46.9%</span>  Cepeda <span class="val">45.1%</span>  marg <span class="val">+1.8</span>
+<span class="lbl">Agente 2 (swing):      </span>Abelardo <span class="val">53.7%</span>  Cepeda <span class="val">46.3%</span>  marg <span class="val">+7.4</span>
+<span class="lbl">Agente 3 (TVT):        </span>Abelardo favorito · dist. mediana: <span class="val">0.54 vs 1.01</span>
+
+<span class="cmt">// Consenso del orquestador</span>
+<span class="lbl">Prob. Abelardo gana:  </span><span class="res">~55%</span>
+<span class="lbl">Prob. Cepeda gana:    </span><span class="res">~45%</span>
+<span class="lbl">Intervalo confianza:  </span><span class="res">±8–10 puntos</span>
+
+<span class="cmt">// Variables que el modelo no puede resolver</span>
+<span class="dim">→ Encuestas dentro del IC: margen real podría ser cero.</span>
+<span class="dim">→ Fajardo (1M votos, sin endoso): bloque decisivo sin dirección clara.</span>
+<span class="dim">→ Abstención diferencial: izquierda movilizó mejor en 2022 (Petro +10pts).</span>
+<span class="res">CONCLUSIÓN: Cualquiera puede ganar. Abelardo es favorito marginal.</span></div>
+    </div>
+
+  </div><!-- /panel-agentes -->
+
+  <!-- ══════════════════ TAB 2: LA MATEMÁTICA ══════════════════════ -->
+  <div class="tab-panel" id="panel-matematica">
+
+    <div class="section-title">Paso 1 — Posiciones en el espectro ideológico</div>
+
+    <svg class="spectrum" viewBox="0 0 720 120" xmlns="http://www.w3.org/2000/svg">
+      <rect width="720" height="120" fill="#fff"/>
+      <!-- Bar -->
+      <rect x="40" y="40" width="300" height="10" fill="#E6F1FB" rx="2"/>
+      <rect x="340" y="40" width="300" height="10" fill="#FCEBEB" rx="2"/>
+      <rect x="40" y="40" width="600" height="10" fill="none" stroke="#e8e6e0" stroke-width="0.5" rx="2"/>
+      <line x1="340" y1="37" x2="340" y2="54" stroke="#e8e6e0" stroke-width="0.5"/>
+      <!-- Axis labels -->
+      <text x="40" y="30" font-size="9" fill="#ccc" font-family="system-ui,sans-serif" text-anchor="middle">−1</text>
+      <text x="340" y="30" font-size="9" fill="#ccc" font-family="system-ui,sans-serif" text-anchor="middle">0</text>
+      <text x="640" y="30" font-size="9" fill="#ccc" font-family="system-ui,sans-serif" text-anchor="middle">+1</text>
+      <text x="40" y="64" font-size="9" fill="#c0bdb8" font-family="system-ui,sans-serif">Izquierda</text>
+      <text x="340" y="64" font-size="9" fill="#c0bdb8" font-family="system-ui,sans-serif" text-anchor="middle">Centro</text>
+      <text x="640" y="64" font-size="9" fill="#c0bdb8" font-family="system-ui,sans-serif" text-anchor="end">Derecha</text>
+      <!-- Median voter -->
+      <line x1="394" y1="36" x2="394" y2="93" stroke="#BA7517" stroke-width="1.5" stroke-dasharray="3,2.5"/>
+      <circle cx="394" cy="45" r="4" fill="#E8A838"/>
+      <text x="394" y="106" font-size="8.5" fill="#BA7517" font-family="system-ui,sans-serif" text-anchor="middle" font-weight="700">Mediana +0.21</text>
+      <!-- Cepeda -->
+      <circle cx="100" cy="45" r="22" fill="#E6F1FB" stroke="#378ADD" stroke-width="1.5"/>
+      <text x="100" y="42" font-size="9" font-weight="700" fill="#1a5f9e" font-family="system-ui,sans-serif" text-anchor="middle">Cepeda</text>
+      <text x="100" y="53" font-size="8" fill="#378ADD" font-family="system-ui,sans-serif" text-anchor="middle">−0.80</text>
+      <!-- Fajardo -->
+      <circle cx="352" cy="45" r="12" fill="#f4f3f0" stroke="#999" stroke-width="0.75"/>
+      <text x="352" y="42" font-size="7.5" fill="#777" font-family="system-ui,sans-serif" text-anchor="middle">Fajardo</text>
+      <text x="352" y="52" font-size="7.5" fill="#aaa" font-family="system-ui,sans-serif" text-anchor="middle">+0.05</text>
+      <!-- Paloma -->
+      <circle cx="572" cy="45" r="13" fill="#f4f3f0" stroke="#ccc" stroke-width="0.5"/>
+      <text x="572" y="42" font-size="7.5" fill="#999" font-family="system-ui,sans-serif" text-anchor="middle">Paloma</text>
+      <text x="572" y="52" font-size="7.5" fill="#ccc" font-family="system-ui,sans-serif" text-anchor="middle">+0.82</text>
+      <!-- Abelardo -->
+      <circle cx="598" cy="45" r="24" fill="#FCEBEB" stroke="#E24B4A" stroke-width="1.5"/>
+      <text x="598" y="42" font-size="9" font-weight="700" fill="#b52b2b" font-family="system-ui,sans-serif" text-anchor="middle">Abelardo</text>
+      <text x="598" y="53" font-size="8" fill="#E24B4A" font-family="system-ui,sans-serif" text-anchor="middle">+0.75</text>
+    </svg>
+
+    <div class="section-title">Paso 2 — El cálculo de la distancia</div>
+    <div class="math">
+<span class="cmt">// Distancia al votante mediano (+0.21)</span>
+|Abelardo (+0.75) − mediana (+0.21)| = <span class="res">0.54 puntos</span>
+|Cepeda   (−0.80) − mediana (+0.21)| = <span class="res">1.01 puntos</span>
+
+<span class="cmt">// Predicción pura del Teorema del Votante Mediano</span>
+Abelardo está más cerca → <span class="res">TVT predice: ABELARDO GANA</span>
+
+<span class="cmt">// Colombia tiene cinco desviaciones del modelo teórico (ver abajo)</span></div>
+
+    <div class="section-title" style="margin-top:20px">Paso 3 — Cinco desviaciones del TVT en Colombia</div>
+    <div class="dev-list">
+
+      <div class="dev-card">
+        <div class="dev-num">01</div>
+        <div>
+          <div class="dev-title">Abstención no es uniforme por ideología</div>
+          <div class="dev-text">El TVT asume participación total. En Colombia, la izquierda
+            históricamente moviliza mejor en segunda vuelta. En 2022 Petro ganó la segunda
+            con mayor participación que la primera.</div>
+          <span class="favors fav-ce">Favorece a Cepeda</span>
+        </div>
+      </div>
+
+      <div class="dev-card">
+        <div class="dev-num">02</div>
+        <div>
+          <div class="dev-title">Anti-Petrismo como fuerza no-ideológica</div>
+          <div class="dev-text">El rechazo al gobierno moviliza votantes hacia Abelardo
+            independientemente de su posición ideológica. Esta fuerza no está capturada
+            por el eje −1/+1.</div>
+          <span class="favors fav-ab">Favorece a Abelardo</span>
+        </div>
+      </div>
+
+      <div class="dev-card">
+        <div class="dev-num">03</div>
+        <div>
+          <div class="dev-title">Heterogeneidad regional marcada</div>
+          <div class="dev-text">La mediana nacional no refleja las regiones clave. Las ciudades
+            grandes tienden al centro-izquierda; las periferias y el eje cafetero más a la
+            derecha. El TVT opera sobre el nacional.</div>
+          <span class="favors fav-ne">Efecto mixto</span>
+        </div>
+      </div>
+
+      <div class="dev-card">
+        <div class="dev-num">04</div>
+        <div>
+          <div class="dev-title">Eficiencia parcial del endoso de Paloma</div>
+          <div class="dev-text">Paloma (+0.82) es más extrema que Abelardo (+0.75). El endoso
+            formal no garantiza transferencia total — algunos votantes de CD están más cerca
+            del centro. Estimación: 65% de eficiencia.</div>
+          <span class="favors fav-ab">Favorece a Abelardo (parcial)</span>
+        </div>
+      </div>
+
+      <div class="dev-card">
+        <div class="dev-num">05</div>
+        <div>
+          <div class="dev-title">Fajardo: centrist en posición, anti-uribista en historia</div>
+          <div class="dev-text">Sus votantes (+0.05) son los más cercanos a la mediana. Por TVT
+            puro, deberían ir a Abelardo. Pero en 2022, ~60% de ellos votaron a Petro. Alta
+            probabilidad de abstención en este bloque.</div>
+          <span class="favors fav-ne">Incierto — el bloque decisivo</span>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /panel-matematica -->
+
+  <!-- ══════════════════ TAB 3: EXPLORADOR ══════════════════════════ -->
+  <div class="tab-panel" id="panel-explorador">
+
+    <div class="sliders-grid">
+      <div>
+        <div class="sl-label-row">
+          <span class="sl-label">Paloma → Abelardo</span>
+          <span class="sl-val" id="val-paloma">65%</span>
+        </div>
+        <input type="range" id="sl-paloma" min="40" max="90" value="65" oninput="calcUpdate()">
+        <div class="sl-sub">6.92% disponible · endoso oficial a Abelardo</div>
+      </div>
+
+      <div>
+        <div class="sl-label-row">
+          <span class="sl-label">Fajardo → Abelardo</span>
+          <span class="sl-val" id="val-fajardo">35%</span>
+        </div>
+        <input type="range" id="sl-fajardo" min="15" max="60" value="35" oninput="calcUpdate()">
+        <div class="sl-sub">4.26% disponible · sin endoso · centro pragmático</div>
+      </div>
+
+      <div>
+        <div class="sl-label-row">
+          <span class="sl-label">Movilización izquierda</span>
+          <span class="sl-val" id="val-mob">0</span>
+        </div>
+        <input type="range" id="sl-mob" min="-4" max="4" value="0" oninput="calcUpdate()">
+        <div class="sl-sub">Negativo = izquierda moviliza mejor · 0.8% por punto</div>
+      </div>
+
+      <div>
+        <div class="sl-label-row">
+          <span class="sl-label">Intensidad anti-Petro</span>
+          <span class="sl-val" id="val-anti">2</span>
+        </div>
+        <input type="range" id="sl-anti" min="0" max="4" value="2" oninput="calcUpdate()">
+        <div class="sl-sub">Boost adicional para Abelardo · 0.4% por punto</div>
+      </div>
+    </div>
+
+    <div class="res-row">
+      <span class="res-name res-name--ab">Abelardo</span>
+      <div class="res-track"><div class="res-fill res-fill--ab" id="bar-ab" style="width:55%"></div></div>
+      <span class="res-pct res-pct--ab" id="pct-ab">55.0%</span>
+    </div>
+    <div class="res-row" style="margin-bottom:14px">
+      <span class="res-name res-name--ce">Cepeda</span>
+      <div class="res-track"><div class="res-fill res-fill--ce" id="bar-ce" style="width:45%"></div></div>
+      <span class="res-pct res-pct--ce" id="pct-ce">45.0%</span>
+    </div>
+
+    <div class="verdict verd--ab" id="verdict">Abelardo gana — margen: +10.0 puntos</div>
+
+    <div class="math-fn">
+      <strong>Modelo:</strong> base 1ra vuelta (43.74/40.90) +
+      Paloma: <em>paloma%</em>×6.92 a Abelardo, 5% fijo a Cepeda, resto abstención ·
+      Fajardo: <em>fajardo%</em>×4.26 a Abelardo, max(15%, 1−fajardo%)×4.26 a Cepeda ·
+      Otros 4.18%: 55/35 split ·
+      Movilización: ±0.8%/punto ·
+      Anti-Petro: +0.4%/punto a Abelardo ·
+      Normalizado a carrera de dos candidatos.
+    </div>
+
+  </div><!-- /panel-explorador -->
+
+  <!-- ══════════════════ TAB 4: ENCUESTAS ══════════════════════════ -->
+  <div class="tab-panel" id="panel-encuestas">
+
+    <div class="section-title">Comparación directa — tres encuestadoras</div>
+    <div class="chart-wrap">
+      <canvas id="pollsChart"></canvas>
+    </div>
+
+    <!-- Invamer -->
+    <div class="poll-card">
+      <div class="poll-src">Invamer · CNN Colombia · Mayo 2026</div>
+      <div class="poll-row">
+        <div class="poll-row-hdr">
+          <span class="poll-cname">Iván Cepeda</span>
+          <span class="poll-num poll-num--ce">52.4%</span>
+        </div>
+        <div class="poll-track"><div class="poll-fill poll-fill--ce" style="width:52.4%"></div></div>
+      </div>
+      <div class="poll-row">
+        <div class="poll-row-hdr">
+          <span class="poll-cname">Abelardo de la Espriella</span>
+          <span class="poll-num poll-num--ab">45.3%</span>
+        </div>
+        <div class="poll-track"><div class="poll-fill poll-fill--ab" style="width:45.3%"></div></div>
+      </div>
+      <div class="poll-ftr">
+        <span class="poll-badge pb--ce">Cepeda gana</span>
+        <span class="poll-note-sm">2.3% voto en blanco</span>
+      </div>
+      <div class="poll-detail">
+        <strong>Metodología:</strong> Invamer redistribuye el voto en blanco entre los dos
+        finalistas en proporción a sus intenciones declaradas. Esto eleva los números al 100%
+        entre ambos candidatos y amplifica cualquier ventaja existente — es el único escenario
+        en que Cepeda supera el 50%.
+      </div>
+    </div>
+
+    <!-- AtlasIntel -->
+    <div class="poll-card">
+      <div class="poll-src">AtlasIntel · Revista Semana · Mayo 2026</div>
+      <div class="poll-row">
+        <div class="poll-row-hdr">
+          <span class="poll-cname">Abelardo de la Espriella</span>
+          <span class="poll-num poll-num--ab">50.0%</span>
+        </div>
+        <div class="poll-track"><div class="poll-fill poll-fill--ab" style="width:50.0%"></div></div>
+      </div>
+      <div class="poll-row">
+        <div class="poll-row-hdr">
+          <span class="poll-cname">Iván Cepeda</span>
+          <span class="poll-num poll-num--ce">41.3%</span>
+        </div>
+        <div class="poll-track"><div class="poll-fill poll-fill--ce" style="width:41.3%"></div></div>
+      </div>
+      <div class="poll-ftr">
+        <span class="poll-badge pb--ab">Abelardo gana</span>
+        <span class="poll-note-sm">8.8% blanco/nulo</span>
+      </div>
+      <div class="poll-detail">
+        <strong>Metodología:</strong> AtlasIntel reporta sobre el total de encuestados,
+        incluyendo quienes declaran voto en blanco o nulo (8.8%). Deprime los porcentajes
+        de ambos candidatos pero no altera la ventaja relativa. Trata la abstención como
+        variable independiente.
+      </div>
+    </div>
+
+    <!-- Guarumo -->
+    <div class="poll-card">
+      <div class="poll-src">Guarumo / Ecoanalítica · El Tiempo · Mayo 2026</div>
+      <div class="poll-row">
+        <div class="poll-row-hdr">
+          <span class="poll-cname">Abelardo de la Espriella</span>
+          <span class="poll-num poll-num--ab">44.8%</span>
+        </div>
+        <div class="poll-track"><div class="poll-fill poll-fill--ab" style="width:44.8%"></div></div>
+      </div>
+      <div class="poll-row">
+        <div class="poll-row-hdr">
+          <span class="poll-cname">Iván Cepeda</span>
+          <span class="poll-num poll-num--ce">39.9%</span>
+        </div>
+        <div class="poll-track"><div class="poll-fill poll-fill--ce" style="width:39.9%"></div></div>
+      </div>
+      <div class="poll-ftr">
+        <span class="poll-badge pb--ab">Abelardo gana</span>
+        <span class="poll-note-sm">15.3% blanco/nulo</span>
+      </div>
+      <div class="poll-detail">
+        <strong>Metodología:</strong> Guarumo muestra el mayor porcentaje de blanco/nulo
+        (15.3%), capturando más incertidumbre del electorado. La ventaja de Abelardo
+        (+4.9 pts) es la mayor de las tres, pero sobre una base más baja de intención
+        declarada para ambos.
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>¿Por qué predicen ganadores distintos?</strong><br><br>
+      Todo depende del tratamiento del voto en blanco/nulo. Invamer lo redistribuye
+      entre finalistas — resultado: Cepeda sobre el 50%. AtlasIntel y Guarumo lo
+      excluyen del denominador — resultado: Abelardo adelante pero por debajo del 50%.
+      Con 8–15% de voto en blanco, esa decisión metodológica cambia el ganador de la
+      simulación.<br><br>
+      <strong>Lo que ninguna encuesta puede medir:</strong> cuántos de esos votantes
+      indecisos realmente van a las urnas el 21 de junio, y a cuál de los dos.
+    </div>
+
+  </div><!-- /panel-encuestas -->
+
+  <!-- ── Footer ──────────────────────────────────── -->
+  <div class="page-footer">
+    Construido con Claude API &nbsp;·&nbsp;
+    <a href="https://github.com/saulolinares10/anthropic-alignment-notes">
+      Código abierto — github.com/saulolinares10/anthropic-alignment-notes
+    </a>
+    <br>Análisis académico — no es una predicción electoral
+  </div>
+
+</div><!-- /container -->
+
+<script>
+/* ── Tab switching ─────────────────────────────────────────────── */
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'encuestas') initChart();
+}
+
+/* ── Explorer calculation ──────────────────────────────────────── */
+function calcUpdate() {
+  const paloma  = parseInt(document.getElementById('sl-paloma').value);
+  const fajardo = parseInt(document.getElementById('sl-fajardo').value);
+  const mob     = parseInt(document.getElementById('sl-mob').value);
+  const anti    = parseInt(document.getElementById('sl-anti').value);
+
+  document.getElementById('val-paloma').textContent  = paloma + '%';
+  document.getElementById('val-fajardo').textContent = fajardo + '%';
+  document.getElementById('val-mob').textContent     = (mob > 0 ? '+' : '') + mob;
+  document.getElementById('val-anti').textContent    = anti;
+
+  // Base first round
+  let ab = 43.74;
+  let ce = 40.90;
+
+  // Paloma block (6.92%)
+  ab += 6.92 * (paloma / 100);
+  ce += 6.92 * 0.05;
+
+  // Fajardo block (4.26%)
+  ab += 4.26 * (fajardo / 100);
+  ce += 4.26 * Math.max(0.15, 1 - fajardo / 100);
+
+  // Others (4.18%)
+  ab += 4.18 * 0.55;
+  ce += 4.18 * 0.35;
+
+  // Mobilization
+  if (mob > 0) ab += mob * 0.8;
+  else if (mob < 0) ce += Math.abs(mob) * 0.8;
+
+  // Anti-Petro
+  ab += anti * 0.4;
+
+  // Normalize
+  const tot  = ab + ce;
+  const abP  = ab / tot * 100;
+  const ceP  = ce / tot * 100;
+  const margin = abP - ceP;
+
+  document.getElementById('bar-ab').style.width  = abP.toFixed(1) + '%';
+  document.getElementById('bar-ce').style.width  = ceP.toFixed(1) + '%';
+  document.getElementById('pct-ab').textContent  = abP.toFixed(1) + '%';
+  document.getElementById('pct-ce').textContent  = ceP.toFixed(1) + '%';
+
+  const v = document.getElementById('verdict');
+  const m = Math.abs(margin).toFixed(1);
+  if (margin > 3) {
+    v.className = 'verdict verd--ab';
+    v.textContent = 'Abelardo gana — margen: +' + m + ' puntos';
+  } else if (margin < -3) {
+    v.className = 'verdict verd--ce';
+    v.textContent = 'Cepeda gana — margen: +' + m + ' puntos';
+  } else {
+    v.className = 'verdict verd--toss';
+    v.textContent = 'Empate técnico — margen: ' + (margin >= 0 ? '+' : '−') + m + ' puntos';
+  }
+}
+
+/* ── Chart.js polls comparison ─────────────────────────────────── */
+let chartInited = false;
+
+function initChart() {
+  if (chartInited) return;
+  chartInited = true;
+
+  const ctx = document.getElementById('pollsChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Invamer', 'AtlasIntel', 'Guarumo'],
+      datasets: [
+        {
+          label: 'Abelardo',
+          data: [45.3, 50.0, 44.8],
+          backgroundColor: 'rgba(226,75,74,.7)',
+          borderColor: '#E24B4A',
+          borderWidth: 1,
+          borderRadius: 4,
+        },
+        {
+          label: 'Cepeda',
+          data: [52.4, 41.3, 39.9],
+          backgroundColor: 'rgba(55,138,221,.7)',
+          borderColor: '#378ADD',
+          borderWidth: 1,
+          borderRadius: 4,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            font: { family: 'system-ui, sans-serif', size: 11 },
+            color: '#666',
+            boxWidth: 12,
+            padding: 14,
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: c => ' ' + c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '%'
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 11 }, color: '#999' }
+        },
+        y: {
+          min: 35, max: 60,
+          grid: { color: '#f5f4f2' },
+          ticks: {
+            font: { size: 10 },
+            color: '#bbb',
+            callback: v => v + '%'
+          }
+        }
+      }
+    }
+  });
+}
+
+// Boot
+calcUpdate();
+</script>
+</body>
+</html>
