@@ -1,0 +1,84 @@
+{
+  "survey_analysis": {
+    "poll_divergence_reason": "The primary driver of divergence is how each firm handles undecided and blank/null voters: Invamer shows only 2.3% blanco/nulo and redistributes most of them toward Cepeda, while Guarumo shows 15.3% and AtlasIntel shows 8.8%, suggesting those firms are capturing a larger pool of genuinely undecided or protest voters that Invamer may be forcing to choose. Additionally, sampling frames differ — AtlasIntel uses online panels (which tend to skew toward younger, more anti-establishment respondents favoring Abelardo), while Invamer uses phone-based probabilistic sampling that may oversample urban Bogotá voters more sympathetic to Cepeda. Timing and likely-voter screening methodology also vary, with Guarumo's direct-scenario framing potentially suppressing soft Cepeda support.",
+    "weighted_consensus": {
+      "abelardo": 46.7,
+      "cepeda": 44.5,
+      "margin": 2.2,
+      "uncertainty_band": "±4.0 points"
+    },
+    "what_polls_cannot_tell_us": [
+      "How the roughly 15% of first-round votes cast for eliminated candidates (especially those from the centro-derecha and movimientos regionales) will transfer in the second round — this bloc alone could swing the result by 6-8 points in either direction.",
+      "The actual turnout differential between Abelardo's coastal and peripheral-region base versus Cepeda's concentrated urban strongholds, since abstention asymmetry has historically distorted Colombian runoff results more than candidate preference shifts.",
+      "Whether a late-campaign event, judicial ruling, or viral social-media moment will produce the kind of last-week surge that made Rodolfo Hernández's 2022 performance undetectable in polls taken just weeks before the runoff."
+    ],
+    "most_credible_scenario": "The AtlasIntel/Semana estimate is most directionally credible because it aligns closest with the actual first-round arithmetic: Abelardo entered the runoff with a 2.84-point lead and a structural advantage in regions with high electoral weight (Córdoba, Sucre, Magdalena, Bolívar). Invamer's Cepeda victory scenario, while methodologically rigorous, requires an implausibly large swing from a nearly zero blank/null baseline and an unusually high transfer rate of third-party votes to Cepeda — assumptions that are not well-supported by Colombian runoff history. The most credible composite scenario is a narrow Abelardo win in the range of +2 to +4 points, contingent on turnout holding in the Caribbean coast and Llanos regions, but the race remains genuinely competitive and within the combined margin of error of all three polls."
+  },
+  "swing_analysis": {
+    "scenario_abelardo_wins": {
+      "paloma_transfer_pct": 0.75,
+      "fajardo_to_abelardo_pct": 0.42,
+      "abstention_pattern": "Right and center-right mobilize strongly driven by anti-Petrismo; left turnout stays flat relative to first round; abstention differential favors Abelardo by ~3 points",
+      "abelardo_final": 52.1,
+      "cepeda_final": 47.9,
+      "probability": 0.38
+    },
+    "scenario_cepeda_wins": {
+      "paloma_transfer_pct": 0.52,
+      "fajardo_to_cepeda_pct": 0.38,
+      "abstention_pattern": "Left coalition replicates 2022 second-round surge; Pacto Histórico base turns out at higher rate than first round; Paloma transfer leaks significantly; urban abstention hurts Abelardo",
+      "abelardo_final": 48.6,
+      "cepeda_final": 51.4,
+      "probability": 0.34
+    },
+    "scenario_toss_up": {
+      "description": "Paloma transfer lands at ~65% efficiency, Fajardo voters split nearly evenly (35% Abelardo / 30% Cepeda / 35% abstain), and mobilization differentials are negligible — both campaigns grind to near-identical second-round expansions of their first-round bases",
+      "deciding_variable": "Net abstention differential between left and right blocs on election day — a swing of ±1.5 points in turnout gap determines the winner",
+      "abelardo_final": 50.4,
+      "cepeda_final": 49.6,
+      "probability": 0.28
+    },
+    "most_likely_scenario": "scenario_abelardo_wins",
+    "key_insight": "Abelardo's structural advantage is real but fragile: his 2.84-point first-round lead plus a natural Paloma endorsement gives him a credible path, but the 2022 precedent proves the left can close larger gaps through superior second-round mobilization — the race is ultimately decided not by vote transfers, which are roughly predictable, but by which side converts its soft supporters into actual voters on June 21st."
+  },
+  "mvt_analysis": {
+    "median_voter_position": 0.21,
+    "closest_candidate": "Abelardo",
+    "mvt_prediction": "Abelardo wins the runoff because at +0.75 he is substantially closer to the vote-weighted median voter position of approximately +0.21 than Cepeda at -0.80, giving him a natural advantage in capturing centrist and center-right voters.",
+    "colombian_deviations": [
+      {
+        "deviation": "Non-uniform abstention across the ideological spectrum",
+        "impact_on_mvt": "MVT assumes all voters participate equally, but in Colombia left-leaning voters historically demobilize less in second rounds. If center and center-right voters who backed Fajardo or López abstain at higher rates than Cepeda's base, the effective median shifts leftward, narrowing Abelardo's advantage.",
+        "favors": "Cepeda"
+      },
+      {
+        "deviation": "Anti-Petro non-ideological mobilization force",
+        "impact_on_mvt": "MVT treats voter preferences as purely positional on a left-right axis. In Colombia a significant bloc votes against the incumbent Petro government on valence issues — economic anxiety, security deterioration, corruption perception — rather than ideology. This creates a cross-ideological mobilization that is not captured by spatial distance from the median and systematically boosts Abelardo beyond what his positional proximity alone would predict.",
+        "favors": "Abelardo"
+      },
+      {
+        "deviation": "Paloma voter rightward overshoot and imperfect transfer",
+        "impact_on_mvt": "Paloma voters sit at +0.82, right of Abelardo. MVT assumes voters transfer to the nearest candidate, predicting near-total Paloma-to-Abelardo transfer. However, a subset of hard-right Paloma voters may abstain or spoil ballots rather than vote for Abelardo if they perceive him as insufficiently ideologically pure, reducing his expected vote ceiling below the full 6.92% transfer.",
+        "favors": "Cepeda"
+      },
+      {
+        "deviation": "Fajardo voter ideological ambiguity and historical precedent",
+        "impact_on_mvt": "Fajardo voters sit at +0.05, closest to the median and equidistant in practical terms between both candidates. MVT predicts they break toward Abelardo given his closer absolute distance. However, the 2022 precedent shows Fajardo voters split roughly 60-40 toward Petro (the left candidate) over Hernández — suggesting these centrist voters weight anti-corruption and democratic quality signals over raw ideological proximity, and may again favor the left candidate if Cepeda credibly occupies that valence space.",
+        "favors": "Cepeda"
+      },
+      {
+        "deviation": "Regional heterogeneity of the median voter",
+        "impact_on_mvT": "MVT assumes a single national median voter, but Colombia's median varies dramatically by region. Pacific coast, Caribbean departments, and rural periphery have local medians well left of the national estimate, while Bogotá and Andean urban centers sit closer to +0.15. Regional mobilization capacity — where Cepeda's machine and Petro's social movements are strongest — means the relevant operative median in high-turnout regions may be considerably left of the aggregate estimate, dampening Abelardo's national positional advantage.",
+        "favors": "Cepeda"
+      },
+      {
+        "deviation": "Incumbent government mobilization and clientelist networks",
+        "impact_on_mvt": "MVT is a static preference-aggregation model and ignores organizational capacity. The Petro government retains state resources, social program beneficiary networks, and territorial political machines that can convert latent ideological sympathy into actual votes for Cepeda, a structural advantage not reflected in ideological distance calculations.",
+        "favors": "Cepeda"
+      }
+    ],
+    "mvt_adjusted_prediction": "Pure MVT favors Abelardo decisively, but Colombian political reality substantially erodes that advantage. Abelardo's positional proximity to the median is his primary structural asset, reinforced by a powerful anti-Petro valence mobilization and Paloma's formal endorsement. Against this, Cepeda benefits from superior second-round mobilization history, incumbent organizational machinery, likely Fajardo voter ambivalence replicating 2022 patterns, and a regional median that runs left of the national estimate. The net adjustment narrows the race significantly from what a pure MVT reading would suggest. The most probable outcome is a narrow Abelardo victory in the range of 51-53%, driven by anti-government sentiment overcoming the left's structural second-round mobilization edge — but the race is competitive enough that a Cepeda victory remains plausible if abstention among center-right voters is high and left mobilization replicates or exceeds 2022 levels.",
+    "confidence": "medium — the directional MVT prediction (Abelardo advantage) is robust, but the magnitude is highly sensitive to abstention patterns and Fajardo voter behavior, both of which are empirically uncertain and historically unpredictable in Colombian runoffs."
+  },
+  "synthesis": "All three analyses converge on the same structural finding: Abelardo enters the runoff as a narrow favorite, with his 2.84-point first-round lead, positional proximity to the median voter, and Paloma's formal endorsement constituting a real but fragile advantage. The survey consensus (+2.2 points), the swing scenario model (38% vs. 34% probability), and the MVT-adjusted prediction (51–53% range) all point in the same direction without a single analysis projecting a comfortable Abelardo margin. Where they agree most forcefully is on the single decisive variable: **differential abstention on June 21st**. Vote transfers from eliminated candidates are roughly predictable and already partially priced into the estimates; what is not predictable is whether the anti-Petro coalition converts its soft supporters into actual voters at the same rate the left historically has in Colombian runoffs. The 2022 precedent, in which the left closed a comparable gap through superior second-round mobilization, is the most relevant historical warning for Abelardo's camp.\n\nWhat remains genuinely uncertain is the magnitude — and possibly the direction — of the result. The ±4.0-point polling uncertainty alone spans a range that includes both a comfortable Abelardo win and a Cepeda victory; add to that the unresolved question of how Fajardo voters break (historical ambiguity replicates 2022 patterns, per MVT analysis), the imprecision in Paloma transfer rates, and the unknowable scale of incumbent organizational mobilization, and the honest confidence interval is wide. **Best estimate: Abelardo wins with approximately 51–53% of valid votes, with a stated probability of 55–60%** — meaning a Cepeda victory is assigned 40–45% probability. This is not false balance; it reflects that three independent methodologies, using real first-round data, cannot collectively resolve a race this close. A margin shift of 1.5 percentage points in turnout differential, which is well within normal day-of variation, changes the winner. Anyone projecting this result with high confidence is overstating what the available evidence supports."
+}
