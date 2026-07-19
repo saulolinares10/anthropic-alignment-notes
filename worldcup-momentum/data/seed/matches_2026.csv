@@ -1,0 +1,15 @@
+match_id,date,stage,team,opponent,home_away,extra_time,final_score_team,final_score_opp,notes
+ESP-CPV-GRP1,2026-06-15,group,Spain,Cape Verde,home,false,0,0,Spain top of Group H after draw; goalless
+ESP-KSA-GRP2,2026-06-21,group,Spain,Saudi Arabia,home,false,4,0,Dominant win; OG from Al-Tambakti; Oyarzabal brace
+ESP-URU-GRP3,2026-06-26,group,Spain,Uruguay,away,false,1,0,Baena goal; Spain qualify top of group unbeaten
+ESP-AUT-R32,2026-07-02,round_of_32,Spain,Austria,home,false,2,1,Oyarzabal brace; Arnautovic equalizes briefly; Spain never trail
+ESP-POR-R16,2026-07-06,round_of_16,Spain,Portugal,home,false,2,1,Ronaldo levels for Portugal; Spain through on Oyarzabal goal; venue Toronto
+ESP-BRA-QF,2026-07-10,quarterfinal,Spain,Brazil,home,false,2,1,Vinicius equalizes; Morata winner; Spain into SF
+ESP-FRA-SF,2026-07-14,semifinal,Spain,France,home,false,2,1,Mbappe equalizes; Morata 85 seals it; Spain to final
+ARG-ALG-GRP1,2026-06-16,group,Argentina,Algeria,home,false,3,0,Messi hat-trick; dominant display
+ARG-AUT-GRP2,2026-06-22,group,Argentina,Austria,home,false,2,0,Messi brace including 90+5 winner; Argentina top Group J
+ARG-JOR-GRP3,2026-06-27,group,Argentina,Jordan,away,false,3,1,Jordan equalize briefly; Messi wins it; Argentina unbeaten in group
+ARG-CPV-R32,2026-07-03,round_of_32,Argentina,Cape Verde,home,true,3,0,0-0 after 90; Messi extra-time opener; Argentina through AET
+ARG-EGY-R16,2026-07-07,round_of_16,Argentina,Egypt,home,false,3,2,Egypt lead 2-0; greatest comeback of tournament; Lautaro 89 seals 3-2
+ARG-SWI-QF,2026-07-11,quarterfinal,Argentina,Switzerland,home,true,3,1,1-1 at 90; Argentina dominant in extra time; 3-1 AET
+ARG-ENG-SF,2026-07-15,semifinal,Argentina,England,home,true,2,1,Kane opens; De Paul equalizes; Alvarez 108 AET winner; Argentina in final
