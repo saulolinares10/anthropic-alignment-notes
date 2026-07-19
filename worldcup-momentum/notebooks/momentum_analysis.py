@@ -6,7 +6,7 @@ Reconstructed Match Momentum proxy for Spain and Argentina at the 2026 FIFA Worl
 WHAT THIS IS NOT: This does not replicate Opta's Match Momentum stat. Opta uses
 possession-value chains, shot quality, and passing networks at sub-minute resolution.
 We have only goal events. This is a transparent, documented proxy built on goal timing
-and match state — which is exactly the critique made of the original graphic.
+and match state -- which is exactly the critique made of the original graphic.
 
 FORMULA (stated explicitly, per the README):
   - Each goal is a momentum impulse of magnitude 1 (0.5 for penalties and own goals).
@@ -28,27 +28,28 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.gridspec as gridspec
 from pathlib import Path
 
-# ── Paths (script lives in notebooks/, outputs go to output/charts/)
+# -- Paths (script lives in notebooks/, outputs go to output/charts/)
 SCRIPT_DIR  = Path(__file__).parent
 ROOT        = SCRIPT_DIR.parent
 DATA_DIR    = ROOT / "data"
 CHARTS_DIR  = ROOT / "output" / "charts"
 CHARTS_DIR.mkdir(parents=True, exist_ok=True)
 
-# ── Tunable parameters (named, not buried in code)
-HALF_LIFE       = 12    # minutes — the smoothing parameter Opta never publishes
+# -- Tunable parameters (named, not buried in code)
+HALF_LIFE       = 12    # minutes -- the smoothing parameter Opta never publishes
 PENALTY_WEIGHT  = 0.5   # impulse magnitude for penalties and own goals
-K_MINUTES       = 120   # max minutes to compute (covers extra time)
+K_MINUTES       = 125   # max minutes to compute (covers extra time)
 
-# ── Team colours: Spain = red, Argentina = blue (jersey colours)
+# -- Team colours: Spain = red, Argentina = blue (jersey colours)
 COLOUR = {"Spain": "#DC2626", "Argentina": "#2563EB"}
 ALPHA_FILL = 0.15
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 # 1. DATA LOADING
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 
 def load_data():
     goals   = pd.read_csv(DATA_DIR / "goals_2026_verified.csv")
@@ -66,8 +67,12 @@ def load_data():
     return goals, matches
 
 
-def time_bucket(minute):
-    """Assign a goal to a named time bucket."""
+def time_bucket(minute, is_et_match=False):
+    """
+    Assign a goal to a named time bucket.
+    Goals past 90' in an ET match go to 'ET'; in a non-ET match they are '90+'
+    stoppage time -- a goal at 90+2' in a match that ended in regulation is not ET.
+    """
     if minute <= 15:
         return "1-15"
     elif minute <= 30:
@@ -80,15 +85,15 @@ def time_bucket(minute):
         return "61-75"
     elif minute <= 90:
         return "76-90"
-    elif minute <= 95:
-        return "90+"
-    else:
+    elif is_et_match:
         return "ET"
+    else:
+        return "90+"
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 # 2. RUNNING SCORE DIFFERENTIAL
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 
 def running_score_diff(match_goals, team):
     """
@@ -111,27 +116,51 @@ def running_score_diff(match_goals, team):
 
 def count_sign_flips(match_goals, team):
     """
-    Count how many times the score differential crosses zero (positive ↔ negative).
-    Being level (0) does not count as a flip; only positive→negative or vice versa.
+    Count how many times the score differential crosses zero (positive <-> negative).
+    Being level (0) does not count as a flip. The diff must move from strictly
+    negative to strictly positive or vice versa. Going +1 -> 0 -> +1 (equalised
+    then scored again) = 0 flips. Going -1 -> 0 -> +1 (came from behind to lead) = 1 flip.
     """
     df = running_score_diff(match_goals, team)
     if df.empty:
         return 0
     diffs = [0] + list(df["running_diff"])
     flips = 0
-    sign = 0
+    last_nonzero_sign = 0   # last non-zero sign seen (+1 or -1)
     for d in diffs:
-        if d != 0:
-            new_sign = 1 if d > 0 else -1
-            if sign != 0 and new_sign != sign:
+        if d > 0:
+            if last_nonzero_sign < 0:   # crossed from negative to positive
                 flips += 1
-            sign = new_sign
+            last_nonzero_sign = 1
+        elif d < 0:
+            if last_nonzero_sign > 0:   # crossed from positive to negative
+                flips += 1
+            last_nonzero_sign = -1
+        # d == 0: level -- do not update last_nonzero_sign
     return flips
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+def trailing_minutes(match_goals, team):
+    """Minutes when team had a strictly negative score differential."""
+    df = running_score_diff(match_goals, team)
+    if df.empty:
+        return 0
+    # Build piecewise diff: between goal events
+    events = [(0, 0)]
+    for _, row in df.iterrows():
+        events.append((int(row["minute_numeric"]), int(row["running_diff"])))
+    total = 0
+    for i in range(len(events) - 1):
+        t_start, diff_val = events[i]
+        t_end = events[i + 1][0]
+        if diff_val < 0:
+            total += t_end - t_start
+    return total
+
+
+# -----------------------------------------------------------------------------
 # 3. MOMENTUM SERIES
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 
 def decay(t, t0, half_life=HALF_LIFE):
     return 0.5 ** ((t - t0) / half_life)
@@ -161,16 +190,15 @@ def compute_momentum(match_goals, team, max_minute=None):
     return np.array(minutes), np.array(momentum)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 # 4. MOMENTUM PREDICTIVE VALIDATION
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 
 def validate_momentum_prediction(goals, matches):
     """
     For each goal in the dataset, check whether momentum was positive for the
     scoring team in the 5 minutes immediately before the goal.
     Returns (n_correct, n_total, rate).
-    Reports plainly whether the proxy has predictive signal.
     """
     n_correct = 0
     n_total   = 0
@@ -186,7 +214,6 @@ def validate_momentum_prediction(goals, matches):
             if t0 <= 5:
                 continue  # not enough history
 
-            # Momentum at t0 - 1 (just before this goal)
             _, mom = compute_momentum(
                 mg[mg["minute_numeric"] < t0], team, max_minute=int(t0 - 1)
             )
@@ -197,9 +224,9 @@ def validate_momentum_prediction(goals, matches):
             m_before = mom[-1]
 
             if scoring_team == team:
-                correct = m_before > 0   # team had positive momentum before scoring
+                correct = m_before > 0
             else:
-                correct = m_before < 0   # team had negative momentum before conceding
+                correct = m_before < 0
 
             if correct:
                 n_correct += 1
@@ -209,13 +236,13 @@ def validate_momentum_prediction(goals, matches):
     return n_correct, n_total, rate
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 # 5. INSIGHT CALCULATIONS
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 
 def compute_insights(goals, matches):
     print("\n" + "=" * 70)
-    print("MATCH MOMENTUM PROXY — INSIGHTS")
+    print("MATCH MOMENTUM PROXY -- INSIGHTS")
     print("2026 FIFA World Cup | Spain vs Argentina Pre-Final Analysis")
     print("Data compiled 2026-07-18 | Half-life parameter:", HALF_LIFE, "minutes")
     print("=" * 70)
@@ -225,61 +252,59 @@ def compute_insights(goals, matches):
     for team in ["Spain", "Argentina"]:
         km = matches[(matches["team"] == team) & (matches["stage"] != "group")]
         trailed = []
+        trail_minutes_list = []
         for _, row in km.iterrows():
             mg = goals[goals["match_id"] == row["match_id"]]
             if mg.empty:
                 continue
-            # Check if team was ever trailing (running_diff < 0 at any point)
             rd = running_score_diff(mg, team)
             if (rd["running_diff"] < 0).any():
                 trailed.append(row["match_id"])
+                trail_minutes_list.append(trailing_minutes(mg, team))
         won_from_behind = len(trailed)
         total_ko = len(km)
         print(f"  {team}: trailed in {won_from_behind}/{total_ko} knockout matches, "
               f"won all of them (100% comeback rate in knockout).")
         if trailed:
-            for mid in trailed:
+            total_trail = sum(trail_minutes_list)
+            for mid, tmin in zip(trailed, trail_minutes_list):
                 note = matches.loc[matches["match_id"] == mid, "notes"].values[0]
-                print(f"    → {mid}: {note}")
+                print(f"    -> {mid}: {note} (trailed {tmin} min)")
+            print(f"    Combined minutes trailing across all comeback wins: {total_trail} min")
 
     # -- INSIGHT 2: Time-bucket scoring profile
     print("\n-- INSIGHT 2: Time-Bucket Goal Distribution\n")
     buckets = ["1-15", "16-30", "31-45", "46-60", "61-75", "76-90", "90+", "ET"]
     for team in ["Spain", "Argentina"]:
-        team_goals = goals[(goals["team"] == team) & (goals["scoring_team"] == team)]
-        team_goals = team_goals.copy()
-        team_goals["bucket"] = team_goals["minute_numeric"].apply(time_bucket)
+        team_goals = goals[(goals["team"] == team) & (goals["scoring_team"] == team)].copy()
+        team_goals["bucket"] = team_goals.apply(
+            lambda r: time_bucket(r["minute_numeric"], r["extra_time"]), axis=1
+        )
         total = len(team_goals)
-        print(f"  {team} — {total} goals total:")
+        print(f"  {team} -- {total} goals total:")
         for b in buckets:
             n = (team_goals["bucket"] == b).sum()
             pct = 100 * n / total if total > 0 else 0
-            bar = "█" * n
+            bar = "#" * n
             print(f"    {b:8s}: {n:2d} ({pct:4.1f}%)  {bar}")
 
-    # Late-goal test: goals in min 76-90, 90+, ET as share
     print()
     for team in ["Spain", "Argentina"]:
         tg = goals[(goals["team"] == team) & (goals["scoring_team"] == team)].copy()
-        tg["bucket"] = tg["minute_numeric"].apply(time_bucket)
+        tg["bucket"] = tg.apply(
+            lambda r: time_bucket(r["minute_numeric"], r["extra_time"]), axis=1
+        )
         late = tg[tg["bucket"].isin(["76-90", "90+", "ET"])]
         et_only = tg[tg["bucket"] == "ET"]
         total = len(tg)
         print(f"  {team}: {len(late)}/{total} goals in 76th min or later "
               f"({100*len(late)/total:.1f}%); "
-              f"{len(et_only)}/{total} in extra time ({100*len(et_only)/total:.1f}%)")
+              f"{len(et_only)}/{total} in true extra time ({100*len(et_only)/total:.1f}%)")
 
     # -- INSIGHT 3: Extra-time load (fatigue metric)
     print("\n-- INSIGHT 3: Extra-Time Load\n")
     for team in ["Spain", "Argentina"]:
         et_matches = matches[(matches["team"] == team) & (matches["extra_time"] == True)]
-        total_et_minutes = 0
-        for _, row in et_matches.iterrows():
-            mg = goals[goals["match_id"] == row["match_id"]]
-            last_goal_min = mg["minute_numeric"].max() if not mg.empty else 90
-            # ET = minutes beyond 90 actually played (last goal + small buffer)
-            et_played = max(0, min(last_goal_min, 120) - 90)
-            total_et_minutes += 30  # WC rules: full 30-min ET if played
         et_match_count = len(et_matches)
         print(f"  {team}: {et_match_count} extra-time match(es), "
               f"~{30 * et_match_count} extra minutes played across tournament.")
@@ -311,36 +336,44 @@ def compute_insights(goals, matches):
             print(f"      {row['match_id']}: {flips_per_match[i]} flip(s), "
                   f"{goals_conceded_per_match[i]} conceded")
 
-    # -- INSIGHT 5: Star reliance
-    print("\n-- INSIGHT 5: Star Reliance (Goal Concentration Risk)\n")
+    # -- INSIGHT 5: Comeback closers (late-goal delivery under pressure)
+    print("\n-- INSIGHT 5: Comeback Closers\n")
+    # Identify who scored the decisive goal in each comeback win
+    for team in ["Spain", "Argentina"]:
+        km = matches[(matches["team"] == team) & (matches["stage"] != "group")]
+        comeback_matches = []
+        for _, row in km.iterrows():
+            mg = goals[goals["match_id"] == row["match_id"]]
+            if mg.empty:
+                continue
+            rd = running_score_diff(mg, team)
+            if (rd["running_diff"] < 0).any():
+                comeback_matches.append(row["match_id"])
+
+        if not comeback_matches:
+            print(f"  {team}: 0 comeback wins in knockout stage.")
+            continue
+
+        print(f"  {team}: {len(comeback_matches)} comeback wins in knockout stage.")
+        for mid in comeback_matches:
+            mg = goals[goals["match_id"] == mid].copy()
+            team_goals = mg[mg["scoring_team"] == team].sort_values("minute_numeric")
+            last_goal = team_goals.iloc[-1]
+            tmin = trailing_minutes(mg, team)
+            print(f"    -> {mid}: decisive goal by {last_goal['scorer']} "
+                  f"at {last_goal['minute_raw']}' (trailed {tmin} min)")
+
+    # Star-level contribution in comeback matches
+    print()
     star = {"Spain": "Oyarzabal", "Argentina": "Messi"}
     for team in ["Spain", "Argentina"]:
         tg = goals[(goals["team"] == team) & (goals["scoring_team"] == team)]
         total = len(tg)
         star_goals = (tg["scorer"] == star[team]).sum()
         pct = 100 * star_goals / total if total > 0 else 0
-        non_star = total - star_goals
         other_scorers = tg[tg["scorer"] != star[team]]["scorer"].nunique()
-        print(f"  {team} — {star[team]}: {star_goals}/{total} goals ({pct:.1f}%)")
-        print(f"    Remaining {non_star} goals from {other_scorers} other scorer(s)")
-
-        # Minutes when star scored
-        sm = sorted(tg[tg["scorer"] == star[team]]["minute_numeric"].tolist())
-        print(f"    {star[team]} goal minutes: {sm}")
-
-        # Matches where star didn't score (regular time)
-        no_star_matches = []
-        for _, mrow in matches[matches["team"] == team].iterrows():
-            mg = goals[(goals["match_id"] == mrow["match_id"]) &
-                       (goals["scoring_team"] == team) &
-                       (goals["scorer"] == star[team]) &
-                       (goals["minute_numeric"] <= 90)]
-            if mg.empty:
-                no_star_matches.append(mrow["match_id"])
-        print(f"    Matches without {star[team]} in regular-time goals: "
-              f"{no_star_matches if no_star_matches else 'none'}")
-        outcome = "won all" if no_star_matches else "always scored"
-        print(f"    Result in those matches: {outcome}")
+        print(f"  {team} -- {star[team]}: {star_goals}/{total} goals ({pct:.1f}%); "
+              f"remaining {total - star_goals} from {other_scorers} other scorers")
 
     # -- INSIGHT 6: Momentum predictive validation
     print("\n-- INSIGHT 6: Momentum Proxy Predictive Validation\n")
@@ -349,40 +382,46 @@ def compute_insights(goals, matches):
     print(f"  Momentum was in the 'correct' direction {n_correct}/{n_total} "
           f"times ({100*rate:.1f}%)")
     if rate > 0.65:
-        print("  → Some directional signal, but this is partially circular:")
+        print("  -> Some directional signal, but this is partially circular:")
         print("    recent goals create positive momentum, which then 'predicts'")
         print("    more goals for the same team. Not an independent predictor.")
     else:
-        print("  → Weak or no predictive signal at this half-life setting.")
-        print("    The proxy is descriptive, not predictive — as expected for")
+        print("  -> Weak or no predictive signal at this half-life setting.")
+        print("    The proxy is descriptive, not predictive -- as expected for")
         print("    a goal-timing-only model with no shot or possession data.")
-    print(f"  Small sample caveat: {n_total} events from 14 matches is insufficient")
-    print("  for statistical significance. These numbers are illustrative only.")
+
+    # ET percentage for Argentina (corrected)
+    arg_goals = goals[(goals["team"] == "Argentina") & (goals["scoring_team"] == "Argentina")].copy()
+    arg_goals["bucket"] = arg_goals.apply(
+        lambda r: time_bucket(r["minute_numeric"], r["extra_time"]), axis=1
+    )
+    et_count = (arg_goals["bucket"] == "ET").sum()
+    total_arg = len(arg_goals)
+    print(f"\n  Argentina ET goals: {et_count}/{total_arg} = {100*et_count/total_arg:.1f}%")
+    print(f"  (True ET: match went to extra time AND goal minute > 90)")
 
     print("\n" + "=" * 70)
-    print("SPECULATIVE SECTION — If these patterns hold (7-match sample, n=small)")
+    print("SPECULATIVE SECTION -- If these patterns hold (7-match sample, n=small)")
     print("=" * 70)
-    print("""
+    print(f"""
   Spain's profile: Never trailed, 0 scoreline sign-flips, no extra time.
-  Every knockout match followed the same pattern — score first, concede an
+  Every knockout match followed the same pattern -- score first, concede an
   equalizer, win with a second goal. Consistent but brittle against teams
   that score first. If Argentina can score early, Spain have no experience
   this tournament of playing from behind.
 
-  Argentina's profile: Trailed in 3 of 4 knockout matches and won all 3.
-  6/19 goals (32%) came in extra time. Messi scored 8 (42%) but Argentina
-  won their two latest knockout matches (QF, SF) without a Messi goal in
-  regulation. The pattern suggests resilience but also suggests Argentina
-  concedes at a higher rate than Spain (5 conceded vs 4 in same number
-  of matches, including 3 goals conceded before equalizing in 2 comeback
-  matches).
+  Argentina's profile: Trailed in 2 of 4 knockout matches (Egypt, England)
+  and won both. {et_count}/{total_arg} goals ({100*et_count/total_arg:.1f}%) came in true extra time.
+  Messi scored 8 goals total but Argentina's most critical closers were
+  Enzo Fernandez (90+2' vs Egypt, 85' vs England) and Lautaro Martinez
+  (90+2' vs England). The squad delivers under pressure without depending
+  on Messi to score the winner.
 
   What the momentum proxy suggests for the final (as a possibility, not
-  a prediction): If Spain scores first — which their group-stage and
-  knockout history suggests they do — Spain's momentum profile would put
-  them in a position they've handled perfectly all tournament. Argentina's
-  history says they can recover. The final 10 minutes and any extra time
-  historically favour Argentina's goal distribution.
+  a prediction): If Spain scores first, they are in the only match state
+  they have managed all tournament. Argentina's history says they can
+  recover. The final 10 minutes historically favour Argentina's goal
+  distribution.
 
   CAVEAT: 7 matches per team is not a statistically meaningful sample.
   This is a narrative framing tool, not a forecasting model. The actual
@@ -390,9 +429,9 @@ def compute_insights(goals, matches):
 """)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 # 6. CHARTS
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 
 STAGE_LABELS = {
     "group":        "Group",
@@ -402,11 +441,47 @@ STAGE_LABELS = {
     "semifinal":    "SF",
 }
 
+
+def _plot_match_panel(ax, mg, team, match_row, colour, y_lim):
+    """Render one momentum panel into ax. Shared helper for all chart functions."""
+    max_min = int(mg["minute_numeric"].max()) + 5 if not mg.empty else 90
+    max_min = max(max_min, 90)
+
+    minutes, mom = compute_momentum(mg, team, max_minute=max_min)
+
+    ax.set_facecolor("#FFFFFF")
+    ax.axhline(0, color="#1E293B", linewidth=1.5, zorder=1)   # bold zero line
+    ax.axvline(90, color="#CBD5E1", linewidth=0.8, linestyle="--", zorder=1)
+
+    ax.fill_between(minutes, mom, 0,
+                    where=(mom >= 0), color=colour, alpha=ALPHA_FILL, zorder=2)
+    ax.fill_between(minutes, mom, 0,
+                    where=(mom < 0),  color="#64748B", alpha=ALPHA_FILL, zorder=2)
+    ax.plot(minutes, mom, color=colour, linewidth=2.5, zorder=3)
+
+    for _, g in mg.iterrows():
+        gm = g["minute_numeric"]
+        if gm > max_min:
+            continue
+        idx = min(int(gm) - 1, len(mom) - 1)
+        m_val = mom[idx]
+        gc = colour if g["scoring_team"] == team else "#94A3B8"
+        ax.scatter(gm, m_val, s=55, color=gc, zorder=5,
+                   edgecolors="white", linewidths=1.0)
+
+    ax.set_ylim(y_lim)
+    ax.set_xlim(0, max_min + 2)
+    ax.set_xticks([0, 45, 90])
+    ax.set_xticklabels(["0", "45'", "90'"], fontsize=9, color="#64748B")
+    ax.tick_params(axis="y", labelsize=9, colors="#64748B")
+    ax.grid(axis="y", alpha=0.2, color="#CBD5E1")
+    for spine in ax.spines.values():
+        spine.set_edgecolor("#E2E8F0")
+    return minutes, mom, max_min
+
+
 def chart_small_multiples(goals, matches):
-    """
-    Chart 1: 2×7 small multiples — Spain (top row), Argentina (bottom row).
-    One momentum line per match, shared y-axis scale.
-    """
+    """Chart 1: 2x7 small multiples -- Spain (top), Argentina (bottom)."""
     teams = ["Spain", "Argentina"]
     fig, axes = plt.subplots(
         2, 7,
@@ -416,7 +491,6 @@ def chart_small_multiples(goals, matches):
     )
     fig.patch.set_facecolor("#F8FAFC")
 
-    # Global y-limits: find max absolute momentum across all matches
     all_mom = []
     for team in teams:
         for _, mrow in matches[matches["team"] == team].iterrows():
@@ -434,61 +508,22 @@ def chart_small_multiples(goals, matches):
 
         for col_idx, (_, mrow) in enumerate(team_matches.iterrows()):
             ax = axes[row_idx][col_idx]
-            ax.set_facecolor("#FFFFFF")
             mg = goals[goals["match_id"] == mrow["match_id"]]
-            max_min = int(mg["minute_numeric"].max()) + 5 if not mg.empty else 90
-            max_min = max(max_min, 90)
+            _plot_match_panel(ax, mg, team, mrow, colour, y_lim)
 
-            minutes, mom = compute_momentum(mg, team, max_minute=max_min)
-
-            # Zero baseline
-            ax.axhline(0, color="#94A3B8", linewidth=0.8, zorder=1)
-            # 90-minute divider
-            ax.axvline(90, color="#CBD5E1", linewidth=0.8, linestyle="--", zorder=1)
-
-            # Fill above/below zero
-            ax.fill_between(minutes, mom, 0,
-                            where=(mom >= 0), color=colour, alpha=ALPHA_FILL, zorder=2)
-            ax.fill_between(minutes, mom, 0,
-                            where=(mom < 0),  color="#64748B", alpha=ALPHA_FILL, zorder=2)
-
-            # Momentum line
-            ax.plot(minutes, mom, color=colour, linewidth=2, zorder=3)
-
-            # Goal event markers
-            for _, g in mg.iterrows():
-                gm = g["minute_numeric"]
-                if gm > max_min:
-                    continue
-                idx = min(int(gm) - 1, len(mom) - 1)
-                m_val = mom[idx]
-                gc = colour if g["scoring_team"] == team else "#64748B"
-                ax.scatter(gm, m_val, s=40, color=gc, zorder=5,
-                           edgecolors="white", linewidths=0.8)
-
-            # Labels
             opp_code = mrow["opponent"][:3].upper()
             stage    = STAGE_LABELS.get(mrow["stage"], mrow["stage"])
-            score    = f"{mrow['final_score_team']}–{mrow['final_score_opp']}"
+            score    = f"{mrow['final_score_team']}-{mrow['final_score_opp']}"
             ax.set_title(f"{stage} vs {opp_code}\n{score}",
                          fontsize=8.5, fontweight="bold", color="#1E293B", pad=4)
-            ax.set_ylim(y_lim)
-            ax.set_xlim(0, max_min + 2)
-            ax.set_xticks([0, 45, 90])
-            ax.set_xticklabels(["0", "45", "90"], fontsize=7, color="#64748B")
-            ax.tick_params(axis="y", labelsize=7, colors="#64748B")
-            ax.grid(axis="y", alpha=0.2, color="#CBD5E1")
-            for spine in ax.spines.values():
-                spine.set_edgecolor("#E2E8F0")
 
-        # Row label
         axes[row_idx][0].set_ylabel(
             team, fontsize=10, fontweight="bold",
             color=COLOUR[team], labelpad=6
         )
 
     fig.suptitle(
-        "Match Momentum Proxy — Spain & Argentina, 2026 FIFA World Cup\n"
+        "Match Momentum Proxy -- Spain & Argentina, 2026 FIFA World Cup\n"
         f"Exponential decay model, half-life = {HALF_LIFE} min  |  "
         "Dots = goals (team colour = scored, grey = conceded)  |  "
         "Dashed line = 90 min",
@@ -502,9 +537,7 @@ def chart_small_multiples(goals, matches):
 
 
 def chart_goals_by_bucket(goals, matches):
-    """
-    Chart 2: Goals by time bucket, Spain vs Argentina, side-by-side.
-    """
+    """Chart 2: Goals by time bucket, Spain vs Argentina, side-by-side."""
     buckets = ["1-15", "16-30", "31-45", "46-60", "61-75", "76-90", "90+", "ET"]
     x = np.arange(len(buckets))
     width = 0.35
@@ -515,7 +548,9 @@ def chart_goals_by_bucket(goals, matches):
 
     for i, team in enumerate(["Spain", "Argentina"]):
         tg = goals[(goals["team"] == team) & (goals["scoring_team"] == team)].copy()
-        tg["bucket"] = tg["minute_numeric"].apply(time_bucket)
+        tg["bucket"] = tg.apply(
+            lambda r: time_bucket(r["minute_numeric"], r["extra_time"]), axis=1
+        )
         counts = [int((tg["bucket"] == b).sum()) for b in buckets]
         offset = (i - 0.5) * width
         bars = ax.bar(x + offset, counts, width,
@@ -529,12 +564,21 @@ def chart_goals_by_bucket(goals, matches):
                         fontsize=9, fontweight="bold",
                         color=COLOUR[team])
 
+    # Compute corrected ET percentage for annotation
+    arg_tg = goals[(goals["team"] == "Argentina") & (goals["scoring_team"] == "Argentina")].copy()
+    arg_tg["bucket"] = arg_tg.apply(
+        lambda r: time_bucket(r["minute_numeric"], r["extra_time"]), axis=1
+    )
+    et_n   = int((arg_tg["bucket"] == "ET").sum())
+    total  = len(arg_tg)
+    et_pct = int(round(100 * et_n / total))
+
     ax.set_xticks(x)
     ax.set_xticklabels(buckets, fontsize=10)
     ax.set_ylabel("Goals scored", fontsize=11)
     ax.set_title(
-        "Goals by Time Bucket — Spain vs Argentina, 2026 World Cup\n"
-        "(Goals scored only, not conceded)",
+        "Goals by Time Bucket -- Spain vs Argentina, 2026 World Cup\n"
+        "(Goals scored only, not conceded  |  ET = true extra time only)",
         fontsize=12, fontweight="bold", color="#1E293B", pad=10
     )
     ax.legend(fontsize=11)
@@ -545,11 +589,10 @@ def chart_goals_by_bucket(goals, matches):
     for spine in ["left", "bottom"]:
         ax.spines[spine].set_edgecolor("#CBD5E1")
 
-    # Annotation: Argentina's ET cluster
     et_idx = buckets.index("ET")
     ax.annotate(
-        "Argentina: 32% of goals\nin extra time",
-        xy=(et_idx + 0.17, 6), xytext=(et_idx - 1.8, 5.5),
+        f"Argentina: {et_pct}% of goals\nin true extra time",
+        xy=(et_idx + 0.17, et_n), xytext=(et_idx - 1.9, et_n + 0.8),
         fontsize=8.5, color=COLOUR["Argentina"],
         arrowprops=dict(arrowstyle="->", color=COLOUR["Argentina"], lw=1.2),
     )
@@ -561,9 +604,7 @@ def chart_goals_by_bucket(goals, matches):
 
 
 def chart_volatility(goals, matches):
-    """
-    Chart 3: Scoreline sign-flip count per match (momentum volatility proxy).
-    """
+    """Chart 3: Scoreline sign-flip count per match (momentum volatility proxy)."""
     records = []
     for team in ["Spain", "Argentina"]:
         for _, mrow in matches[matches["team"] == team].sort_values("date").iterrows():
@@ -611,7 +652,7 @@ def chart_volatility(goals, matches):
     total_esp = df[df["team"] == "Spain"]["flips"].sum()
     total_arg = df[df["team"] == "Argentina"]["flips"].sum()
     fig.suptitle(
-        f"Scoreline Volatility per Match — Sign flips (score diff crosses zero)\n"
+        f"Scoreline Volatility per Match -- Sign flips (score diff crosses zero)\n"
         f"Spain total: {total_esp}  |  Argentina total: {total_arg}  "
         f"(across {len(df)//2} matches each)",
         fontsize=11, fontweight="bold", color="#1E293B", y=1.02
@@ -623,9 +664,272 @@ def chart_volatility(goals, matches):
     print(f"Saved: {out}")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+def chart_hero_4panel(goals, matches):
+    """
+    Chart 4: 4-panel hero chart for LinkedIn.
+    Panel 1: Spain QF vs Belgium  -- led, equalized, won
+    Panel 2: Argentina QF vs Switzerland  -- same shape (led, equalized, won AET)
+    Panel 3: Argentina R16 vs Egypt  -- sawtooth comeback from 0-2
+    Panel 4: Argentina SF vs England  -- comeback from 0-1
+    Shared y-axis, bold zero line, mobile-legible. Width >= 1600px at dpi=150.
+    """
+    PANELS = [
+        ("ESP-BEL-QF",  "Spain",     "Spain QF vs Belgium",      "Led 1-0, equalized 1-1, won 2-1"),
+        ("ARG-SWI-QF",  "Argentina", "Argentina QF vs Switzerland","Led 1-0, equalized 1-1, won 3-1 AET"),
+        ("ARG-EGY-R16", "Argentina", "Argentina R16 vs Egypt",    "From 0-2 down: Messi 83', Enzo 90+2'"),
+        ("ARG-ENG-SF",  "Argentina", "Argentina SF vs England",   "From 0-1 down: Enzo 85', Lautaro 90+2'"),
+    ]
+
+    # Compute global y-limits across all 4 matches
+    all_mom = []
+    for mid, team, _, _ in PANELS:
+        mg = goals[goals["match_id"] == mid]
+        max_min = int(mg["minute_numeric"].max()) + 5 if not mg.empty else 90
+        max_min = max(max_min, 90)
+        _, mom = compute_momentum(mg, team, max_minute=max_min)
+        all_mom.extend(mom.tolist())
+    y_abs = max(abs(v) for v in all_mom) * 1.2 if all_mom else 1.5
+    y_lim = (-y_abs, y_abs)
+
+    fig, axes = plt.subplots(
+        2, 2,
+        figsize=(18, 10),
+        sharey=True,
+        gridspec_kw={"hspace": 0.42, "wspace": 0.08},
+    )
+    fig.patch.set_facecolor("#0F172A")   # dark background for LinkedIn impact
+
+    panel_list = [(axes[0][0], PANELS[0]),
+                  (axes[0][1], PANELS[1]),
+                  (axes[1][0], PANELS[2]),
+                  (axes[1][1], PANELS[3])]
+
+    row_labels = [
+        ("Same script, different team", 0),
+        ("Two genuine comebacks", 1),
+    ]
+
+    for ax, (mid, team, title, subtitle) in panel_list:
+        mg = goals[goals["match_id"] == mid]
+        mrow = matches[matches["match_id"] == mid].iloc[0]
+        colour = COLOUR[team]
+
+        ax.set_facecolor("#1E293B")
+        max_min = int(mg["minute_numeric"].max()) + 5 if not mg.empty else 90
+        max_min = max(max_min, 90)
+        minutes, mom = compute_momentum(mg, team, max_minute=max_min)
+
+        # Bold zero line
+        ax.axhline(0, color="#F8FAFC", linewidth=2.0, zorder=1)
+        ax.axvline(90, color="#64748B", linewidth=0.8, linestyle="--", zorder=1)
+
+        ax.fill_between(minutes, mom, 0,
+                        where=(mom >= 0), color=colour, alpha=0.25, zorder=2)
+        ax.fill_between(minutes, mom, 0,
+                        where=(mom < 0),  color="#EF4444", alpha=0.20, zorder=2)
+        ax.plot(minutes, mom, color=colour, linewidth=3.0, zorder=3)
+
+        # Goal markers
+        for _, g in mg.iterrows():
+            gm = g["minute_numeric"]
+            if gm > max_min:
+                continue
+            idx = min(int(gm) - 1, len(mom) - 1)
+            m_val = mom[idx]
+            gc = colour if g["scoring_team"] == team else "#F87171"
+            ax.scatter(gm, m_val, s=80, color=gc, zorder=5,
+                       edgecolors="#0F172A", linewidths=1.5)
+
+        ax.set_ylim(y_lim)
+        ax.set_xlim(0, max_min + 2)
+        ax.set_xticks([0, 45, 90])
+        ax.set_xticklabels(["0", "45'", "90'"], fontsize=11, color="#94A3B8")
+        ax.tick_params(axis="y", labelsize=11, colors="#94A3B8")
+        ax.grid(axis="y", alpha=0.15, color="#475569")
+        for spine in ax.spines.values():
+            spine.set_edgecolor("#334155")
+
+        score = f"{mrow['final_score_team']}-{mrow['final_score_opp']}"
+        ax.set_title(
+            f"{title}  |  {score}",
+            fontsize=13, fontweight="bold", color="#F1F5F9", pad=8
+        )
+        ax.text(0.02, 0.04, subtitle,
+                transform=ax.transAxes, fontsize=10,
+                color="#94A3B8", va="bottom")
+
+    # Row labels on left side
+    for label_text, row_idx in row_labels:
+        axes[row_idx][0].set_ylabel(
+            label_text, fontsize=12, fontweight="bold",
+            color="#CBD5E1", labelpad=10
+        )
+
+    fig.suptitle(
+        "Match Momentum Proxy  --  2026 FIFA World Cup  |  Pre-Final Analysis",
+        fontsize=16, fontweight="bold", color="#F8FAFC", y=1.02
+    )
+    fig.text(
+        0.5, -0.01,
+        f"Exponential decay model, half-life = {HALF_LIFE} min  |  "
+        "Coloured dots = goals scored  |  Red dots = goals conceded  |  "
+        "Dashed = 90 min  |  Goal-event data only; not Opta",
+        ha="center", fontsize=9, color="#64748B"
+    )
+
+    out = CHARTS_DIR / "momentum_hero_4panel.png"
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
+    plt.close(fig)
+    print(f"Saved: {out}")
+
+
+def chart_methodology_explainer(goals, matches):
+    """
+    Chart 5: Two-part methodology explainer.
+    Top: annotated momentum line for Spain QF vs Belgium with plain-English callouts.
+    Bottom: formula + limitation statement.
+    """
+    MID  = "ESP-BEL-QF"
+    TEAM = "Spain"
+    colour = COLOUR[TEAM]
+
+    mg   = goals[goals["match_id"] == MID]
+    mrow = matches[matches["match_id"] == MID].iloc[0]
+    max_min = 95
+    minutes, mom = compute_momentum(mg, TEAM, max_minute=max_min)
+
+    fig = plt.figure(figsize=(16, 9))
+    fig.patch.set_facecolor("#F8FAFC")
+    gs  = gridspec.GridSpec(2, 1, height_ratios=[3, 1], hspace=0.35)
+    ax  = fig.add_subplot(gs[0])
+    ax2 = fig.add_subplot(gs[1])
+
+    # -- Top panel: annotated momentum line
+    ax.set_facecolor("#FFFFFF")
+    ax.axhline(0, color="#1E293B", linewidth=1.5, zorder=1)
+    ax.axvline(90, color="#CBD5E1", linewidth=0.8, linestyle="--", zorder=1)
+    ax.fill_between(minutes, mom, 0,
+                    where=(mom >= 0), color=colour, alpha=ALPHA_FILL, zorder=2)
+    ax.fill_between(minutes, mom, 0,
+                    where=(mom < 0),  color="#64748B", alpha=ALPHA_FILL, zorder=2)
+    ax.plot(minutes, mom, color=colour, linewidth=2.5, zorder=3)
+
+    # Goal event markers + vertical lines
+    goal_events = mg.sort_values("minute_numeric").iterrows()
+    for _, g in mg.sort_values("minute_numeric").iterrows():
+        gm  = int(g["minute_numeric"])
+        idx = min(gm - 1, len(mom) - 1)
+        mv  = mom[idx]
+        gc  = colour if g["scoring_team"] == TEAM else "#64748B"
+        ax.scatter(gm, mv, s=80, color=gc, zorder=5,
+                   edgecolors="white", linewidths=1.0)
+        ax.axvline(gm, color=gc, linewidth=0.6, linestyle=":", alpha=0.5, zorder=1)
+
+    # -- Annotation 1: after first goal (minute 30, Fabian Ruiz)
+    g1_idx = min(30, len(mom) - 1)
+    ax.annotate(
+        "Goal scored (30') ->\nmomentum impulse added\nthen decays at half-life = 12 min",
+        xy=(30, mom[g1_idx - 1]),
+        xytext=(20, mom[g1_idx - 1] + 0.45),
+        fontsize=9.5, color="#1E293B",
+        arrowprops=dict(arrowstyle="->", color="#334155", lw=1.3),
+        bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                  edgecolor="#CBD5E1", alpha=0.95),
+    )
+
+    # -- Annotation 2: midpoint between goal1 and opponent goal (decay visible)
+    mid_idx = 36  # between 30 and 41 -- momentum has decayed somewhat
+    ax.annotate(
+        "No goals -> momentum\nfades toward zero",
+        xy=(36, mom[mid_idx - 1]),
+        xytext=(42, mom[mid_idx - 1] + 0.35),
+        fontsize=9.5, color="#1E293B",
+        arrowprops=dict(arrowstyle="->", color="#334155", lw=1.3),
+        bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                  edgecolor="#CBD5E1", alpha=0.95),
+    )
+
+    # -- Annotation 3: after opponent goal (minute 41, De Ketelaere)
+    g2_idx = min(41, len(mom) - 1)
+    ax.annotate(
+        "Opponent scores (41') ->\nmomentum drops below zero\n(team is level, proxy says 'behind')",
+        xy=(41, mom[g2_idx - 1]),
+        xytext=(50, mom[g2_idx - 1] - 0.40),
+        fontsize=9.5, color="#1E293B",
+        arrowprops=dict(arrowstyle="->", color="#334155", lw=1.3),
+        bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                  edgecolor="#CBD5E1", alpha=0.95),
+    )
+
+    # -- Annotation 4: after winning goal (minute 88, Merino)
+    g3_idx = min(88, len(mom) - 1)
+    ax.annotate(
+        "Team scores winner (88') ->\nmomentum spikes positive",
+        xy=(88, mom[g3_idx - 1]),
+        xytext=(70, mom[g3_idx - 1] + 0.35),
+        fontsize=9.5, color="#1E293B",
+        arrowprops=dict(arrowstyle="->", color="#334155", lw=1.3),
+        bbox=dict(boxstyle="round,pad=0.3", facecolor="white",
+                  edgecolor="#CBD5E1", alpha=0.95),
+    )
+
+    ax.set_title(
+        f"How the momentum proxy works  --  {TEAM} QF vs Belgium (2-1)",
+        fontsize=13, fontweight="bold", color="#1E293B", pad=10
+    )
+    ax.set_xlim(0, max_min + 2)
+    ax.set_xticks([0, 15, 30, 45, 60, 75, 90])
+    ax.set_xticklabels(["0", "15'", "30'", "41'   45'", "60'", "75'", "88'  90'"],
+                        fontsize=9, color="#64748B")
+    ax.set_ylabel("Momentum (proxy)", fontsize=11, color="#334155")
+    ax.tick_params(axis="y", labelsize=9, colors="#64748B")
+    ax.grid(axis="y", alpha=0.2, color="#CBD5E1")
+    for spine in ["top", "right"]:
+        ax.spines[spine].set_visible(False)
+    for spine in ["left", "bottom"]:
+        ax.spines[spine].set_edgecolor("#CBD5E1")
+
+    # -- Bottom panel: formula + limitation
+    ax2.set_facecolor("#F1F5F9")
+    ax2.axis("off")
+
+    formula_text = (
+        r"Formula:   momentum(t)  =  $\sum$ own_goal  weight $\times$ 0.5$^{(t-t_0)/12}$"
+        "  -  "
+        r"$\sum$ opp_goal  weight $\times$ 0.5$^{(t-t_0)/12}$"
+    )
+    ax2.text(0.5, 0.78, formula_text,
+             ha="center", va="center", fontsize=11,
+             color="#1E293B", transform=ax2.transAxes,
+             fontfamily="monospace")
+
+    params_text = (
+        "weight = 1.0 for open-play goals  |  0.5 for penalties and own goals  |  "
+        "half-life = 12 minutes (tunable)"
+    )
+    ax2.text(0.5, 0.52, params_text,
+             ha="center", va="center", fontsize=10,
+             color="#475569", transform=ax2.transAxes)
+
+    limitation_text = (
+        "Limitation: This proxy uses goal timing only -- no possession, no shots, no passing data.  "
+        "Validation: correctly predicted the next scorer in only 36.6% of events (below chance).  "
+        "It is descriptive, not predictive."
+    )
+    ax2.text(0.5, 0.22, limitation_text,
+             ha="center", va="center", fontsize=9.5,
+             color="#64748B", transform=ax2.transAxes,
+             style="italic")
+
+    out = CHARTS_DIR / "momentum_explainer.png"
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
+    plt.close(fig)
+    print(f"Saved: {out}")
+
+
+# -----------------------------------------------------------------------------
 # 7. MAIN
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 
 def main():
     goals, matches = load_data()
@@ -634,9 +938,11 @@ def main():
     print(f"Spain matches: {len(matches[matches['team']=='Spain'])}")
     print(f"Argentina matches: {len(matches[matches['team']=='Argentina'])}")
 
-    # Add time_bucket to goals for use in insights
+    # Compute time bucket using match-level extra_time flag (Bug 2 fix)
     goals = goals.copy()
-    goals["bucket"] = goals["minute_numeric"].apply(time_bucket)
+    goals["bucket"] = goals.apply(
+        lambda r: time_bucket(r["minute_numeric"], r["extra_time"]), axis=1
+    )
 
     compute_insights(goals, matches)
 
@@ -644,6 +950,8 @@ def main():
     chart_small_multiples(goals, matches)
     chart_goals_by_bucket(goals, matches)
     chart_volatility(goals, matches)
+    chart_hero_4panel(goals, matches)
+    chart_methodology_explainer(goals, matches)
 
     print(f"\nAll charts saved to: {CHARTS_DIR.resolve()}")
     print("\nDone.")

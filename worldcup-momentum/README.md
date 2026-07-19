@@ -84,41 +84,47 @@ arbitrary but documented — which is more than the broadcast version offers.
 
 ### 1. Comeback rate
 
-**Spain:** Trailed in 0 of 4 knockout matches. Spain scored first in every match
-and was never behind. In four knockout matches they were equalized four times (once
-per match) but immediately responded.
+**Spain:** Trailed in 0 of 4 knockout matches. Spain scored first in every knockout
+match and was never behind. In all four knockout matches they were equalized (once
+per match: Austria R32, Portugal R16, Belgium QF, France SF) but never went behind.
 
-**Argentina:** Trailed in 3 of 4 knockout matches — R16 vs Egypt (from 0–2 down),
-QF vs Switzerland (0–1 at minute 23), SF vs England (0–1 at minute 29). Won all
-three. Argentina has a 100% comeback rate in situations where they trailed in
-a 2026 knockout match.
+**Argentina:** Trailed in 2 of 4 knockout matches — R16 vs Egypt (from 0–2 down,
+68 minutes trailing) and SF vs England (0–1 from minute 55, 30 minutes trailing).
+Won both. Argentina has a 100% comeback rate in 2026 knockout matches where they trailed.
+**Combined minutes trailing across comeback wins: 98 minutes.**
+
+The QF vs Switzerland (Argentina 3–1 AET) was not a comeback — Argentina scored
+first at minute 10' and was equalized at 67', then won in extra time. Same shape
+as every Spain knockout match.
 
 ### 2. Time-bucket scoring profile
 
 | Bucket | Spain (n=13) | Argentina (n=19) |
 |---|---|---|
-| 1–15 min | 1 (7.7%) | 0 (0.0%) |
+| 1–15 min | 1 (7.7%) | 1 (5.3%) |
 | 16–30 | 3 (23.1%) | 2 (10.5%) |
 | 31–45 | 4 (30.8%) | 2 (10.5%) |
 | 46–60 | 1 (7.7%) | 2 (10.5%) |
-| 61–75 | 3 (23.1%) | 3 (15.8%) |
-| 76–90 | 1 (7.7%) | 3 (15.8%) |
-| 90+ (stoppage) | 0 (0.0%) | 1 (5.3%) |
-| Extra time | **0 (0.0%)** | **6 (31.6%)** |
+| 61–75 | 2 (15.4%) | 1 (5.3%) |
+| 76–90 | 2 (15.4%) | 4 (21.1%) |
+| 90+ (stoppage) | 0 (0.0%) | 3 (15.8%) |
+| True extra time | **0 (0.0%)** | **4 (21.1%)** |
 
-Spain clusters in 31–45 (31% of goals). Argentina has the most uniform distribution
-but a dramatic tail: 52.6% of their goals come in the 76th minute or later, and
-31.6% come in extra time. Spain has zero extra-time goals this tournament.
+"True extra time" = match went to AET AND goal minute > 90. Goals at 90+2'
+in matches that ended in regulation (Argentina vs Egypt, vs England) are
+stoppage time, not extra time. Spain clusters in 31–45 (31% of goals). Argentina's
+tail is striking: 57.9% of goals come in the 76th minute or later, including
+21.1% in genuine extra time. Spain has zero goals beyond the 90th minute this tournament.
 
 ### 3. Extra-time load (fatigue)
 
 **Spain:** 0 extra-time matches. 0 extra minutes played. Spain has not been pushed
 beyond 90 minutes in any match at this tournament.
 
-**Argentina:** 3 extra-time matches (R32 vs Cape Verde, QF vs Switzerland, SF vs
-England). Approximately **90 extra minutes** played across the tournament.
-Entering the final, Argentina have played a full match's worth of football beyond
-90 minutes that Spain have not.
+**Argentina:** 2 extra-time matches (R32 vs Cape Verde 3–1 AET, QF vs Switzerland
+3–1 AET). Approximately **60 extra minutes** played across the tournament. The SF
+vs England ended in stoppage time (Lautaro 90+2'), not extra time — Argentina won
+2–1 without requiring the additional 30 minutes.
 
 ### 4. Defensive suppression vs scoreline volatility
 
@@ -126,29 +132,35 @@ Entering the final, Argentina have played a full match's worth of football beyon
 differential across all 7 matches — Spain's differential went 0 → positive and
 never reversed. They have never been behind in this tournament.
 
-**Argentina:** 5 goals conceded in 7 matches (0.71/match). **3 sign-flips** — all
-in knockout matches (Egypt, Switzerland, England). Argentina's differential crossed
-zero in both directions in each of those matches: they were behind, then level,
-then ahead. Average 0.43 sign-flips per match vs Spain's 0.00.
+**Argentina:** 6 goals conceded in 7 matches (0.86/match). **2 sign-flips** — both
+in knockout comeback wins (R16 vs Egypt and SF vs England). Argentina's differential
+crossed from negative to positive in exactly those two matches. The Switzerland QF
+reads as 0 flips because Argentina led first (Messi 10') and was only equalized,
+never behind. Average 0.29 sign-flips per match vs Spain's 0.00.
 
-### 5. Star reliance (goal concentration)
+### 5. Comeback closers
 
-**Messi (Argentina):** 8 of 19 goals (42.1%). Remaining 11 goals from 6 other
-scorers (Lo Celso, Lautaro, Álvarez, Di María, De Paul, Mac Allister). Messi
-scored in 5 of 7 matches. Critically: Argentina won their last 3 knockout
-matches (R32, QF, SF) without a Messi goal in regulation time (he scored in
-ET in R32, and not at all in QF and SF).
+**Argentina's decisive goals in comeback wins:**
+- R16 vs Egypt: **Enzo Fernández at 90+2'** (came from 0–2; Di María 56', Messi 83' to equalize, Enzo wins it)
+- SF vs England: **Lautaro Martínez at 90+2'** (came from 0–1; Enzo 85' to equalize, Lautaro wins it)
 
-**Oyarzabal (Spain):** 5 of 13 goals (38.5%). Remaining 8 goals from 5 other
-scorers (Yamal, Baena, Williams, Morata, OG). Oyarzabal scored in only 3 of
-7 matches. Spain won 4 matches without an Oyarzabal goal. Distribution is
-marginally wider than Argentina's.
+Messi's contribution to the two comebacks: the 83' equalizer vs Egypt only.
+Both winning goals were delivered by other players under maximum pressure.
+
+**Goal concentration:**
+
+Messi (Argentina): 8 of 19 goals (42.1%). Remaining 11 goals from 6 other scorers
+(Lo Celso, Lautaro, Álvarez, Enzo Fernández, Di María, Mac Allister).
+
+Oyarzabal (Spain): 5 of 13 goals (38.5%). Remaining 8 goals from 5 other scorers
+(Yamal, Baena, Fabián Ruiz, Merino, Morata, OG). Spain's QF vs Belgium was won
+by Fabián Ruiz (30') and Merino (88') — neither is Oyarzabal.
 
 ### 6. Momentum proxy predictive validation
 
 The momentum proxy correctly identified the "expected" scoring direction
-(positive momentum before scoring, negative before conceding) in **15 of 41
-goal events (36.6%)** — which is below chance.
+(positive momentum before scoring, negative before conceding) in **13 of 42
+goal events (31.0%)** — which is below chance.
 
 This is expected and honest: a goal-timing-only momentum model is descriptive,
 not predictive. The exponential decay of prior goals cannot anticipate the next
@@ -168,17 +180,17 @@ behind, every match has followed the same 2–1 script (score, equalize, winner)
 and they have played exactly 0 minutes beyond 90. Their momentum proxy is smooth
 and never reverses sign.
 
-Argentina's profile is one of resilience: they have been behind in 75% of their
-knockout matches and won every time, including from a 0–2 deficit. But they have
-played 90 minutes more than Spain at elevated pressure, and their defensive record
-is slightly worse (5 conceded vs 4 in the same number of matches).
+Argentina's profile is one of resilience: they have been behind in 50% of their
+knockout matches (Egypt and England) and won both, including from a 0–2 deficit.
+They have played 60 extra minutes beyond 90 that Spain have not, and their defensive
+record is slightly worse (6 conceded vs 4 in the same number of matches).
 
 The pattern that would favour Spain: if they score first (which their history
 suggests they do), they are in the only match state they have managed all
 tournament. Argentina have no experience scoring into an early Spain lead.
 
 The pattern that would favour Argentina: if the match goes to extra time
-(which Argentina have needed 3 times and Spain 0), Argentina's late-game goal
+(which Argentina have needed twice and Spain 0), Argentina's late-game goal
 distribution and demonstrated ET composure becomes relevant.
 
 What the final score actually will be is determined by football.

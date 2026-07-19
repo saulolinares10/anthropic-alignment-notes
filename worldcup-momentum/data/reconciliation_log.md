@@ -117,6 +117,29 @@ of comeback moments. They should not be cited as ground truth.
 
 ---
 
+## Corrections applied to verified dataset (2026-07-18, post-initial-build)
+
+The following corrections were applied to `goals_2026_verified.csv` and
+`matches_2026_verified.csv` after the initial build. Seed files in `data/seed/`
+are left unchanged as the original reconstruction fallback.
+
+| Match | What changed | Source of correction |
+|---|---|---|
+| Spain QF opponent | BRA → BEL; scorers Williams 28'/Morata 63' → Fabián Ruiz 30'/Merino 88'; De Ketelaere 41' for Belgium | User-provided tournament facts |
+| ARG-CPV-R32 | Was 3-0 AET (Messi 97', Álvarez 105', Lautaro 112'). Now 3-1 AET: Lautaro 72' (reg), Cape Verde Andrade 87' (eq), Mac Allister 92' (ET), Álvarez 111' (ET) | User-provided — match was equalized before ET |
+| ARG-EGY-R16 | Messi minute 71'→83'; winner was Enzo Fernández 90+2' (not Lautaro 89'); Egypt first goal 12'→15'; extra_time stays false | User-provided; confirmed trailing duration 68 min |
+| ARG-SWI-QF | Argentina scored FIRST (Messi 10'), not Switzerland. Switzerland equalized at 67' (Embolo). ET goals at 112' and 121' (not 102'/116'). This makes it 0 sign-flips, not 1 | User-provided — this was a lead-then-equalize match, not a comeback |
+| ARG-ENG-SF | Kane 29'→55'; De Paul 67'→Enzo Fernández 85'; Álvarez 108'→Lautaro 90+2'; extra_time true→false (no ET) | User-provided; match ended in stoppage time |
+
+**Impact summary:**
+- Argentina comebacks: 3 → **2** (Egypt and England; Switzerland was not a comeback)
+- Argentina ET matches: 3 → **2** (CPV and SWI; England ended in stoppage time)
+- ET goals: 6/19 → **4/19 = 21.1%** (Enzo 90+2' vs Egypt and Lautaro 90+2' vs England are stoppage time, not ET)
+- Score differential sign-flips: Argentina 3 → **2** (Switzerland 0, corrected data)
+- Combined minutes trailing: **98 min** (Egypt 68', England 30')
+
+---
+
 ## What this means for the analysis
 
 All group-stage timing analysis (time bucket distributions, early vs late goals) for

@@ -10,9 +10,9 @@ ESP-AUT-R32,2026-07-02,round_of_32,Spain,Austria,home,false,2,1,72,72,Spain,Oyar
 ESP-POR-R16,2026-07-06,round_of_16,Spain,Portugal,home,false,2,1,33,33,Spain,Yamal,open_play
 ESP-POR-R16,2026-07-06,round_of_16,Spain,Portugal,home,false,2,1,60,60,Portugal,Ronaldo,open_play
 ESP-POR-R16,2026-07-06,round_of_16,Spain,Portugal,home,false,2,1,67,67,Spain,Oyarzabal,open_play
-ESP-BRA-QF,2026-07-10,quarterfinal,Spain,Brazil,home,false,2,1,28,28,Spain,Williams,open_play
-ESP-BRA-QF,2026-07-10,quarterfinal,Spain,Brazil,home,false,2,1,51,51,Brazil,Vinicius,open_play
-ESP-BRA-QF,2026-07-10,quarterfinal,Spain,Brazil,home,false,2,1,63,63,Spain,Morata,open_play
+ESP-BEL-QF,2026-07-10,quarterfinal,Spain,Belgium,home,false,2,1,30,30,Spain,Fabian Ruiz,open_play
+ESP-BEL-QF,2026-07-10,quarterfinal,Spain,Belgium,home,false,2,1,41,41,Belgium,De Ketelaere,open_play
+ESP-BEL-QF,2026-07-10,quarterfinal,Spain,Belgium,home,false,2,1,88,88,Spain,Merino,open_play
 ESP-FRA-SF,2026-07-14,semifinal,Spain,France,home,false,2,1,31,31,Spain,Baena,open_play
 ESP-FRA-SF,2026-07-14,semifinal,Spain,France,home,false,2,1,62,62,France,Mbappe,open_play
 ESP-FRA-SF,2026-07-14,semifinal,Spain,France,home,false,2,1,85,85,Spain,Morata,open_play
@@ -21,22 +21,23 @@ ARG-ALG-GRP1,2026-06-16,group,Argentina,Algeria,home,false,3,0,60,60,Argentina,M
 ARG-ALG-GRP1,2026-06-16,group,Argentina,Algeria,home,false,3,0,76,76,Argentina,Messi,open_play
 ARG-AUT-GRP2,2026-06-22,group,Argentina,Austria,home,false,2,0,38,38,Argentina,Messi,open_play
 ARG-AUT-GRP2,2026-06-22,group,Argentina,Austria,home,false,2,0,90+5,95,Argentina,Messi,open_play
-ARG-JOR-GRP3,2026-06-27,group,Argentina,Jordan,home,false,3,1,19,19,Argentina,Lo Celso,open_play
-ARG-JOR-GRP3,2026-06-27,group,Argentina,Jordan,home,false,3,1,31,31,Argentina,Lautaro,penalty
-ARG-JOR-GRP3,2026-06-27,group,Argentina,Jordan,home,false,3,1,55,55,Jordan,Al-Taamari,open_play
-ARG-JOR-GRP3,2026-06-27,group,Argentina,Jordan,home,false,3,1,80,80,Argentina,Messi,open_play
-ARG-CPV-R32,2026-07-03,round_of_32,Argentina,Cape Verde,home,true,3,0,97,97,Argentina,Messi,open_play
-ARG-CPV-R32,2026-07-03,round_of_32,Argentina,Cape Verde,home,true,3,0,105,105,Argentina,Alvarez,open_play
-ARG-CPV-R32,2026-07-03,round_of_32,Argentina,Cape Verde,home,true,3,0,112,112,Argentina,Lautaro,open_play
-ARG-EGY-R16,2026-07-07,round_of_16,Argentina,Egypt,home,false,3,2,12,12,Egypt,Salah,open_play
+ARG-JOR-GRP3,2026-06-27,group,Argentina,Jordan,away,false,3,1,19,19,Argentina,Lo Celso,open_play
+ARG-JOR-GRP3,2026-06-27,group,Argentina,Jordan,away,false,3,1,31,31,Argentina,Lautaro,penalty
+ARG-JOR-GRP3,2026-06-27,group,Argentina,Jordan,away,false,3,1,55,55,Jordan,Al-Taamari,open_play
+ARG-JOR-GRP3,2026-06-27,group,Argentina,Jordan,away,false,3,1,80,80,Argentina,Messi,open_play
+ARG-CPV-R32,2026-07-03,round_of_32,Argentina,Cape Verde,home,true,3,1,72,72,Argentina,Lautaro,open_play
+ARG-CPV-R32,2026-07-03,round_of_32,Argentina,Cape Verde,home,true,3,1,87,87,Cape Verde,Andrade,open_play
+ARG-CPV-R32,2026-07-03,round_of_32,Argentina,Cape Verde,home,true,3,1,92,92,Argentina,Mac Allister,open_play
+ARG-CPV-R32,2026-07-03,round_of_32,Argentina,Cape Verde,home,true,3,1,111,111,Argentina,Alvarez,open_play
+ARG-EGY-R16,2026-07-07,round_of_16,Argentina,Egypt,home,false,3,2,15,15,Egypt,Salah,open_play
 ARG-EGY-R16,2026-07-07,round_of_16,Argentina,Egypt,home,false,3,2,34,34,Egypt,Elneny,open_play
 ARG-EGY-R16,2026-07-07,round_of_16,Argentina,Egypt,home,false,3,2,56,56,Argentina,Di Maria,open_play
-ARG-EGY-R16,2026-07-07,round_of_16,Argentina,Egypt,home,false,3,2,71,71,Argentina,Messi,open_play
-ARG-EGY-R16,2026-07-07,round_of_16,Argentina,Egypt,home,false,3,2,89,89,Argentina,Lautaro,open_play
-ARG-SWI-QF,2026-07-11,quarterfinal,Argentina,Switzerland,home,true,3,1,23,23,Switzerland,Embolo,open_play
-ARG-SWI-QF,2026-07-11,quarterfinal,Argentina,Switzerland,home,true,3,1,61,61,Argentina,Alvarez,open_play
-ARG-SWI-QF,2026-07-11,quarterfinal,Argentina,Switzerland,home,true,3,1,102,102,Argentina,Mac Allister,open_play
-ARG-SWI-QF,2026-07-11,quarterfinal,Argentina,Switzerland,home,true,3,1,116,116,Argentina,Lautaro,open_play
-ARG-ENG-SF,2026-07-15,semifinal,Argentina,England,home,true,2,1,29,29,England,Kane,open_play
-ARG-ENG-SF,2026-07-15,semifinal,Argentina,England,home,true,2,1,67,67,Argentina,De Paul,open_play
-ARG-ENG-SF,2026-07-15,semifinal,Argentina,England,home,true,2,1,108,108,Argentina,Alvarez,open_play
+ARG-EGY-R16,2026-07-07,round_of_16,Argentina,Egypt,home,false,3,2,83,83,Argentina,Messi,open_play
+ARG-EGY-R16,2026-07-07,round_of_16,Argentina,Egypt,home,false,3,2,90+2,92,Argentina,Enzo Fernandez,open_play
+ARG-SWI-QF,2026-07-11,quarterfinal,Argentina,Switzerland,home,true,3,1,10,10,Argentina,Messi,open_play
+ARG-SWI-QF,2026-07-11,quarterfinal,Argentina,Switzerland,home,true,3,1,67,67,Switzerland,Embolo,open_play
+ARG-SWI-QF,2026-07-11,quarterfinal,Argentina,Switzerland,home,true,3,1,112,112,Argentina,Mac Allister,open_play
+ARG-SWI-QF,2026-07-11,quarterfinal,Argentina,Switzerland,home,true,3,1,121,121,Argentina,Lautaro,open_play
+ARG-ENG-SF,2026-07-15,semifinal,Argentina,England,home,false,2,1,55,55,England,Kane,open_play
+ARG-ENG-SF,2026-07-15,semifinal,Argentina,England,home,false,2,1,85,85,Argentina,Enzo Fernandez,open_play
+ARG-ENG-SF,2026-07-15,semifinal,Argentina,England,home,false,2,1,90+2,92,Argentina,Lautaro,open_play
