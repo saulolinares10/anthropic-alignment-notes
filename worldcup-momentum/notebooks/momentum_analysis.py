@@ -927,8 +927,424 @@ def chart_methodology_explainer(goals, matches):
     print(f"Saved: {out}")
 
 
+# Also fix the stale 36.6% figure in the explainer — update when called from main
+def _fix_explainer_validation_text():
+    """Placeholder — validation text is now written dynamically from n_correct/n_total."""
+    pass
+
+
 # -----------------------------------------------------------------------------
-# 7. MAIN
+# 7. RESPONSE TIME & PRE-COMEBACK ANALYSIS
+# -----------------------------------------------------------------------------
+
+TEAM_CODE = {"Spain": "ESP", "Argentina": "ARG"}
+
+
+def compute_response_times(goals, matches):
+    """
+    For every concession event, find the next goal by the conceding team.
+    If a team concedes multiple times before responding, the gap is measured
+    from the MOST RECENT unanswered concession (pending is overwritten on each
+    new concession, so the oldest are naturally absorbed).
+    Returns a DataFrame sorted ascending by gap_minutes, no-response rows at end.
+    """
+    stage_order = {
+        "group": 0, "round_of_32": 1, "round_of_16": 2,
+        "quarterfinal": 3, "semifinal": 4,
+    }
+    results = []
+
+    for _, mrow in matches.sort_values("date").iterrows():
+        team = mrow["team"]
+        mid  = mrow["match_id"]
+        mg   = goals[goals["match_id"] == mid].sort_values("minute_numeric").copy()
+
+        pending = None   # dict or None — most recent unresponded concession
+
+        for _, g in mg.iterrows():
+            minute = float(g["minute_numeric"])
+            if g["scoring_team"] != team:
+                # New concession: overwrite pending (absorbs any earlier unresponded one)
+                pending = {
+                    "concede_minute":     minute,
+                    "concede_minute_raw": str(g["minute_raw"]),
+                    "concede_scorer":     g["scorer"],
+                }
+            else:
+                # Team scored: close out pending concession if one exists
+                if pending is not None:
+                    gap = minute - pending["concede_minute"]
+                    results.append({
+                        "team":                team,
+                        "match_id":            mid,
+                        "opponent":            mrow["opponent"],
+                        "stage":               mrow["stage"],
+                        "stage_order":         stage_order.get(mrow["stage"], 9),
+                        "concede_minute":      pending["concede_minute"],
+                        "concede_minute_raw":  pending["concede_minute_raw"],
+                        "concede_scorer":      pending["concede_scorer"],
+                        "response_minute":     minute,
+                        "response_minute_raw": str(g["minute_raw"]),
+                        "response_scorer":     g["scorer"],
+                        "gap_minutes":         gap,
+                        "no_response":         False,
+                    })
+                    pending = None
+
+        # Match ended with an unanswered concession
+        if pending is not None:
+            results.append({
+                "team":                team,
+                "match_id":            mid,
+                "opponent":            mrow["opponent"],
+                "stage":               mrow["stage"],
+                "stage_order":         stage_order.get(mrow["stage"], 9),
+                "concede_minute":      pending["concede_minute"],
+                "concede_minute_raw":  pending["concede_minute_raw"],
+                "concede_scorer":      pending["concede_scorer"],
+                "response_minute":     None,
+                "response_minute_raw": None,
+                "response_scorer":     None,
+                "gap_minutes":         None,
+                "no_response":         True,
+            })
+
+    df = pd.DataFrame(results)
+    responded = df[~df["no_response"]].sort_values("gap_minutes").reset_index(drop=True)
+    no_resp   = df[df["no_response"]].reset_index(drop=True)
+    return pd.concat([responded, no_resp], ignore_index=True)
+
+
+def chart_time_to_respond(response_df):
+    """
+    Chart A: Horizontal bar chart showing time-to-respond after each concession.
+    Sorted fastest (top) to slowest (bottom). No-response events below separator.
+    """
+    stage_labels = {
+        "group":        "Grp",
+        "round_of_32":  "R32",
+        "round_of_16":  "R16",
+        "quarterfinal": "QF",
+        "semifinal":    "SF",
+    }
+
+    responded = response_df[~response_df["no_response"]].copy()
+    no_resp   = response_df[response_df["no_response"]].copy()
+
+    def row_label(row):
+        code  = TEAM_CODE.get(row["team"], row["team"][:3].upper())
+        stage = stage_labels.get(row["stage"], row["stage"])
+        opp   = row["opponent"][:3].upper()
+        # Last word of scorer name (avoids long full names in labels)
+        conc_scorer = row["concede_scorer"].split()[-1]
+        return f"{code} | {stage} vs {opp} | conceded {int(row['concede_minute'])}'  ({conc_scorer})"
+
+    responded["label"]  = responded.apply(row_label, axis=1)
+    responded["colour"] = responded["team"].map(COLOUR)
+
+    n = len(responded)
+    fig_h = max(6, 0.75 * n + 2.5)
+    fig, ax = plt.subplots(figsize=(14, fig_h), dpi=150)
+    fig.patch.set_facecolor("#F8FAFC")
+    ax.set_facecolor("#FFFFFF")
+
+    # y positions: fastest at top (highest y value)
+    y_pos = list(range(n - 1, -1, -1))   # [n-1, n-2, ..., 0]
+
+    ax.barh(y_pos,
+            responded["gap_minutes"].tolist(),
+            color=responded["colour"].tolist(),
+            alpha=0.85, height=0.55,
+            edgecolor="white", linewidth=0.8)
+
+    # Response label on each bar
+    for yi, (_, row) in zip(y_pos, responded.iterrows()):
+        resp_last   = row["response_scorer"].split()[-1]
+        resp_raw    = row["response_minute_raw"]
+        gap         = int(row["gap_minutes"])
+        label_text  = f"{resp_last} {resp_raw}'  +{gap} min"
+        bar_end     = row["gap_minutes"]
+        ax.text(bar_end + 0.6, yi, label_text,
+                va="center", ha="left", fontsize=9,
+                color="#334155", fontweight="bold")
+
+    # Y-axis labels
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(responded["label"].tolist(), fontsize=9.5, color="#1E293B")
+
+    # Annotations: fastest (top) and slowest (bottom)
+    fastest = responded.iloc[0]
+    slowest = responded.iloc[-1]
+
+    ax.annotate(
+        f"Fastest: {int(fastest['gap_minutes'])} min",
+        xy=(fastest["gap_minutes"], n - 1),
+        xytext=(fastest["gap_minutes"] + 14, n - 1 + 0.6),
+        fontsize=9.5, color="#059669", fontweight="bold",
+        arrowprops=dict(arrowstyle="->", color="#059669", lw=1.3),
+    )
+    ax.annotate(
+        f"Slowest: {int(slowest['gap_minutes'])} min",
+        xy=(slowest["gap_minutes"], 0),
+        xytext=(slowest["gap_minutes"] - 24, -0.7),
+        fontsize=9.5, color="#B91C1C", fontweight="bold",
+        arrowprops=dict(arrowstyle="->", color="#B91C1C", lw=1.3),
+    )
+
+    # No-response section at bottom (if any)
+    if len(no_resp) > 0:
+        ax.axhline(-0.6, color="#CBD5E1", linewidth=0.8, linestyle="--")
+        for k, (_, row) in enumerate(no_resp.iterrows()):
+            ax.text(0.5, -(0.9 + k * 0.7),
+                    f"{row_label(row)}  [NO RESPONSE]",
+                    va="center", ha="left", fontsize=9, color="#94A3B8")
+
+    no_resp_note = (
+        f"All {n} concession events had a same-match response — 0 'no response' events."
+        if len(no_resp) == 0
+        else f"{len(no_resp)} concession(s) had no same-match response (shown below dashed line)."
+    )
+
+    ax.set_xlabel("Minutes from concession to next team goal", fontsize=11, color="#334155")
+    ax.set_xlim(0, responded["gap_minutes"].max() * 1.42)
+    ax.set_ylim(-1.2, n)
+    ax.grid(axis="x", alpha=0.25, color="#CBD5E1")
+    ax.set_axisbelow(True)
+    for spine in ["top", "right"]:
+        ax.spines[spine].set_visible(False)
+    for spine in ["left", "bottom"]:
+        ax.spines[spine].set_edgecolor("#CBD5E1")
+
+    legend_patches = [
+        mpatches.Patch(color=COLOUR["Spain"],     label="Spain"),
+        mpatches.Patch(color=COLOUR["Argentina"], label="Argentina"),
+    ]
+    ax.legend(handles=legend_patches, fontsize=10, loc="lower right")
+
+    # Note about multi-goal sequences
+    ax.text(0.01, -0.08,
+            "* ARG vs Egypt: conceded at 15' (Salah) then 34' (Elneny) before responding — "
+            "gap computed from most recent concession (34').",
+            transform=ax.transAxes, fontsize=8, color="#94A3B8", style="italic")
+
+    ax.set_title(
+        "Time to Respond After Conceding — Spain & Argentina, 2026 World Cup\n"
+        f"Gap = minutes from most recent unanswered concession to next own goal  |  "
+        f"Sorted fastest to slowest  |  {no_resp_note}",
+        fontsize=11, fontweight="bold", color="#1E293B", pad=10
+    )
+
+    out = CHARTS_DIR / "time_to_respond.png"
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
+    plt.close(fig)
+    print(f"Saved: {out}")
+
+
+def chart_pre_comeback_dip(goals, matches):
+    """
+    Chart B: 15-min before / 5-min after window for Argentina's 2 equalizing goals
+    in comeback matches (ARG-EGY-R16 Messi 83', ARG-ENG-SF Enzo 85').
+    Checks whether momentum is at/near its match minimum in the 10 min before each goal.
+    Returns list of finding dicts (printed and embedded in suptitle).
+    """
+    # The equalizer in each genuine comeback (not the winner — the pivot moment)
+    COMEBACK_WINDOWS = [
+        ("ARG-EGY-R16", "Argentina", 83,
+         "Messi 83' equalizer vs Egypt  (came from 0-2)"),
+        ("ARG-ENG-SF",  "Argentina", 85,
+         "Enzo 85' equalizer vs England  (came from 0-1)"),
+    ]
+
+    PRE        = 15   # minutes to show before the goal
+    POST       = 5    # minutes to show after the goal
+    TEN_BEFORE = 10   # window for the dip-check
+
+    fig, axes = plt.subplots(
+        1, 2, figsize=(15, 7.5), sharey=True, dpi=150,
+        gridspec_kw={"wspace": 0.08}
+    )
+    fig.patch.set_facecolor("#F8FAFC")
+
+    colour   = COLOUR["Argentina"]
+    findings = []
+
+    for ax, (mid, team, goal_min, title_suffix) in zip(axes, COMEBACK_WINDOWS):
+        mg      = goals[goals["match_id"] == mid]
+        mrow    = matches[matches["match_id"] == mid].iloc[0]
+        max_match_min = max(int(mg["minute_numeric"].max()) + 5, 90)
+
+        # Full match momentum (needed for global minimum and to clip the window)
+        full_min_arr, full_mom_arr = compute_momentum(mg, team, max_minute=max_match_min)
+        # full_min_arr[i] == i+1 (minute 1 = index 0)
+
+        # Global minimum
+        global_min_idx = int(np.argmin(full_mom_arr))
+        global_min_val = float(full_mom_arr[global_min_idx])
+        global_min_min = int(full_min_arr[global_min_idx])
+
+        # Momentum exactly 10 min before the goal
+        ten_before_min = goal_min - TEN_BEFORE    # the minute to sample
+        if 1 <= ten_before_min <= max_match_min:
+            ten_before_val = float(full_mom_arr[ten_before_min - 1])   # -1: 0-indexed
+        else:
+            ten_before_val = float("nan")
+
+        # Ratio: how close is the 10-min-before value to the global minimum?
+        if global_min_val != 0 and not math.isnan(ten_before_val):
+            ratio_pct = 100.0 * abs(ten_before_val) / abs(global_min_val)
+        else:
+            ratio_pct = float("nan")
+
+        # Pattern holds if: momentum is negative AND within 75% of global minimum
+        pattern_holds = (
+            (not math.isnan(ten_before_val))
+            and (ten_before_val < 0)
+            and (ratio_pct >= 75.0)
+        )
+
+        findings.append({
+            "match":           mid,
+            "goal_min":        goal_min,
+            "title_suffix":    title_suffix,
+            "global_min_val":  global_min_val,
+            "global_min_min":  global_min_min,
+            "ten_before_val":  ten_before_val,
+            "ten_before_min":  ten_before_min,
+            "ratio_pct":       ratio_pct,
+            "pattern_holds":   pattern_holds,
+        })
+
+        # --- Plot windowed momentum ---
+        w_start = max(1, goal_min - PRE)
+        w_end   = min(max_match_min, goal_min + POST)
+        mask    = (full_min_arr >= w_start) & (full_min_arr <= w_end)
+        win_min = full_min_arr[mask]
+        win_mom = full_mom_arr[mask]
+
+        ax.set_facecolor("#FFFFFF")
+        ax.axhline(0, color="#1E293B", linewidth=1.8, zorder=1)
+
+        # Yellow shading: 10-min pre-goal window
+        ax.axvspan(ten_before_min, goal_min,
+                   color="#FEF3C7", alpha=0.55, zorder=1,
+                   label=f"10-min analysis window ({ten_before_min}' – {goal_min}')")
+
+        # Goal vertical marker
+        ax.axvline(goal_min, color=colour, linewidth=1.4,
+                   linestyle="--", alpha=0.75, zorder=2)
+
+        # Momentum fill and line
+        ax.fill_between(win_min, win_mom, 0,
+                        where=(win_mom >= 0), color=colour, alpha=0.18, zorder=2)
+        ax.fill_between(win_min, win_mom, 0,
+                        where=(win_mom < 0), color="#64748B", alpha=0.18, zorder=2)
+        ax.plot(win_min, win_mom, color=colour, linewidth=2.8, zorder=3)
+
+        # Marker: 10-min-before sample
+        ax.scatter(ten_before_min, ten_before_val,
+                   s=90, color="#F59E0B", marker="D", zorder=6,
+                   edgecolors="white", linewidths=1.2)
+        ax.annotate(
+            f"{ten_before_min}': {ten_before_val:+.2f}",
+            xy=(ten_before_min, ten_before_val),
+            xytext=(ten_before_min - 4, ten_before_val - 0.18),
+            fontsize=8.5, color="#92400E",
+            arrowprops=dict(arrowstyle="->", color="#92400E", lw=1.0),
+        )
+
+        # Marker: goal itself
+        goal_mom_val = float(full_mom_arr[goal_min - 1])
+        ax.scatter(goal_min, goal_mom_val,
+                   s=110, color=colour, zorder=6,
+                   edgecolors="white", linewidths=1.5)
+        ax.annotate(
+            f"Goal {goal_min}'",
+            xy=(goal_min, goal_mom_val),
+            xytext=(goal_min + 0.8, goal_mom_val + 0.12),
+            fontsize=8.5, color=colour, fontweight="bold",
+        )
+
+        # Concession goals in window (for visual context)
+        for _, g in mg.sort_values("minute_numeric").iterrows():
+            gm = int(g["minute_numeric"])
+            if gm < w_start or gm > w_end:
+                continue
+            if g["scoring_team"] != team:
+                idx = min(gm - 1, len(full_mom_arr) - 1)
+                ax.scatter(gm, float(full_mom_arr[idx]),
+                           s=70, color="#EF4444", zorder=5,
+                           edgecolors="white", linewidths=1.0,
+                           marker="v")
+
+        # Info text box
+        status_text = "HOLDS" if pattern_holds else "DOES NOT HOLD"
+        status_col  = "#059669" if pattern_holds else "#B91C1C"
+        info = (
+            f"Match minimum: {global_min_val:+.2f}  at {global_min_min}'\n"
+            f"At {ten_before_min}' (10 min before):  {ten_before_val:+.2f}\n"
+            f"  = {ratio_pct:.0f}% of match minimum\n"
+            f"'Dip right before comeback':  {status_text}"
+        )
+        ax.text(0.03, 0.97, info,
+                transform=ax.transAxes, fontsize=9.5,
+                va="top", ha="left", color=status_col,
+                bbox=dict(boxstyle="round,pad=0.45", facecolor="white",
+                          edgecolor="#CBD5E1", alpha=0.95))
+
+        opp   = mrow["opponent"]
+        score = f"{mrow['final_score_team']}-{mrow['final_score_opp']}"
+        stage = STAGE_LABELS.get(mrow["stage"], mrow["stage"])
+        ax.set_title(
+            f"Argentina {stage} vs {opp}  |  {score}\n{title_suffix}",
+            fontsize=12, fontweight="bold", color="#1E293B", pad=8
+        )
+        ax.set_xlabel("Match minute", fontsize=10, color="#334155")
+        ax.set_xlim(w_start - 0.5, w_end + 0.5)
+        ax.set_xticks(range(w_start, w_end + 1, 3))
+        ax.tick_params(labelsize=9, colors="#64748B")
+        ax.grid(axis="y", alpha=0.2, color="#CBD5E1")
+        for spine in ["top", "right"]:
+            ax.spines[spine].set_visible(False)
+        for spine in ["left", "bottom"]:
+            ax.spines[spine].set_edgecolor("#CBD5E1")
+        ax.legend(fontsize=8, loc="upper right")
+
+    axes[0].set_ylabel("Momentum (proxy)", fontsize=11, color="#334155")
+
+    # Overall finding for suptitle
+    n_hold = sum(1 for f in findings if f["pattern_holds"])
+    if n_hold == 2:
+        finding_line = (
+            "Pattern holds for both: momentum at match minimum right before each comeback goal."
+        )
+    elif n_hold == 0:
+        finding_line = (
+            "Pattern holds for neither match. "
+            "The 12-min half-life means the model forgets old concessions before the comeback arrives — "
+            "the nadir is history, not the current moment."
+        )
+    else:
+        hold_match = next(f["match"] for f in findings if f["pattern_holds"])
+        finding_line = (
+            f"Pattern holds for {hold_match} only; see info boxes for per-match breakdown."
+        )
+
+    fig.suptitle(
+        "Pre-Comeback Momentum Dip  |  15 min before / 5 min after Argentina's equalizers\n"
+        f"Yellow = 10-min analysis window  |  Diamond = sampled value 10 min pre-goal  |  {finding_line}",
+        fontsize=10.5, fontweight="bold", color="#1E293B", y=1.03
+    )
+
+    out = CHARTS_DIR / "pre_comeback_dip.png"
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
+    plt.close(fig)
+    print(f"Saved: {out}")
+
+    return findings
+
+
+# -----------------------------------------------------------------------------
+# 8. MAIN
 # -----------------------------------------------------------------------------
 
 def main():
@@ -952,6 +1368,43 @@ def main():
     chart_volatility(goals, matches)
     chart_hero_4panel(goals, matches)
     chart_methodology_explainer(goals, matches)
+
+    # -- Response time analysis
+    print("\n-- Computing response times after conceding...")
+    response_df = compute_response_times(goals, matches)
+
+    csv_cols = [
+        "team", "match_id", "opponent", "stage",
+        "concede_minute", "concede_minute_raw", "concede_scorer",
+        "response_minute", "response_minute_raw", "response_scorer",
+        "gap_minutes", "no_response",
+    ]
+    csv_path = DATA_DIR / "response_times.csv"
+    response_df[csv_cols].to_csv(csv_path, index=False)
+    print(f"Saved: {csv_path}")
+
+    responded = response_df[~response_df["no_response"]]
+    print(f"\n  Response events: {len(responded)}  |  No-response: {len(response_df) - len(responded)}")
+    for _, row in responded.iterrows():
+        print(f"    {TEAM_CODE.get(row['team'], '???')} vs {row['opponent'][:3].upper()} "
+              f"({STAGE_LABELS.get(row['stage'], row['stage'])}): "
+              f"conceded {int(row['concede_minute'])}' ({row['concede_scorer'].split()[-1]}) "
+              f"-> {row['response_minute_raw']}' ({row['response_scorer'].split()[-1]}): "
+              f"+{int(row['gap_minutes'])} min")
+
+    chart_time_to_respond(response_df)
+
+    # -- Pre-comeback dip analysis
+    print("\n-- Analysing pre-comeback momentum dip...")
+    findings = chart_pre_comeback_dip(goals, matches)
+    print("\n  Pre-comeback dip results:")
+    for f in findings:
+        sign_tag = "POSITIVE" if f["ten_before_val"] > 0 else "negative"
+        print(f"    {f['match']}  |  equalizer at {f['goal_min']}'")
+        print(f"      Global min: {f['global_min_val']:+.3f} at {f['global_min_min']}'")
+        print(f"      10 min before ({f['ten_before_min']}'): {f['ten_before_val']:+.3f} "
+              f"({sign_tag}, {f['ratio_pct']:.0f}% of min)")
+        print(f"      Pattern holds: {'YES' if f['pattern_holds'] else 'NO'}")
 
     print(f"\nAll charts saved to: {CHARTS_DIR.resolve()}")
     print("\nDone.")

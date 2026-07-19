@@ -197,6 +197,31 @@ What the final score actually will be is determined by football.
 
 ---
 
+## Response times after conceding (auditable table)
+
+Full table in `data/response_times.csv`. Logic: for each concession event, the gap is
+measured from the **most recent unanswered concession** to the next team goal. If a team
+concedes twice in sequence before responding, the earlier concession is absorbed
+(gap computed from the later one). Argentina vs Egypt conceded at 15' (Salah) then 34'
+(Elneny) before responding; the row reports the 34' concession and a 22-minute gap.
+
+| Team | Stage vs Opp | Conceded | Scorer | Responded | Responder | Gap |
+|---|---|---|---|---|---|---|
+| ARG | R32 vs Cape Verde | 87' | Andrade | 92' | Mac Allister | **5 min** |
+| ESP | R16 vs Portugal | 60' | Ronaldo | 67' | Oyarzabal | 7 min |
+| ESP | R32 vs Austria | 55' | Arnautovic | 72' | Oyarzabal | 17 min |
+| ARG | R16 vs Egypt | 34'* | Elneny | 56' | Di María | 22 min |
+| ESP | SF vs France | 62' | Mbappé | 85' | Morata | 23 min |
+| ARG | Group vs Jordan | 55' | Al-Taamari | 80' | Messi | 25 min |
+| ARG | SF vs England | 55' | Kane | 85' | Enzo Fernández | 30 min |
+| ARG | QF vs Switzerland | 67' | Embolo | 112' | Mac Allister | 45 min |
+| ESP | QF vs Belgium | 41' | De Ketelaere | 88' | Merino | **47 min** |
+
+*Argentina also conceded at 15' (Salah) before the 34' Elneny goal; gap computed from 34'.
+Both teams responded to every concession — 0 "no response" events.
+
+---
+
 ## Reproducing this analysis
 
 ```bash

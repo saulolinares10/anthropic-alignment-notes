@@ -1,0 +1,10 @@
+team,match_id,opponent,stage,concede_minute,concede_minute_raw,concede_scorer,response_minute,response_minute_raw,response_scorer,gap_minutes,no_response
+Argentina,ARG-CPV-R32,Cape Verde,round_of_32,87.0,87,Andrade,92.0,92,Mac Allister,5.0,False
+Spain,ESP-POR-R16,Portugal,round_of_16,60.0,60,Ronaldo,67.0,67,Oyarzabal,7.0,False
+Spain,ESP-AUT-R32,Austria,round_of_32,55.0,55,Arnautovic,72.0,72,Oyarzabal,17.0,False
+Argentina,ARG-EGY-R16,Egypt,round_of_16,34.0,34,Elneny,56.0,56,Di Maria,22.0,False
+Spain,ESP-FRA-SF,France,semifinal,62.0,62,Mbappe,85.0,85,Morata,23.0,False
+Argentina,ARG-JOR-GRP3,Jordan,group,55.0,55,Al-Taamari,80.0,80,Messi,25.0,False
+Argentina,ARG-ENG-SF,England,semifinal,55.0,55,Kane,85.0,85,Enzo Fernandez,30.0,False
+Argentina,ARG-SWI-QF,Switzerland,quarterfinal,67.0,67,Embolo,112.0,112,Mac Allister,45.0,False
+Spain,ESP-BEL-QF,Belgium,quarterfinal,41.0,41,De Ketelaere,88.0,88,Merino,47.0,False
