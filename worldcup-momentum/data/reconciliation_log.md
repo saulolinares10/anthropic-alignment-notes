@@ -131,12 +131,58 @@ are left unchanged as the original reconstruction fallback.
 | ARG-SWI-QF | Argentina scored FIRST (Messi 10'), not Switzerland. Switzerland equalized at 67' (Embolo). ET goals at 112' and 121' (not 102'/116'). This makes it 0 sign-flips, not 1 | User-provided — this was a lead-then-equalize match, not a comeback |
 | ARG-ENG-SF | Kane 29'→55'; De Paul 67'→Enzo Fernández 85'; Álvarez 108'→Lautaro 90+2'; extra_time true→false (no ET) | User-provided; match ended in stoppage time |
 
-**Impact summary:**
+**Impact summary (2026-07-18 batch):**
 - Argentina comebacks: 3 → **2** (Egypt and England; Switzerland was not a comeback)
 - Argentina ET matches: 3 → **2** (CPV and SWI; England ended in stoppage time)
 - ET goals: 6/19 → **4/19 = 21.1%** (Enzo 90+2' vs Egypt and Lautaro 90+2' vs England are stoppage time, not ET)
 - Score differential sign-flips: Argentina 3 → **2** (Switzerland 0, corrected data)
 - Combined minutes trailing: **98 min** (Egypt 68', England 30')
+
+---
+
+## Independent source verification (2026-07-19)
+
+### ARG-ENG-SF — VERIFIED ✓
+
+**Source:** FIFA official match centre  
+**URL:** https://www.fifa.com/en/match-centre/match/17/285023/289290/400021540?date=2026-07-15  
+**Confirmed from page:** Gordon 55' (England), Enzo Fernández 85' (Argentina), Lautaro Martínez 90+2' (Argentina). Final score Argentina 2–1 England. No extra time.
+
+This matches the goal data already in `goals_2026_verified.csv` and `matches_2026_verified.csv` exactly. No changes needed for this match.
+
+**Note:** During a live verification attempt (2026-07-19), the Wikipedia 2026 knockout stage page returned a summary showing "3–1 AET" for this match. That entry was incorrect — either a Wikipedia data error or a misparse of another fixture in the condensed bracket. The FIFA match centre is the authoritative source; the data already in the verified CSVs was correct.
+
+---
+
+### ESP-FRA-SF — CORRECTED and VERIFIED ✓
+
+**Sources (three independent, all agreeing):**
+- FIFA match report: https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/france-spain-match-report-highlights
+- ESPN: https://www.espn.com/soccer/match/_/gameId/760514/spain-france
+- Al Jazeera: https://www.aljazeera.com/sports/2026/7/14/spain-deliver-masterclass-to-beat-france-2-0-and-reach-world-cup-final
+
+**Confirmed:** Spain 2–0 France. Goalscorers: Mikel Oyarzabal (penalty, 22'), Pedro Porro (58'). France scored 0 goals. Spain never conceded in this match.
+
+**What the initial reconstruction had wrong:** The seed data and initial build used Spain 2–1 France (Baena 31', Mbappé 62', Morata 85'), reconstructed without a live source. All three goalscorers and the scoreline were incorrect. The earlier Mbappé 62' concession event was flagged as unsourced; it was not merely unsourced — it did not happen.
+
+**Note:** The Wikipedia 2026 knockout stage page also showed "France 2–1 Spain" for this match, the opposite result. That entry was incorrect. The consensus of FIFA + ESPN + Al Jazeera establishes Spain 2–0 France conclusively.
+
+**Corrections applied to verified dataset (2026-07-19):**
+- `goals_2026_verified.csv`: ESP-FRA-SF rows replaced. Old: Baena 31' / Mbappé 62' / Morata 85' (3 rows, final_score_opp=1). New: Oyarzabal 22' pen / Porro 58' (2 rows, final_score_opp=0).
+- `matches_2026_verified.csv`: ESP-FRA-SF final_score_opp 1 → 0, notes updated.
+
+**Cascade impact on derived numbers:**
+- Spain goals conceded: 4 → **3** (0.57/match → 0.43/match)
+- Spain time-bucket distribution shifts: 16–30 gains +1 (Oyarzabal 22'), 31–45 loses −1 (Baena 31' removed), 46–60 gains +1 (Porro 58'), 76–90 loses −1 (Morata 85' removed)
+- Oyarzabal goal tally: 5/13 → **6/13** (46.2%)
+- Response times: Spain's Mbappé→Morata event (gap 23 min) removed; 9 response events → **8**
+- Spain "4 knockout matches equalized" → **3** (France SF was 2–0, no equalizer)
+- Spain's "every match followed 2–1 script" → corrected to **3 of 4 knockout matches**
+
+**Unaffected items:**
+- Spain 0 sign-flips: still correct (France SF differential went positive at 22' and stayed positive)
+- Spain never trailed: still correct (0–0 → 1–0 → 2–0 in France SF)
+- ARG-ENG-SF concession events: unchanged (Gordon 55', confirmed above)
 
 ---
 

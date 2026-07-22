@@ -13,9 +13,8 @@ ESP-POR-R16,2026-07-06,round_of_16,Spain,Portugal,home,false,2,1,67,67,Spain,Oya
 ESP-BEL-QF,2026-07-10,quarterfinal,Spain,Belgium,home,false,2,1,30,30,Spain,Fabian Ruiz,open_play
 ESP-BEL-QF,2026-07-10,quarterfinal,Spain,Belgium,home,false,2,1,41,41,Belgium,De Ketelaere,open_play
 ESP-BEL-QF,2026-07-10,quarterfinal,Spain,Belgium,home,false,2,1,88,88,Spain,Merino,open_play
-ESP-FRA-SF,2026-07-14,semifinal,Spain,France,home,false,2,1,31,31,Spain,Baena,open_play
-ESP-FRA-SF,2026-07-14,semifinal,Spain,France,home,false,2,1,62,62,France,Mbappe,open_play
-ESP-FRA-SF,2026-07-14,semifinal,Spain,France,home,false,2,1,85,85,Spain,Morata,open_play
+ESP-FRA-SF,2026-07-14,semifinal,Spain,France,home,false,2,0,22,22,Spain,Oyarzabal,penalty
+ESP-FRA-SF,2026-07-14,semifinal,Spain,France,home,false,2,0,58,58,Spain,Porro,open_play
 ARG-ALG-GRP1,2026-06-16,group,Argentina,Algeria,home,false,3,0,17,17,Argentina,Messi,open_play
 ARG-ALG-GRP1,2026-06-16,group,Argentina,Algeria,home,false,3,0,60,60,Argentina,Messi,open_play
 ARG-ALG-GRP1,2026-06-16,group,Argentina,Algeria,home,false,3,0,76,76,Argentina,Messi,open_play

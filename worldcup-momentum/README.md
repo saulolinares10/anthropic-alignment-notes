@@ -85,8 +85,9 @@ arbitrary but documented — which is more than the broadcast version offers.
 ### 1. Comeback rate
 
 **Spain:** Trailed in 0 of 4 knockout matches. Spain scored first in every knockout
-match and was never behind. In all four knockout matches they were equalized (once
-per match: Austria R32, Portugal R16, Belgium QF, France SF) but never went behind.
+match and was never behind. In three of four knockout matches they were equalized
+(Austria R32, Portugal R16, Belgium QF) but never went behind. Spain won the France
+semifinal 2–0 without conceding — the one knockout match where no equalizer arrived.
 
 **Argentina:** Trailed in 2 of 4 knockout matches — R16 vs Egypt (from 0–2 down,
 68 minutes trailing) and SF vs England (0–1 from minute 55, 30 minutes trailing).
@@ -102,17 +103,18 @@ as every Spain knockout match.
 | Bucket | Spain (n=13) | Argentina (n=19) |
 |---|---|---|
 | 1–15 min | 1 (7.7%) | 1 (5.3%) |
-| 16–30 | 3 (23.1%) | 2 (10.5%) |
-| 31–45 | 4 (30.8%) | 2 (10.5%) |
-| 46–60 | 1 (7.7%) | 2 (10.5%) |
+| 16–30 | 4 (30.8%) | 2 (10.5%) |
+| 31–45 | 3 (23.1%) | 2 (10.5%) |
+| 46–60 | 2 (15.4%) | 2 (10.5%) |
 | 61–75 | 2 (15.4%) | 1 (5.3%) |
-| 76–90 | 2 (15.4%) | 4 (21.1%) |
+| 76–90 | 1 (7.7%) | 4 (21.1%) |
 | 90+ (stoppage) | 0 (0.0%) | 3 (15.8%) |
 | True extra time | **0 (0.0%)** | **4 (21.1%)** |
 
 "True extra time" = match went to AET AND goal minute > 90. Goals at 90+2'
 in matches that ended in regulation (Argentina vs Egypt, vs England) are
-stoppage time, not extra time. Spain clusters in 31–45 (31% of goals). Argentina's
+stoppage time, not extra time. Spain's peak window is 16–30 (31% of goals), driven
+by Oyarzabal's penalty at 22' in the France SF and two KSA goals. Argentina's
 tail is striking: 57.9% of goals come in the 76th minute or later, including
 21.1% in genuine extra time. Spain has zero goals beyond the 90th minute this tournament.
 
@@ -128,7 +130,7 @@ vs England ended in stoppage time (Lautaro 90+2'), not extra time — Argentina 
 
 ### 4. Defensive suppression vs scoreline volatility
 
-**Spain:** 4 goals conceded in 7 matches (0.57/match). **0 sign-flips** in score
+**Spain:** 3 goals conceded in 7 matches (0.43/match). **0 sign-flips** in score
 differential across all 7 matches — Spain's differential went 0 → positive and
 never reversed. They have never been behind in this tournament.
 
@@ -152,8 +154,8 @@ Both winning goals were delivered by other players under maximum pressure.
 Messi (Argentina): 8 of 19 goals (42.1%). Remaining 11 goals from 6 other scorers
 (Lo Celso, Lautaro, Álvarez, Enzo Fernández, Di María, Mac Allister).
 
-Oyarzabal (Spain): 5 of 13 goals (38.5%). Remaining 8 goals from 5 other scorers
-(Yamal, Baena, Fabián Ruiz, Merino, Morata, OG). Spain's QF vs Belgium was won
+Oyarzabal (Spain): 6 of 13 goals (46.2%). Remaining 7 goals from 5 other scorers
+(Yamal, Baena, Fabián Ruiz, Merino, Porro, OG). Spain's QF vs Belgium was won
 by Fabián Ruiz (30') and Merino (88') — neither is Oyarzabal.
 
 ### 6. Momentum proxy predictive validation
@@ -176,14 +178,15 @@ the rhythm of a match; it is not a forecasting tool.
 sample. Read as "if this were the only evidence."*
 
 Spain's profile entering the final is one of consistency: they have never been
-behind, every match has followed the same 2–1 script (score, equalize, winner),
-and they have played exactly 0 minutes beyond 90. Their momentum proxy is smooth
-and never reverses sign.
+behind, three knockout matches followed the 2–1 script (score, equalize, winner),
+and the France semifinal extended that dominance one step further — a 2–0 win
+where they never needed to respond to an equalizer. They have played exactly 0
+minutes beyond 90. Their momentum proxy is smooth and never reverses sign.
 
 Argentina's profile is one of resilience: they have been behind in 50% of their
 knockout matches (Egypt and England) and won both, including from a 0–2 deficit.
 They have played 60 extra minutes beyond 90 that Spain have not, and their defensive
-record is slightly worse (6 conceded vs 4 in the same number of matches).
+record is slightly worse (6 conceded vs 3 in the same number of matches).
 
 The pattern that would favour Spain: if they score first (which their history
 suggests they do), they are in the only match state they have managed all
@@ -205,20 +208,21 @@ concedes twice in sequence before responding, the earlier concession is absorbed
 (gap computed from the later one). Argentina vs Egypt conceded at 15' (Salah) then 34'
 (Elneny) before responding; the row reports the 34' concession and a 22-minute gap.
 
+Spain never conceded in the France semifinal (2–0 win) so that match has no row.
+
 | Team | Stage vs Opp | Conceded | Scorer | Responded | Responder | Gap |
 |---|---|---|---|---|---|---|
 | ARG | R32 vs Cape Verde | 87' | Andrade | 92' | Mac Allister | **5 min** |
 | ESP | R16 vs Portugal | 60' | Ronaldo | 67' | Oyarzabal | 7 min |
 | ESP | R32 vs Austria | 55' | Arnautovic | 72' | Oyarzabal | 17 min |
 | ARG | R16 vs Egypt | 34'* | Elneny | 56' | Di María | 22 min |
-| ESP | SF vs France | 62' | Mbappé | 85' | Morata | 23 min |
 | ARG | Group vs Jordan | 55' | Al-Taamari | 80' | Messi | 25 min |
 | ARG | SF vs England | 55' | Kane | 85' | Enzo Fernández | 30 min |
 | ARG | QF vs Switzerland | 67' | Embolo | 112' | Mac Allister | 45 min |
 | ESP | QF vs Belgium | 41' | De Ketelaere | 88' | Merino | **47 min** |
 
 *Argentina also conceded at 15' (Salah) before the 34' Elneny goal; gap computed from 34'.
-Both teams responded to every concession — 0 "no response" events.
+Both teams responded to every concession — 8 total events, 0 "no response".
 
 ---
 

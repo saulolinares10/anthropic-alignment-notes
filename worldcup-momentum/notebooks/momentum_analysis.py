@@ -1344,7 +1344,220 @@ def chart_pre_comeback_dip(goals, matches):
 
 
 # -----------------------------------------------------------------------------
-# 8. MAIN
+# 8. FINAL EXPLAINER CHART
+# -----------------------------------------------------------------------------
+
+def chart_momentum_explainer_final(goals, matches):
+    """
+    Final explainer: Argentina vs England SF (FIFA-verified data only).
+
+    Top half   — swing metaphor, plain language, three annotations:
+                 Gordon 55' "England gets the push", decay stretch
+                 "The swing loses height on its own", Enzo 85'
+                 "Argentina gets the push back".
+    Bottom half — formula, half-life sentence, limitation stated plainly.
+    Headline   — "The height reflects the last 10–15 minutes, not the whole match."
+
+    Source cited in fine print: FIFA official match centre URL.
+    """
+    MID      = "ARG-ENG-SF"
+    TEAM     = "Argentina"
+    colour   = COLOUR[TEAM]
+    ENG_RED  = "#DC2626"
+    FIFA_URL = ("https://www.fifa.com/en/match-centre/match/"
+                "17/285023/289290/400021540?date=2026-07-15")
+
+    mg      = goals[goals["match_id"] == MID]
+    max_min = 95     # covers 90+2 = minute 92
+    minutes, mom = compute_momentum(mg, TEAM, max_minute=max_min)
+
+    # Key events (0-indexed: minute N lives at mom[N-1])
+    G_GORDON  = 55
+    G_ENZO    = 85
+    G_LAUTARO = 92
+    DECAY_REF = 72   # annotation target for decay stretch
+
+    val_gordon  = float(mom[G_GORDON  - 1])   # ≈ -1.000
+    val_decay   = float(mom[DECAY_REF - 1])   # ≈ -0.374
+    val_enzo    = float(mom[G_ENZO    - 1])   # ≈ +0.823
+    val_lautaro = float(mom[G_LAUTARO - 1])   # ≈ +1.553
+
+    # ── Figure layout ────────────────────────────────────────────────────────
+    fig = plt.figure(figsize=(16, 10), dpi=150)
+    fig.patch.set_facecolor("#FAFAFA")
+    gs = gridspec.GridSpec(
+        2, 1,
+        height_ratios=[2.5, 1],
+        hspace=0.55,
+        top=0.82, bottom=0.08, left=0.06, right=0.97,
+    )
+    ax  = fig.add_subplot(gs[0])
+    ax2 = fig.add_subplot(gs[1])
+
+    # ── Headline (core insight — most prominent element) ─────────────────────
+    fig.text(
+        0.5, 0.975,
+        "The height reflects the last 10–15 minutes, not the whole match.",
+        ha="center", va="top",
+        fontsize=18, fontweight="bold", color="#0F172A",
+    )
+    fig.text(
+        0.5, 0.935,
+        "A team can dominate for an hour and show a flat line if nothing scored recently — "
+        "a goal from 40 minutes ago barely registers even though it's still on the scoreboard.",
+        ha="center", va="top",
+        fontsize=11, color="#475569", style="italic",
+    )
+
+    # ── TOP HALF: swing metaphor ─────────────────────────────────────────────
+    ax.set_facecolor("#FFFFFF")
+
+    # Minimal gridlines: just ±0.5 and ±1.0
+    for yg in [-1.0, -0.5, 0.5, 1.0, 1.5]:
+        ax.axhline(yg, color="#E2E8F0", linewidth=0.65, zorder=0)
+
+    # Bold zero line
+    ax.axhline(0, color="#1E293B", linewidth=2.5, zorder=1)
+
+    # Coloured fills
+    ax.fill_between(minutes, mom, 0,
+                    where=(mom >= 0), color=colour, alpha=0.18, zorder=2)
+    ax.fill_between(minutes, mom, 0,
+                    where=(mom < 0), color=ENG_RED, alpha=0.12, zorder=2)
+
+    # Thick momentum line
+    ax.plot(minutes, mom, color=colour, linewidth=4.5, zorder=3)
+
+    # Goal markers
+    for gm, gc in [(G_GORDON, ENG_RED), (G_ENZO, colour), (G_LAUTARO, colour)]:
+        idx = min(gm - 1, len(mom) - 1)
+        ax.scatter(gm, float(mom[idx]), s=160, color=gc, zorder=5,
+                   edgecolors="white", linewidths=2.0)
+
+    # Subtle goal-minute tick lines
+    for gm in (G_GORDON, G_ENZO, G_LAUTARO):
+        ax.axvline(gm, color="#CBD5E1", linewidth=0.7, linestyle=":", zorder=1)
+
+    # Region labels (orient the viewer)
+    ax.text(2, 0.14, "Argentina gaining →",
+            fontsize=9, color=colour, alpha=0.65, va="bottom")
+    ax.text(2, -0.14, "England gaining →",
+            fontsize=9, color=ENG_RED, alpha=0.65, va="top")
+
+    # ── Annotation 1: Gordon 55' — "England gets the push" ───────────────────
+    ax.annotate(
+        "England gets the push\n(Gordon 55')",
+        xy=(G_GORDON, val_gordon),
+        xytext=(22, val_gordon - 0.26),
+        fontsize=13, color="#9B1C1C", fontweight="bold",
+        arrowprops=dict(
+            arrowstyle="->", color="#9B1C1C", lw=1.8,
+            connectionstyle="arc3,rad=-0.12",
+        ),
+        bbox=dict(boxstyle="round,pad=0.45", facecolor="white",
+                  edgecolor="#FECACA", alpha=0.97),
+    )
+
+    # ── Annotation 2: decay stretch — "The swing loses height on its own" ────
+    ax.annotate(
+        "The swing loses\nheight on its own",
+        xy=(DECAY_REF, val_decay),
+        xytext=(55, val_decay - 0.42),
+        fontsize=13, color="#475569", style="italic",
+        arrowprops=dict(
+            arrowstyle="->", color="#94A3B8", lw=1.6,
+            connectionstyle="arc3,rad=0.18",
+        ),
+        bbox=dict(boxstyle="round,pad=0.45", facecolor="#F8FAFC",
+                  edgecolor="#CBD5E1", alpha=0.97),
+    )
+
+    # ── Annotation 3: Enzo 85' — "Argentina gets the push back" ─────────────
+    ax.annotate(
+        "Argentina gets\nthe push back\n(Enzo 85')",
+        xy=(G_ENZO, val_enzo),
+        xytext=(61, val_enzo + 0.40),
+        fontsize=13, color="#1D4ED8", fontweight="bold",
+        arrowprops=dict(
+            arrowstyle="->", color=colour, lw=1.8,
+            connectionstyle="arc3,rad=0.08",
+        ),
+        bbox=dict(boxstyle="round,pad=0.45", facecolor="white",
+                  edgecolor="#BFDBFE", alpha=0.97),
+    )
+
+    # Lautaro small label
+    ax.text(G_LAUTARO + 0.6, val_lautaro + 0.08,
+            "Lautaro 90+2'", fontsize=10, color=colour,
+            va="bottom", fontweight="bold")
+
+    # ── Axis formatting ───────────────────────────────────────────────────────
+    y_lo = mom.min() * 1.55
+    y_hi = mom.max() * 1.65
+    ax.set_ylim(y_lo, y_hi)
+    ax.set_xlim(0, max_min + 2)
+    ax.set_xticks([0, 15, 30, 45, 55, 72, 85, 92])
+    ax.set_xticklabels(
+        ["0", "15'", "30'", "45'", "55'", "72'", "85'", "90+2'"],
+        fontsize=10.5, color="#64748B",
+    )
+    ax.set_yticklabels([])
+    ax.tick_params(axis="y", length=0)
+    for spine in ["top", "right"]:
+        ax.spines[spine].set_visible(False)
+    for spine in ["left", "bottom"]:
+        ax.spines[spine].set_edgecolor("#E2E8F0")
+    ax.set_title(
+        "Argentina 2–1 England  |  2026 FIFA World Cup Semifinal  |  Atlanta, July 15",
+        fontsize=13, fontweight="bold", color="#1E293B", pad=10,
+    )
+
+    # ── BOTTOM HALF: technical spec ───────────────────────────────────────────
+    ax2.set_facecolor("#F1F5F9")
+    ax2.axis("off")
+
+    ax2.text(
+        0.5, 0.88,
+        r"momentum(t)  =  $\Sigma$[ own_goal_weight × 0.5$^{(t-t_0)/12}$ ]"
+        "  −  "
+        r"$\Sigma$[ opp_goal_weight × 0.5$^{(t-t_0)/12}$ ]",
+        ha="center", va="center", fontsize=10.5, color="#1E293B",
+        transform=ax2.transAxes, fontfamily="monospace",
+    )
+    ax2.text(
+        0.5, 0.60,
+        "Each push loses half its remaining height every 12 minutes — "
+        "not a flat amount, a flat fraction of what's left.",
+        ha="center", va="center", fontsize=10.5, color="#334155",
+        transform=ax2.transAxes, style="italic",
+    )
+    ax2.text(
+        0.5, 0.28,
+        "Known blind spot: this reconstruction reacts only to goals — "
+        "not to shots, passes, or possession like the real broadcast graphic.\n"
+        "During any tense, goalless stretch, the line goes flat and uninformative. "
+        "That is a structural property of the model, not a hedge.",
+        ha="center", va="center", fontsize=9.5, color="#64748B",
+        transform=ax2.transAxes,
+        bbox=dict(boxstyle="round,pad=0.45", facecolor="white",
+                  edgecolor="#CBD5E1", alpha=0.90),
+    )
+
+    # ── Citation fine print ───────────────────────────────────────────────────
+    fig.text(
+        0.5, 0.005,
+        f"Verified source: FIFA official match centre  |  {FIFA_URL}",
+        ha="center", va="bottom", fontsize=7.5, color="#94A3B8",
+    )
+
+    out = CHARTS_DIR / "momentum_explainer_final.png"
+    fig.savefig(out, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
+    plt.close(fig)
+    print(f"Saved: {out}")
+
+
+# -----------------------------------------------------------------------------
+# 9. MAIN
 # -----------------------------------------------------------------------------
 
 def main():
@@ -1368,6 +1581,7 @@ def main():
     chart_volatility(goals, matches)
     chart_hero_4panel(goals, matches)
     chart_methodology_explainer(goals, matches)
+    chart_momentum_explainer_final(goals, matches)
 
     # -- Response time analysis
     print("\n-- Computing response times after conceding...")
